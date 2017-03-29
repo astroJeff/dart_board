@@ -169,11 +169,13 @@
 *
 * Evolve the binary.
 *
+         write(*,*) "Before evolution"
          CALL evolv2_rev(kstar,mass0,mass,rad,lum,massc,radc,
      &               menv,renv,ospin,epoch,tms,
      &               tphys,tphysf,dtp,z,zpars,tb,ecc,
      &               v_kick1,theta_kick1,phi_kick1,
      &               v_kick2,theta_kick2,phi_kick2)
+         write(*,*) "After evolution"
 *
 * Search the BCM array for the formation of binaries of
 * interest (data on unit 12 if detected) and also output
@@ -181,6 +183,8 @@
 *
 * In this example we will search for CVs.
 *
+
+         write(*,*) out_flag
 
          jj = 0
          do while (bcm(jj,1).lt.tmax)
@@ -195,11 +199,16 @@
            mdot2 = bcm(jj,28)
 
            if(out_flag)then
-              write(11,*) bcm(jj,1), m1_out, m2_out, k1_out, k2_out,
+             write(*,*) bcm(jj,1), m1_out, m2_out, k1_out, k2_out,
      &                   ecc_out, a_out, p_out, mdot1, mdot2
            endif
+
+           write(*,*) "Time: ", bcm(jj,1), tmax
+
            jj = jj + 1
          enddo
+
+         write(*,*) "After outflag"
 
          last = jj
 
@@ -218,6 +227,8 @@
          if(mdot2.gt.mdot1) mdot_out = mdot2
          v_sys_out = bcm(last,33)
 
+         write(*,*) "After bcm, before bpp"
+
 * To get t_SN1, we use the bpp array which stores values
 * whenever the stellar k-type changes
          jp = 0
@@ -233,6 +244,8 @@
 
            jp = jp + 1
          enddo
+
+         write(*,*) "After bpp"
 
          if(out_flag)then
             write(11,*) bcm(last,1), m1_out, m2_out, k1_out, k2_out,

@@ -62,6 +62,7 @@ class DartBoard():
         self.prior_theta_kick2 = ln_prior_theta_kick
         self.prior_phi_kick2 = ln_prior_phi_kick
 
+        self.prior_pos = None
         if ln_prior_pos is None:
             self.prior_t = ln_prior_t
         else:
@@ -85,7 +86,8 @@ class DartBoard():
         self.evolve_binary = evolve_binary
 
         # The type of objects
-        if np.any(binary_type, np.array(["BHBH", "NSNS", "BHNS"])):
+        self.second_SN = False
+        if np.any(binary_type == np.array(["BHBH", "NSNS", "BHNS"])):
             self.second_SN = True
 
         # Determine the number of dimensions
@@ -130,7 +132,7 @@ class DartBoard():
             phi_kick2 = 0.0
 
         # Iterate randomly through initial conditions until a viable parameter set is found
-        for i in np.arange(1000000):
+        for i in np.arange(100000):
 
             M1 = 5.0 * np.random.uniform(size=1) + 8.0
             M2 = M1 * (0.2 * np.random.uniform(size=1) + 0.8)
@@ -153,7 +155,7 @@ class DartBoard():
                 x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, time
 
             # If the system has a viable posterior probability
-            if self.posterior_population(x)[0] > -10000.0:
+            if self.posterior_function(x, self)[0] > -10000.0:
 
                 # ...then use it as our starting system
                 break
@@ -199,7 +201,7 @@ class DartBoard():
                         v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
                         time_set[i]
 
-            ln_posterior = self.posterior_population(p)[0]
+            ln_posterior = self.posterior_function(p, self)[0]
 
 
             while ln_posterior < -10000.0:
@@ -233,7 +235,7 @@ class DartBoard():
                             v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
                             time_set[i]
 
-                ln_posterior = self.posterior_population(p)[0]
+                ln_posterior = self.posterior_function(p, self)[0]
 
 
 

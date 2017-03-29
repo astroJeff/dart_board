@@ -3,6 +3,8 @@
 import sys
 import numpy as np
 
+from . import constants as c
+from . import darts
 
 
 def P_to_A(M1, M2, P):
@@ -49,16 +51,18 @@ def ln_posterior(x, dart):
 
     """
 
+    print("Here")
+
     if dart.second_SN:
-        if ln_prior_pos is None:
-            M1, M2, a, ecc, v_kick1, theta1, phi1, v_kick2, theta2, phi2, t_b = x
+        if dart.prior_pos is None:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b = x
         else:
-            M1, M2, a, ecc, v_kick1, theta1, phi1, v_kick2, theta2, phi2, ra_b, dec_b, t_b = x
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, t_b = x
     else:
-        if ln_prior_pos is None:
-            M1, M2, a, ecc, v_kick1, theta1, phi1, t_b = x
+        if dart.prior_pos is None:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, t_b = x
         else:
-            M1, M2, a, ecc, v_kick1, theta1, phi1, ra_b, dec_b, t_b = x
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, t_b = x
 
 
     # Empty array for emcee blobs
@@ -72,15 +76,15 @@ def ln_posterior(x, dart):
     lp += dart.prior_ecc(ecc)
     lp += dart.prior_a(a, ecc)
     lp += dart.prior_v_kick1(v_kick1)
-    lp += dart.prior_theta_kick1(theta1)
-    lp += dart.prior_phi_kick1(phi1)
+    lp += dart.prior_theta_kick1(theta_kick1)
+    lp += dart.prior_phi_kick1(phi_kick1)
 
     if dart.second_SN:
         lp += dart.prior_v_kick2(v_kick2)
-        lp += dart.prior_theta_kick2(theta2)
-        lp += dart.prior_phi_kick2(phi2)
+        lp += dart.prior_theta_kick2(theta_kick2)
+        lp += dart.prior_phi_kick2(phi_kick2)
 
-    if ln_prior_pos is None:
+    if dart.prior_pos is None:
         lp += dart.prior_t(t_b)
     else:
         lp += dart.prior_pos(ra_b, dec_b, t_b)
@@ -93,19 +97,26 @@ def ln_posterior(x, dart):
 
 
     # Run rapid binary evolution code
-    output = dart.evolve_binary(1, M1, M2, orbital_period, ecc, v_kick1, theta1,
-                                phi1, v_kick2, theta2, phi2, t_b, dart.metallicity)
+    if not dart.second_SN:
+        v_kick2 = v_kick1
+        theta_kick2 = theta_kick1
+        phi_kick2 = phi_kick1
+
+    print("pre-evolve", M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b, dart.metallicity)
+
+    output = dart.evolve_binary(1, M1, M2, orbital_period, ecc,
+                                v_kick1, theta_kick1, phi_kick1,
+                                v_kick2, theta_kick2, phi_kick2,
+                                t_b, dart.metallicity, False)
 
 
-    m1_out, m2_out, a_out, ecc_out, v_sys, L_x, t_SN1, k1, k2 = output
+    m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
-
-    binary_evolved = [m1_out, m2_out, a_out, ecc_out, v_sys, L_x, t_SN1, k1, k2]
-
+    print(output)
 
     # Return posterior probability and blobs
     if check_output(output, dart.binary_type):
-        return lp, np.array(binary_evolved)
+        return lp, np.array([m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2])
     else:
         return -np.inf, empty_arr
 
