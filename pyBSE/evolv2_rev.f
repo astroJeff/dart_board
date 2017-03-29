@@ -203,7 +203,7 @@
       LOGICAL isave,iplot
       REAL*8 rl,mlwind,vrotf,corerd
       EXTERNAL rl,mlwind,vrotf,corerd
-      REAL bcm(50000,34),bpp(80,10)
+      REAL bcm(50000,35),bpp(80,10)
       COMMON /BINARY/ bcm,bpp
 *
 * Save the initial state.
@@ -925,6 +925,7 @@
             bcm(ip,30) = tb
             bcm(ip,31) = sep
             bcm(ip,32) = ecc
+            bcm(ip,33) = SQRT(vs(1)*vs(1)+vs(2)*vs(2)+vs(3)*vs(3))
             if(isave) tsave = tsave + dtp
          endif
       endif

@@ -3,7 +3,8 @@
      &                         theta_kick1, phi_kick1, v_kick2,
      &                         theta_kick2, phi_kick2, tmax, z,
      &                         m1_out, m2_out, a_out, ecc_out,
-     &                         k1_out, k2_out, mdot1_out, mdot2_out,
+     &                         v_sys_out, mdot_out, t_SN1,
+     &                         k1_out, k2_out,
      &                         out_flag)
 ***
 *
@@ -14,7 +15,7 @@
 *
       INCLUDE 'const_bse.h'
 *
-      integer i,j,k,jj,nm1, last
+      integer i,j,k,jj,jp,nm1, last
       integer kw,kw2,kwx,kwx2,kstar(2)
       integer i1,i2,kdum
       integer, intent(in) :: num_bin
@@ -32,8 +33,10 @@
       PARAMETER(tol=1.d-07)
       real*8 t1,t2,mx,mx2,tbx,eccx
       real*8 p_out
+      real*8 mdot1, mdot2
       real*8, intent(out) :: m1_out, m2_out, a_out, ecc_out
-      real*8, intent(out) :: k1_out, k2_out, mdot1_out, mdot2_out
+      real*8, intent(out) :: v_sys_out, mdot_out, t_SN1
+      real*8, intent(out) :: k1_out, k2_out
       logical out_flag
       CHARACTER*8 label(14)
 *
@@ -188,12 +191,12 @@
            ecc_out = bcm(jj,32)
            p_out = bcm(jj,30)*365.25
            a_out = bcm(jj,31)
-           mdot1_out = bcm(jj,14)
-           mdot2_out = bcm(jj,28)
+           mdot1 = bcm(jj,14)
+           mdot2 = bcm(jj,28)
 
            if(out_flag)then
-              write(11,*) bcm(jj,1), m1_out,m2_out,k1_out,k2_out,
-     &                   ecc_out, a_out, p_out, mdot1_out, mdot2_out
+              write(11,*) bcm(jj,1), m1_out, m2_out, k1_out, k2_out,
+     &                   ecc_out, a_out, p_out, mdot1, mdot2
            endif
            jj = jj + 1
          enddo
@@ -207,12 +210,33 @@
          ecc_out = bcm(last,32)
          p_out = bcm(last,30)*365.25
          a_out = bcm(last,31)
-         mdot1_out = bcm(last,14)
-         mdot2_out = bcm(last,28)
+
+* Mass accretion rate out is the largest mdot of the two
+         mdot1 = bcm(last,14)
+         mdot2 = bcm(last,28)
+         mdot_out = mdot1
+         if(mdot2.gt.mdot1) mdot_out = mdot2
+         v_sys_out = bcm(last,33)
+
+* To get t_SN1, we use the bpp array which stores values
+* whenever the stellar k-type changes
+         jp = 0
+         do while (bpp(jp,1).lt.tmax)
+           kstar(1) = INT(bpp(jp,4))
+           kstar(2) = INT(bpp(jp,5))
+
+* First time the loop encounters a NS or BH, set t_SN1 and exit loop
+           if(kstar(1).gt.12.or.kstar(2).gt.12)then
+             t_SN1 = bpp(jp,1)
+             EXIT
+           endif
+
+           jp = jp + 1
+         enddo
 
          if(out_flag)then
-            write(11,*) bcm(last,1), m1_out,m2_out,k1_out,k2_out,
-     &                 ecc_out, a_out, p_out, mdot1_out, mdot2_out
+            write(11,*) bcm(last,1), m1_out, m2_out, k1_out, k2_out,
+     &                 ecc_out, a_out, p_out, mdot1, mdot2
          endif
 
 
