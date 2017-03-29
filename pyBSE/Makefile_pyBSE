@@ -1,5 +1,6 @@
 IGNORE:
-CMPLR = f77
+PY_CMPLR = f2py
+CMPLR = gfortran
 FFLAGS =
 LFLAGS = const_bse.h zdata.h
 
