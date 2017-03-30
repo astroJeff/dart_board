@@ -15,8 +15,6 @@ import emcee
 from . import priors
 from . import posterior
 
-sys.path.append("../pyBSE/")
-import pybse
 
 
 class DartBoard():
@@ -42,7 +40,12 @@ class DartBoard():
                  nwalkers=80,
                  threads=1,
                  mpi=False,
-                 evolve_binary=pybse.evolv_wrapper):
+                 evolve_binary=None):
+
+        # First, check that a binary evolution scheme was provided
+        if evolve_binary is None:
+            print("You must include a binary evolution scheme, e.g. pybse.evolv_wrapper")
+            sys.exit(-1)
 
         # The type of binary we are modeling
         self.binary_type = binary_type
@@ -102,6 +105,10 @@ class DartBoard():
             else:
                 self.dim = 10
 
+
+        # Saved data
+        self.sampler = []
+        self.binary_data = []
 
     def aim_darts(self):
         """
@@ -275,12 +282,12 @@ class DartBoard():
             if not pool.is_master():
                 pool.wait()
                 sys.exit(0)
-            sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, pool=pool)
+            sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, args=[self], pool=pool)
 
         elif self.threads != 1:
-            sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, threads=self.threads)
+            sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, args=[self], threads=self.threads)
         else:
-            sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function)
+            sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, args=[self])
 
 
         # Burn-in
@@ -293,3 +300,6 @@ class DartBoard():
         sampler.reset()
         pos,prob,state,binary_data = sampler.run_mcmc(pos, N=nsteps)
         print("...full run finished")
+
+        self.sampler = sampler
+        self.binary_data = binary_data

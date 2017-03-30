@@ -51,7 +51,6 @@ def ln_posterior(x, dart):
 
     """
 
-    print("Here")
 
     if dart.second_SN:
         if dart.prior_pos is None:
@@ -89,7 +88,8 @@ def ln_posterior(x, dart):
     else:
         lp += dart.prior_pos(ra_b, dec_b, t_b)
 
-    if np.isinf(lp): return -np.inf, empty_arr
+    if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
+
 
 
     # Get initial orbital period
@@ -102,7 +102,6 @@ def ln_posterior(x, dart):
         theta_kick2 = theta_kick1
         phi_kick2 = phi_kick1
 
-    print("pre-evolve", M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b, dart.metallicity)
 
     output = dart.evolve_binary(1, M1, M2, orbital_period, ecc,
                                 v_kick1, theta_kick1, phi_kick1,
@@ -111,8 +110,6 @@ def ln_posterior(x, dart):
 
 
     m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
-
-    print(output)
 
     # Return posterior probability and blobs
     if check_output(output, dart.binary_type):
@@ -149,7 +146,7 @@ def check_output(output, binary_type):
 
     """
 
-    m1_out, m2_out, a_out, ecc_out, v_sys, L_x, t_SN1, k1, k2 = output
+    m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
     type_options = np.array(["HMXB", "BHBH", "NSNS", "BHNS"])
 
@@ -162,7 +159,7 @@ def check_output(output, binary_type):
         if k2 > 9: return False
         if a_out <= 0.0: return False
         if ecc_out < 0.0 or ecc_out >= 1.0: return False
-        if L_x <= 0.0: return False
+        if mdot <= 0.0: return False
         if m2_out < 4.0: return False
 
     elif binary_type == "BHBH":
