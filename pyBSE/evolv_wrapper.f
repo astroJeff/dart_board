@@ -146,6 +146,7 @@
          tb0 = tb/yeardy
          sep0 = aursun*(tb0*tb0*(mass(1) + mass(2)))**(1.d0/3.d0)
          tb0 = tb
+
 *
 * Initialize the binary.
 *
@@ -169,13 +170,11 @@
 *
 * Evolve the binary.
 *
-         write(*,*) "Before evolution"
          CALL evolv2_rev(kstar,mass0,mass,rad,lum,massc,radc,
      &               menv,renv,ospin,epoch,tms,
      &               tphys,tphysf,dtp,z,zpars,tb,ecc,
      &               v_kick1,theta_kick1,phi_kick1,
      &               v_kick2,theta_kick2,phi_kick2)
-         write(*,*) "After evolution"
 *
 * Search the BCM array for the formation of binaries of
 * interest (data on unit 12 if detected) and also output
@@ -184,7 +183,6 @@
 * In this example we will search for CVs.
 *
 
-         write(*,*) out_flag
 
          jj = 0
          do while (bcm(jj,1).lt.tmax)
@@ -203,12 +201,11 @@
      &                   ecc_out, a_out, p_out, mdot1, mdot2
            endif
 
-           write(*,*) "Time: ", bcm(jj,1), tmax
+           if(jj.gt.2.and.bcm(jj,1).eq.0.0) EXIT
 
            jj = jj + 1
-         enddo
 
-         write(*,*) "After outflag"
+         enddo
 
          last = jj
 
@@ -220,14 +217,13 @@
          p_out = bcm(last,30)*365.25
          a_out = bcm(last,31)
 
+
 * Mass accretion rate out is the largest mdot of the two
          mdot1 = bcm(last,14)
          mdot2 = bcm(last,28)
          mdot_out = mdot1
          if(mdot2.gt.mdot1) mdot_out = mdot2
          v_sys_out = bcm(last,33)
-
-         write(*,*) "After bcm, before bpp"
 
 * To get t_SN1, we use the bpp array which stores values
 * whenever the stellar k-type changes
@@ -244,8 +240,6 @@
 
            jp = jp + 1
          enddo
-
-         write(*,*) "After bpp"
 
          if(out_flag)then
             write(11,*) bcm(last,1), m1_out, m2_out, k1_out, k2_out,

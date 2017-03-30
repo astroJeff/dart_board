@@ -38,7 +38,6 @@
       calpha = 0.0
       vr2 = gmrkm*(m1+m2)*(1.d0/sep)
       vr = SQRT(vr2)
-
 *      vr = 0.d0
 *      vr2 = 0.d0
 *      salpha = 0.d0
