@@ -148,7 +148,6 @@ def posterior_properties(output, **kwargs):
                 error = get_error_from_kwargs(param, **kwargs)
                 ll += np.log(norm.pdf(model_vals[i], loc=value, scale=error))
 
-
     return ll
 
 

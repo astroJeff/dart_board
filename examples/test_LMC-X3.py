@@ -7,7 +7,9 @@ sys.path.append("../pyBSE/")
 import pybse
 import dart_board
 
-pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper)
+kwargs = {"M1" : 6.98, "M1_err" : 0.56, "M2" : 3.63, "M2_err" : 0.57, "P_orb" : 1.7, "P_orb_err" : 0.1}
+pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper, kwargs=kwargs)
+# pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper)
 pub.aim_darts()
 
 
@@ -44,4 +46,4 @@ plt_range = ([7,24], [2.5,15], [0,1500], [0,1], [0,450], [np.pi/4.,np.pi], [0,np
 hist2d_kwargs = {"plot_datapoints" : False}
 corner.corner(pub.sampler.flatchain, labels=labels, range=plt_range, bins=20, max_n_ticks=4, **hist2d_kwargs)
 
-plt.savefig("../figures/test_HMXB_corner.pdf")
+plt.savefig("../figures/test_LMC-X3_corner.pdf")

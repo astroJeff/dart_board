@@ -30,3 +30,4 @@ pyBSE/zfuncs.f
 figures/*
 dart_board.egg-info
 dart_board/__pycache__
+examples/*.out

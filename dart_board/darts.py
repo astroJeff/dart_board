@@ -172,7 +172,7 @@ class DartBoard():
                 x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, time
 
             # If the system has a viable posterior probability
-            if self.posterior_function(x, self)[0] > -10000.0:
+            if self.posterior_function(x, self)[0] > -1000.0:
 
                 # ...then use it as our starting system
                 break
@@ -221,7 +221,7 @@ class DartBoard():
             ln_posterior = self.posterior_function(p, self)[0]
 
 
-            while ln_posterior < -10000.0:
+            while ln_posterior < -1000.0:
 
 
                 # Binary parameters
