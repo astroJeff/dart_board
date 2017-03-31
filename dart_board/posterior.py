@@ -2,6 +2,7 @@
 
 import sys
 import numpy as np
+from scipy.stats import norm
 
 from . import constants as c
 from . import darts
@@ -90,19 +91,90 @@ def ln_posterior(x, dart):
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
                                 t_b, dart.metallicity, False)
-
-    m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
+    # m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
 
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type): return -np.inf, empty_arr
 
 
+    # Check for kwargs arguments
+    ll = 0
+    if not dart.kwargs == {}: ll = posterior_properties(output, **dart.kwargs)
 
-    return lp, np.array([m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2])
+
+    return ll+lp, np.array([output])
 
 
 
+
+def posterior_properties(output, **kwargs):
+    """
+    Calculate the (log of the) posterior probability given specific observables.
+
+    """
+
+    M1, M2, a, ecc, v_sys, mdot, t_SN1, k1, k2 = output
+    P_orb = A_to_P(M1, M2, a)
+
+
+    # Calculate an X-ray luminosity
+    L_x = calculate_L_x(M1, mdot, k1)
+
+
+    def get_error_from_kwargs(param, **kwargs):
+
+        # Search kwargs for parameter uncertainty
+        for key, error in kwargs.items():
+            if key == param + "_err":
+                return error
+
+        # Parameter uncertainty was not provided
+        print("You must provide an uncertainty for the observables. Example:")
+        print("M2 : 8.0, M2_err : 1.0")
+        sys.exit(-1)
+
+
+    # Possible observables
+    observables = ["M1","M2","P_orb","a","ecc","L_x","v_sys"]
+    model_vals = [M1,M2,P_orb,a,ecc,L_x,v_sys]
+
+
+    # Add log probabilities for each observable
+    ll = 0
+    for key, value in kwargs.items():
+        for i,param in enumerate(observables):
+            if key == param:
+                error = get_error_from_kwargs(param, **kwargs)
+                ll += np.log(norm.pdf(model_vals[i], loc=value, scale=error))
+
+
+    return ll
+
+
+
+def calculate_L_x(M1, mdot, k1):
+    """
+    Calculate the X-ray luminosity of an accreting binary.
+
+    """
+
+    if k1 == 13:
+        R_acc = c.R_NS * 1.0e5  # NS radius in cm
+        epsilon = 1.0 # Surface accretion
+        eta = 0.15 # Wind accretion
+    elif k1 == 14:
+        R_acc = 3.0 * 2.0 * c.G * (M1*c.Msun_to_g) / (c.c_light * c.c_light) # BH has accretion radius of 3 Schwarzchild radii
+        epsilon = 0.5 # Disk accretion
+        eta = 0.8 # All BH accretion
+    else:
+        return -1
+
+    L_bol = epsilon * c.G * (M1*c.Msun_to_g) * mdot / R_acc
+
+    L_x = eta * L_bol
+
+    return L_x
 
 
 def check_output(output, binary_type):

@@ -94,17 +94,12 @@ class DartBoard():
         if np.any(binary_type == np.array(["BHBH", "NSNS", "BHNS"])):
             self.second_SN = True
 
-        def print_keyword_args(**kwargs):
-            # kwargs is a dict of the keyword args passed to the function
-            for key, value in kwargs.iteritems():
-                print("%s = %s" % (key, value))
 
         # Oservables to match
         self.kwargs = kwargs
         if not self.kwargs == {}:
-            print_keyword_args(**kwargs)
-
-
+            for key, value in kwargs.items():
+                print("%s = %s" % (key, value))
 
 
         # Determine the number of dimensions
