@@ -130,8 +130,8 @@
 *
 * Open the output files.
 *
-      OPEN(11,file='binaries.out',status='unknown')
-      OPEN(12,file='search.out',status='unknown')
+*      OPEN(11,file='binaries.out',status='unknown')
+*      OPEN(12,file='search.out',status='unknown')
 *
       do i = 1,num_bin
 *
@@ -241,10 +241,10 @@
            jp = jp + 1
          enddo
 
-         if(out_flag)then
-            write(11,*) bcm(last,1), m1_out, m2_out, k1_out, k2_out,
-     &                 ecc_out, a_out, p_out, mdot1, mdot2
-         endif
+*         if(out_flag)then
+*            write(11,*) bcm(last,1), m1_out, m2_out, k1_out, k2_out,
+*     &                 ecc_out, a_out, p_out, mdot1, mdot2
+*         endif
 
 
          jj = 0
@@ -279,26 +279,26 @@
             endif
          endif
 *
-         if(t1.gt.0.0.and.(bcm(jj,i1).lt.1.0.or.
-     &      kw.ne.kwx.or.kw2.ne.kwx2))then
-            if(t2.lt.0.0)then
-               t2 = bcm(jj,1)
-               if(t2.gt.(t1+tol))then
-                  WRITE(12,112)m1,m2,ecc0,tb0,t1,t2,kwx,kwx2,
-     &                         mx,mx2,eccx,tbx
-               endif
-               t1 = -1.0
-               t2 = -1.0
-            endif
-         endif
+*         if(t1.gt.0.0.and.(bcm(jj,i1).lt.1.0.or.
+*     &      kw.ne.kwx.or.kw2.ne.kwx2))then
+*            if(t2.lt.0.0)then
+*               t2 = bcm(jj,1)
+*               if(t2.gt.(t1+tol))then
+*                  WRITE(12,112)m1,m2,ecc0,tb0,t1,t2,kwx,kwx2,
+*     &                         mx,mx2,eccx,tbx
+*               endif
+*               t1 = -1.0
+*               t2 = -1.0
+*            endif
+*         endif
 *
          goto 30
  40      continue
 *
-         if(t1.gt.0.0)then
-            if(t2.lt.0.0) t2 = tmax
-            WRITE(12,112)m1,m2,ecc0,tb0,t1,t2,kwx,kwx2,mx,mx2,eccx,tbx
-         endif
+*         if(t1.gt.0.0)then
+*            if(t2.lt.0.0) t2 = tmax
+*            WRITE(12,112)m1,m2,ecc0,tb0,t1,t2,kwx,kwx2,mx,mx2,eccx,tbx
+*         endif
 *
          jj = jj - 1
          kw = INT(bcm(jj,2))
@@ -314,8 +314,8 @@
  111  FORMAT(f10.1,2i3,3f8.3,1p,e14.6)
  112  FORMAT(3f8.3,1p,e14.6,0p,2f10.2,2i3,3f8.3,1p,e14.6)
 *      CLOSE(10)
-      CLOSE(11)
-      CLOSE(12)
+*      CLOSE(11)
+*      CLOSE(12)
 
 
 * The bpp array acts as a log, storing parameters at each change

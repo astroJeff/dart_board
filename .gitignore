@@ -27,3 +27,6 @@ pyBSE/star.f
 pyBSE/zcnsts.f
 pyBSE/zdata.f
 pyBSE/zfuncs.f
+figures/*
+dart_board.egg-info
+dart_board/__pycache__
