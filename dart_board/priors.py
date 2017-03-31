@@ -6,6 +6,49 @@ from scipy.stats import maxwell
 from . import constants as c
 
 
+def prior_probability(x, dart):
+    """
+    Calculate all the prior probabilities.
+
+    """
+
+
+    if dart.second_SN:
+        if dart.prior_pos is None:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b = x
+        else:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, t_b = x
+    else:
+        if dart.prior_pos is None:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, t_b = x
+        else:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, t_b = x
+
+
+    # Calculate prior probabilities
+    lp = 0.0
+    lp += dart.prior_M1(M1)
+    lp += dart.prior_M2(M2, M1)
+    lp += dart.prior_ecc(ecc)
+    lp += dart.prior_a(a, ecc)
+    lp += dart.prior_v_kick1(v_kick1)
+    lp += dart.prior_theta_kick1(theta_kick1)
+    lp += dart.prior_phi_kick1(phi_kick1)
+
+    if dart.second_SN:
+        lp += dart.prior_v_kick2(v_kick2)
+        lp += dart.prior_theta_kick2(theta_kick2)
+        lp += dart.prior_phi_kick2(phi_kick2)
+
+    if dart.prior_pos is None:
+        lp += dart.prior_t(t_b)
+    else:
+        lp += dart.prior_pos(ra_b, dec_b, t_b)
+
+    return lp
+
+
+
 def ln_prior_M1(M1):
     """
     Return the prior probability on M1: P(M1).

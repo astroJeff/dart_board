@@ -40,7 +40,8 @@ class DartBoard():
                  nwalkers=80,
                  threads=1,
                  mpi=False,
-                 evolve_binary=None):
+                 evolve_binary=None,
+                 kwargs={}):
 
         # First, check that a binary evolution scheme was provided
         if evolve_binary is None:
@@ -93,6 +94,19 @@ class DartBoard():
         if np.any(binary_type == np.array(["BHBH", "NSNS", "BHNS"])):
             self.second_SN = True
 
+        def print_keyword_args(**kwargs):
+            # kwargs is a dict of the keyword args passed to the function
+            for key, value in kwargs.iteritems():
+                print("%s = %s" % (key, value))
+
+        # Oservables to match
+        self.kwargs = kwargs
+        if not self.kwargs == {}:
+            print_keyword_args(**kwargs)
+
+
+
+
         # Determine the number of dimensions
         if ln_prior_pos is None:
             if self.second_SN:
@@ -109,6 +123,7 @@ class DartBoard():
         # Saved data
         self.sampler = []
         self.binary_data = []
+
 
     def aim_darts(self):
         """

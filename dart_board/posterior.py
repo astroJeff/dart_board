@@ -5,6 +5,7 @@ import numpy as np
 
 from . import constants as c
 from . import darts
+from . import priors
 
 
 def P_to_A(M1, M2, P):
@@ -68,54 +69,40 @@ def ln_posterior(x, dart):
     empty_arr = np.zeros(9)
 
 
-    # Calculate prior probabilities
-    lp = 0.0
-    lp += dart.prior_M1(M1)
-    lp += dart.prior_M2(M2, M1)
-    lp += dart.prior_ecc(ecc)
-    lp += dart.prior_a(a, ecc)
-    lp += dart.prior_v_kick1(v_kick1)
-    lp += dart.prior_theta_kick1(theta_kick1)
-    lp += dart.prior_phi_kick1(phi_kick1)
-
-    if dart.second_SN:
-        lp += dart.prior_v_kick2(v_kick2)
-        lp += dart.prior_theta_kick2(theta_kick2)
-        lp += dart.prior_phi_kick2(phi_kick2)
-
-    if dart.prior_pos is None:
-        lp += dart.prior_t(t_b)
-    else:
-        lp += dart.prior_pos(ra_b, dec_b, t_b)
-
+    # Calculate the prior probability
+    lp = priors.prior_probability(x, dart)
     if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
-
 
 
     # Get initial orbital period
     orbital_period = A_to_P(M1, M2, a)
 
 
-    # Run rapid binary evolution code
+    # Proxy values if binary_type does not include second SN
     if not dart.second_SN:
         v_kick2 = v_kick1
         theta_kick2 = theta_kick1
         phi_kick2 = phi_kick1
 
 
+    # Run rapid binary evolution code
     output = dart.evolve_binary(1, M1, M2, orbital_period, ecc,
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
                                 t_b, dart.metallicity, False)
 
-
     m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
+
     # Return posterior probability and blobs
-    if check_output(output, dart.binary_type):
-        return lp, np.array([m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2])
-    else:
-        return -np.inf, empty_arr
+    if not check_output(output, dart.binary_type): return -np.inf, empty_arr
+
+
+
+    return lp, np.array([m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2])
+
+
+
 
 
 def check_output(output, binary_type):

@@ -7,12 +7,13 @@ sys.path.append("../pyBSE/")
 import pybse
 import dart_board
 
-pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper)
+kwargs = {"M2" : 8.0, "M2_err" : 1.0}
+pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper, kwargs=kwargs)
 pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=50000, nsteps=50000)
+pub.throw_darts(nburn=2, nsteps=2)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 print("Acceptance fractions:",pub.sampler.acceptance_fraction)
