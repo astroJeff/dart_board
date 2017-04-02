@@ -17,8 +17,8 @@ asec_to_rad = 4.84814e-6 # Arcsec to radians
 
 R_NS = 10.0  # NS radius in km
 eta_bol = 0.15  # Calibrated to Chandra X-ray sensitivity
-v_k_sigma = 265.0  # Kick velocity Maxwellian dispersion - Fe-core collapse
-v_k_sigma_ECS = 50.0  # Kick velocity Maxwellian dispersion - ECS
+v_kick_sigma = 265.0  # Kick velocity Maxwellian dispersion - Fe-core collapse
+v_kick_sigma_ECS = 50.0  # Kick velocity Maxwellian dispersion - ECS
 alpha = -2.35  # IMF index
 
 

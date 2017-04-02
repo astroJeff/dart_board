@@ -14,6 +14,7 @@ import emcee
 
 from . import priors
 from . import posterior
+from . import forward_pop_synth
 
 
 
@@ -37,6 +38,15 @@ class DartBoard():
                  ln_prior_t=priors.ln_prior_t,
                  ln_prior_pos=None,
                  ln_posterior_function=None,
+                 generate_M1=forward_pop_synth.get_M1,
+                 generate_M2=forward_pop_synth.get_M2,
+                 generate_a=forward_pop_synth.get_a,
+                 generate_ecc=forward_pop_synth.get_ecc,
+                 generate_v_kick=forward_pop_synth.get_v_kick,
+                 generate_theta_kick=forward_pop_synth.get_theta,
+                 generate_phi_kick=forward_pop_synth.get_phi,
+                 generate_t=forward_pop_synth.get_t,
+                 generate_pos=None,
                  nwalkers=80,
                  threads=1,
                  mpi=False,
@@ -71,6 +81,26 @@ class DartBoard():
             self.prior_t = ln_prior_t
         else:
             self.prior_pos = ln_prior_pos
+
+        # Set the functions to generate new values for each parameters
+        # This is only needed for forward population synthesis
+        self.generate_M1 = generate_M1
+        self.generate_M2 = generate_M2
+        self.generate_a = generate_a
+        self.generate_ecc = generate_ecc
+        self.generate_v_kick1 = generate_v_kick
+        self.generate_theta_kick1 = generate_theta_kick
+        self.generate_phi_kick1 = generate_phi_kick
+        self.generate_v_kick2 = generate_v_kick
+        self.generate_theta_kick2 = generate_theta_kick
+        self.generate_phi_kick2 = generate_phi_kick
+
+        self.generate_pos = None
+        if generate_pos is None:
+            self.generate_t = generate_t
+        else:
+            self.generate_pos = generate_pos
+
 
         # Set the posterior probability function
         if ln_posterior_function is None:
@@ -117,6 +147,7 @@ class DartBoard():
 
         # Saved data
         self.sampler = []
+        self.binary_x_i = []
         self.binary_data = []
 
 
@@ -313,3 +344,45 @@ class DartBoard():
 
         self.sampler = sampler
         self.binary_data = binary_data
+
+
+
+    def scatter_darts(self, num_darts=100000):
+        """
+        Rather than use the MCMC sampler, run a forward population synthesis analysis.
+
+        Parameters
+        ----------
+        num_darts : int
+            Number of darts to throw
+
+        """
+
+        # Generate the population
+        M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
+                phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, num_darts)
+
+        # Now, we want to zero the outputs
+        self.binary_x_i = np.zeros((num_darts, 11))
+        self.binary_data = np.zeros((num_darts, 9))
+        success = np.zeros(num_darts, dtype=bool)
+
+
+        # Run binary evolution - must run one at a time
+        for i in range(num_darts):
+            output = self.evolve_binary(1, M1[i], M2[i], orbital_period[i], ecc[i],
+                                        v_kick1[i], theta_kick1[i], phi_kick1[i],
+                                        v_kick2[i], theta_kick2[i], phi_kick2[i],
+                                        t_b[i], self.metallicity, False)
+
+            x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
+                    phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], t_b[i]
+
+            if posterior.check_output(output, self.binary_type):
+                self.binary_x_i[i] = np.array([x_i])
+                self.binary_data[i] = np.array([output])
+                success[i] = True
+
+        # Now, let's only return successful values in binary_x_i, binary_data
+        self.binary_x_i = self.binary_x_i[success]
+        self.binary_data = self.binary_data[success]

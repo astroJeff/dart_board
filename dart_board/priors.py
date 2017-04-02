@@ -99,7 +99,7 @@ def ln_prior_v_kick(v_kick):
     """
 
     if v_kick < 0.0: return -np.inf
-    return np.log(maxwell.pdf(v_kick, scale=c.v_k_sigma))
+    return np.log(maxwell.pdf(v_kick, scale=c.v_kick_sigma))
 
 
 def ln_prior_theta_kick(theta_kick):
