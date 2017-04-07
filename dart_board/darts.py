@@ -151,6 +151,248 @@ class DartBoard():
         self.binary_data = []
 
 
+    def aim_darts_separate(self):
+
+
+
+
+        # Set walkers
+        print("Setting walkers...")
+
+
+        # Initial values
+        M1 = 12.0
+        M2 = 10.0
+        ecc = 0.41
+        metallicity = self.metallicity
+        orbital_period = 500.0
+        time = 30.0
+
+        # SN kicks
+        v_kick1 = 0.0
+        theta_kick1 = 0.0
+        phi_kick1 = 0.0
+        if self.second_SN:
+            v_kick2 = 0.0
+            theta_kick2 = 0.0
+            phi_kick2 = 0.0
+
+
+        # Allocate walkers
+        M1_set = np.zeros(self.nwalkers)
+        M2_set = np.zeros(self.nwalkers)
+        a_set = np.zeros(self.nwalkers)
+        ecc_set = np.zeros(self.nwalkers)
+        v_kick1_set = np.zeros(self.nwalkers)
+        theta_kick1_set = np.zeros(self.nwalkers)
+        phi_kick1_set = np.zeros(self.nwalkers)
+        if self.second_SN:
+            v_kick2_set = np.zeros(self.nwalkers)
+            theta_kick2_set = np.zeros(self.nwalkers)
+            phi_kick2_set = np.zeros(self.nwalkers)
+        time_set = np.zeros(self.nwalkers)
+
+        for j in range(self.nwalkers):
+
+
+            # Iterate randomly through initial conditions until a viable parameter set is found
+            for i in range(100000):
+
+                M1 = 5.0 * np.random.uniform(size=1) + 8.0
+                M2 = M1 * (0.2 * np.random.uniform(size=1) + 0.8)
+                a = 300.0 * np.random.uniform(size=1) + 20.0
+                ecc = np.random.uniform(size=1)
+
+                v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
+                theta_kick1 = np.pi * np.random.uniform(size=1)
+                phi_kick1 = np.pi * np.random.uniform(size=1)
+                if self.second_SN:
+                    v_kick2 = 300.0 * np.random.uniform(size=1) + 20.0
+                    theta_kick2 = np.pi * np.random.uniform(size=1)
+                    phi_kick2 = np.pi * np.random.uniform(size=1)
+
+                time = 40.0 * np.random.uniform(size=1)
+
+                if self.second_SN:
+                    x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, time
+                else:
+                    x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, time
+
+                # If the system has a viable posterior probability
+                if self.posterior_function(x, self)[0] > -500.0:
+
+                    M1_set[j] = M1
+                    M2_set[j] = M2
+                    a_set[j] = a
+                    ecc_set[j] = ecc
+                    v_kick1_set[j] = v_kick1
+                    theta_kick1_set[j] = theta_kick1
+                    phi_kick1_set[j] = phi_kick1
+                    if self.second_SN:
+                        v_kick2_set[j] = v_kick2
+                        theta_kick2_set[j] = theta_kick2
+                        phi_kick2_set[j] = phi_kick2
+                    time_set[j] = time
+
+                    print("Walker", j, "is set. x=", x,". Posterior probability:", self.posterior_function(x, self)[0])
+
+                    # ...then use it as our starting system
+                    break
+
+
+
+        # Save and return the walker positions
+        if self.second_SN:
+            self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                                phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+                                time_set]).T
+        else:
+            self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                                phi_kick1_set, time_set]).T
+
+
+        print("Initial parameter space explored.")
+        print("Iterating to do better...")
+
+
+        # Now, we move to the best position
+        ln_posteriors_set = -1.0e4 * np.ones(self.nwalkers)
+        for i, p in enumerate(self.p0):
+            ln_posteriors_set[i] = self.posterior_function(p, self)[0]
+            print(p, ln_posteriors_set[i])
+        ln_posterior_best = np.max(ln_posteriors_set)
+        idx = np.argmax(ln_posteriors_set)
+
+        # Find values of best data point
+        M1 = M1_set[idx]
+        M2 = M2_set[idx]
+        a = a_set[idx]
+        ecc = ecc_set[idx]
+        v_kick1 = v_kick1_set[idx]
+        theta_kick1 = theta_kick1_set[idx]
+        phi_kick1 = phi_kick1_set[idx]
+        if self.second_SN:
+            v_kick2 = v_kick2_set[idx]
+            theta_kick2 = theta_kick2_set[idx]
+            phi_kick2 = phi_kick2_set[idx]
+        time = time_set[idx]
+
+
+        # Iterate around data point until solution is stable
+        C = 0.001
+
+
+        lp_prev = -1.0e4 * np.ones(20)
+
+
+        while 1:
+        # for j in range(30):
+
+            ln_posterior_best = np.max(ln_posteriors_set)
+            idx = np.argmax(ln_posteriors_set)
+            # print(idx, ln_posterior_best)
+        #     print("Best posterior probability:", ln_posterior_best)
+        #     print("Best posterior probability index:", idx)
+
+            # Shift record of previous posterior probabilities
+            for i in range(19):
+                lp_prev[i] = lp_prev[i+1]
+            lp_prev[19] = ln_posterior_best
+
+            if(abs(lp_prev[0] - lp_prev[19]) < 0.2): break
+
+            print("ln_posterior:", ln_posterior_best, lp_prev[0])
+
+
+            M1 = M1_set[idx]
+            M2 = M2_set[idx]
+            a = a_set[idx]
+            ecc = ecc_set[idx]
+            v_kick1 = v_kick1_set[idx]
+            theta_kick1 = theta_kick1_set[idx]
+            phi_kick1 = phi_kick1_set[idx]
+            if self.second_SN:
+                v_kick2 = v_kick2_set[idx]
+                theta_kick2 = theta_kick2_set[idx]
+                phi_kick2 = phi_kick2_set[idx]
+            time = time_set[idx]
+
+
+            for i in range(self.nwalkers):
+
+                if i == idx: continue
+
+
+                if self.second_SN:
+                    p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                            v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
+                            v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
+                            time_set[i]
+                else:
+                    p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                            v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
+                            time_set[i]
+
+                ln_posterior = self.posterior_function(p, self)[0]
+
+
+                k = 0
+                while k == 0 or ln_posterior + 4.0 < ln_posterior_best or np.isinf(ln_posterior):
+
+                    k = k + 1
+
+                    # Binary parameters
+                    M1_set[i] = M1*(1.0 + np.random.normal(0.0, C, 1))
+                    M2_set[i] = M2*(1.0 + np.random.normal(0.0, C, 1))
+                    ecc_set[i] = ecc*(1.0 + np.random.normal(0.0, C, 1))
+                    a_set[i] = a*(1.0 + np.random.normal(0.0, C, 1))
+
+                    # SN kick perameters
+                    v_kick1_set[i] = v_kick1*(1.0 + np.random.normal(0.0, C, 1))
+                    theta_kick1_set[i] = theta_kick1*(1.0 + np.random.normal(0.0, C, 1))
+                    phi_kick1_set[i] = phi_kick1*(1.0 + np.random.normal(0.0, C, 1))
+                    if self.second_SN:
+                        v_kick2_set[i] = v_kick2*(1.0 + np.random.normal(0.0, C, 1))
+                        theta_kick2_set[i] = theta_kick2*(1.0 + np.random.normal(0.0, C, 1))
+                        phi_kick2_set[i] = phi_kick2*(1.0 + np.random.normal(0.0, C, 1))
+
+                    # Birth time
+
+                    if self.second_SN:
+                        p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                                v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
+                                v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
+                                time_set[i]
+                    else:
+                        p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                                v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
+                                time_set[i]
+
+                    ln_posterior = self.posterior_function(p, self)[0]
+
+                    print(i, M1_set[i], M2_set[i], ln_posterior)
+
+                ln_posteriors_set[i] = ln_posterior
+
+
+
+
+
+
+        # Save and return the walker positions
+        if self.second_SN:
+            self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                                phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+                                time_set]).T
+        else:
+            self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                                phi_kick1_set, time_set]).T
+
+
+        print("...walkers are set")
+
+
+
     def aim_darts(self):
         """
         Find a viable region of parameter space then create a ball around it.
@@ -203,7 +445,7 @@ class DartBoard():
                 x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, time
 
             # If the system has a viable posterior probability
-            if self.posterior_function(x, self)[0] > -1000.0:
+            if self.posterior_function(x, self)[0] > -500.0:
 
                 # ...then use it as our starting system
                 break
@@ -213,31 +455,36 @@ class DartBoard():
             print("Walkers could not be set")
             sys.exit(-1)
 
+        print("First walker set. Posterior probability:", self.posterior_function(x, self)[0])
 
 
         # Now to generate a ball around these parameters
 
+        C = 0.2
+
         # Binary parameters
-        M1_set = M1 + np.random.normal(0.0, 0.1, self.nwalkers)
-        M2_set = M2 + np.random.normal(0.0, 0.1, self.nwalkers)
-        ecc_set = ecc + np.random.normal(0.0, 0.01, self.nwalkers)
-        a_set = a + np.random.normal(0.0, 2.0, self.nwalkers)
+        M1_set = M1 + np.random.normal(0.0, C*0.1, self.nwalkers)
+        M2_set = M2 + np.random.normal(0.0, C*0.1, self.nwalkers)
+        ecc_set = ecc + np.random.normal(0.0, C*0.01, self.nwalkers)
+        a_set = a + np.random.normal(0.0, C*2.0, self.nwalkers)
 
         # SN kick perameters
-        v_kick1_set = v_kick1 + np.random.normal(0.0, 1.0, self.nwalkers)
-        theta_kick1_set = theta_kick1 + np.random.normal(0.0, 0.01, self.nwalkers)
-        phi_kick1_set = phi_kick1 + np.random.normal(0.0, 0.01, self.nwalkers)
+        v_kick1_set = v_kick1 + np.random.normal(0.0, C*1.0, self.nwalkers)
+        theta_kick1_set = theta_kick1 + np.random.normal(0.0, C*0.01, self.nwalkers)
+        phi_kick1_set = phi_kick1 + np.random.normal(0.0, C*0.01, self.nwalkers)
         if self.second_SN:
-            v_kick2_set = v_kick2 + np.random.normal(0.0, 1.0, self.nwalkers)
-            theta_kick2_set = theta_kick2 + np.random.normal(0.0, 0.01, self.nwalkers)
-            phi_kick2_set = phi_kick2 + np.random.normal(0.0, 0.01, self.nwalkers)
+            v_kick2_set = v_kick2 + np.random.normal(0.0, C*1.0, self.nwalkers)
+            theta_kick2_set = theta_kick2 + np.random.normal(0.0, C*0.01, self.nwalkers)
+            phi_kick2_set = phi_kick2 + np.random.normal(0.0, C*0.01, self.nwalkers)
 
         # Birth time
-        time_set = time + np.random.normal(0.0, 0.2, self.nwalkers)
+        time_set = time + np.random.normal(0.0, C*0.2, self.nwalkers)
 
 
         # Check if any of these have posteriors with -infinity
         for i in np.arange(self.nwalkers):
+
+            # print("Working on walker", i)
 
             if self.second_SN:
                 p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
@@ -252,26 +499,26 @@ class DartBoard():
             ln_posterior = self.posterior_function(p, self)[0]
 
 
-            while ln_posterior < -1000.0:
+            while ln_posterior < -1000.0 or np.isinf(ln_posterior):
 
 
                 # Binary parameters
-                M1_set[i] = M1 + np.random.normal(0.0, 0.1, 1)
-                M2_set[i] = M2 + np.random.normal(0.0, 0.1, 1)
-                ecc_set[i] = ecc + np.random.normal(0.0, 0.01, 1)
-                a_set[i] = a + np.random.normal(0.0, 2.0, 1)
+                M1_set[i] = M1 + np.random.normal(0.0, C*0.1, 1)
+                M2_set[i] = M2 + np.random.normal(0.0, C*0.1, 1)
+                ecc_set[i] = ecc + np.random.normal(0.0, C*0.01, 1)
+                a_set[i] = a + np.random.normal(0.0, C*.0, 1)
 
                 # SN kick perameters
-                v_kick1_set[i] = v_kick1 + np.random.normal(0.0, 1.0, 1)
-                theta_kick1_set[i] = theta_kick1 + np.random.normal(0.0, 0.01, 1)
-                phi_kick1_set[i] = phi_kick1 + np.random.normal(0.0, 0.01, 1)
+                v_kick1_set[i] = v_kick1 + np.random.normal(0.0, C*1.0, 1)
+                theta_kick1_set[i] = theta_kick1 + np.random.normal(0.0, C*0.01, 1)
+                phi_kick1_set[i] = phi_kick1 + np.random.normal(0.0, C*0.01, 1)
                 if self.second_SN:
-                    v_kick2_set[i] = v_kick2 + np.random.normal(0.0, 1.0, 1)
-                    theta_kick2_set[i] = theta_kick2 + np.random.normal(0.0, 0.01, 1)
-                    phi_kick2_set[i] = phi_kick2 + np.random.normal(0.0, 0.01, 1)
+                    v_kick2_set[i] = v_kick2 + np.random.normal(0.0, C*1.0, 1)
+                    theta_kick2_set[i] = theta_kick2 + np.random.normal(0.0, C*0.01, 1)
+                    phi_kick2_set[i] = phi_kick2 + np.random.normal(0.0, C*0.01, 1)
 
                 # Birth time
-                time_set[i] = time + np.random.normal(0.0, 0.2, 1)
+                time_set[i] = time + np.random.normal(0.0, C*0.2, 1)
 
                 if self.second_SN:
                     p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
@@ -285,6 +532,7 @@ class DartBoard():
 
                 ln_posterior = self.posterior_function(p, self)[0]
 
+                # print(M1_set[i], ln_posterior)
 
 
         # Save and return the walker positions
