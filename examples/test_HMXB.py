@@ -8,7 +8,7 @@ import pybse
 import dart_board
 
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper)
-pub.aim_darts()
+pub.aim_darts_separate()
 
 
 start_time = time.time()

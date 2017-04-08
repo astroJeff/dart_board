@@ -55,8 +55,8 @@ def ln_prior_M1(M1):
 
     """
 
-    if M1 < c.min_mass or M1 > c.max_mass: return -np.inf
-    norm_const = (c.alpha+1.0) / (np.power(c.max_mass, c.alpha+1.0) - np.power(c.min_mass, c.alpha+1.0))
+    if M1 < c.min_mass_M1 or M1 > c.max_mass_M1: return -np.inf
+    norm_const = (c.alpha+1.0) / (np.power(c.max_mass_M1, c.alpha+1.0) - np.power(c.min_mass_M1, c.alpha+1.0))
     return np.log( norm_const * np.power(M1, c.alpha) )
 
 
@@ -66,7 +66,7 @@ def ln_prior_M2(M2, M1):
 
     """
 
-    if M2 < c.min_mass or M2 > M1: return -np.inf
+    if M2 < c.min_mass_M2 or M2 > M1: return -np.inf
     return np.log(1.0 / M1)
 
 

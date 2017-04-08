@@ -206,7 +206,7 @@ def check_output(output, binary_type):
 
     m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
-    type_options = np.array(["HMXB", "BHBH", "NSNS", "BHNS"])
+    type_options = np.array(["BHHMXB", "HMXB", "BHBH", "NSNS", "BHNS"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
@@ -218,7 +218,15 @@ def check_output(output, binary_type):
         if a_out <= 0.0: return False
         if ecc_out < 0.0 or ecc_out >= 1.0: return False
         if mdot <= 0.0: return False
-        if m2_out < 4.0: return False
+        if m2_out < 0.5: return False
+
+    if binary_type == "BHHMXB":
+        if k1 != 14: return False
+        if k2 > 9: return False
+        if a_out <= 0.0: return False
+        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if mdot <= 0.0: return False
+        if m2_out < 0.5: return False
 
     elif binary_type == "BHBH":
         if k1 != 14 or k2 != 14: return False

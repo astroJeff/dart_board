@@ -206,6 +206,11 @@
       REAL bcm(50000,35),bpp(80,10)
       COMMON /BINARY/ bcm,bpp
 *
+* Zero output arrays
+*
+      bcm = 0.0d0
+      bpp = 0.0d0
+*
 * Save the initial state.
 *
       mass1i = mass0(1)

@@ -234,7 +234,7 @@ class DartBoard():
                         phi_kick2_set[j] = phi_kick2
                     time_set[j] = time
 
-                    print("Walker", j, "is set. x=", x,". Posterior probability:", self.posterior_function(x, self)[0])
+                    # print("Walker", j, "is set. x=", x,". Posterior probability:", self.posterior_function(x, self)[0])
 
                     # ...then use it as our starting system
                     break
@@ -301,7 +301,7 @@ class DartBoard():
 
             if(abs(lp_prev[0] - lp_prev[19]) < 0.2): break
 
-            print("ln_posterior:", ln_posterior_best, lp_prev[0])
+            print("ln_posterior:", idx, ln_posterior_best, lp_prev[0])
 
 
             M1 = M1_set[idx]
@@ -357,6 +357,7 @@ class DartBoard():
                         phi_kick2_set[i] = phi_kick2*(1.0 + np.random.normal(0.0, C, 1))
 
                     # Birth time
+                    time_set[i] = time*(1.0 + np.random.normal(0.0, C, 1))
 
                     if self.second_SN:
                         p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
@@ -370,7 +371,7 @@ class DartBoard():
 
                     ln_posterior = self.posterior_function(p, self)[0]
 
-                    print(i, M1_set[i], M2_set[i], ln_posterior)
+                    # print(i, p, ln_posterior)
 
                 ln_posteriors_set[i] = ln_posterior
 
