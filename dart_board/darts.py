@@ -198,9 +198,9 @@ class DartBoard():
             # Iterate randomly through initial conditions until a viable parameter set is found
             for i in range(100000):
 
-                M1 = 5.0 * np.random.uniform(size=1) + 8.0
-                M2 = M1 * (0.2 * np.random.uniform(size=1) + 0.8)
-                a = 300.0 * np.random.uniform(size=1) + 20.0
+                M1 = 30.0 * np.random.uniform(size=1) + 8.0
+                M2 = M1 * (np.random.uniform(size=1))
+                a = 5000.0 * np.random.uniform(size=1) + 20.0
                 ecc = np.random.uniform(size=1)
 
                 v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
@@ -217,6 +217,7 @@ class DartBoard():
                     x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, time
                 else:
                     x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, time
+
 
                 # If the system has a viable posterior probability
                 if self.posterior_function(x, self)[0] > -500.0:
@@ -235,6 +236,7 @@ class DartBoard():
                     time_set[j] = time
 
                     # print("Walker", j, "is set. x=", x,". Posterior probability:", self.posterior_function(x, self)[0])
+                    print("Walker", j, "is set. Posterior probability:", self.posterior_function(x, self))
 
                     # ...then use it as our starting system
                     break
@@ -392,6 +394,7 @@ class DartBoard():
 
         print("...walkers are set")
 
+        sys.stdout.flush()
 
 
     def aim_darts(self):
