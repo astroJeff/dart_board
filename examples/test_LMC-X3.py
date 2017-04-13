@@ -26,8 +26,8 @@ print("Acceptance fractions:",pub.sampler.acceptance_fraction)
 
 # Pickle results
 import pickle
-pickle.dump(pub.sampler, "../data/LMC-X3_sampler.obj")
-pickle.dump(pub.binary_data, "../data/LMC-X3_binary_data.obj")
+pickle.dump(pub.sampler, open("../data/LMC-X3_sampler.obj", "wb"))
+pickle.dump(pub.binary_data, open("../data/LMC-X3_binary_data.obj", "wb"))
 
 
 
