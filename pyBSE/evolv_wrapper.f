@@ -300,14 +300,14 @@
 *            WRITE(12,112)m1,m2,ecc0,tb0,t1,t2,kwx,kwx2,mx,mx2,eccx,tbx
 *         endif
 *
-         jj = jj - 1
-         kw = INT(bcm(jj,2))
-         kw2 = INT(bcm(jj,16))
-         mx = bcm(jj,4)
-         mx2 = bcm(jj,18)
-         tbx = bcm(jj,30)*yeardy
-         eccx = bcm(jj,32)
-         WRITE(11,111)tmax,kw,kw2,mx,mx2,eccx,tbx
+*         jj = jj - 1
+*         kw = INT(bcm(jj,2))
+*         kw2 = INT(bcm(jj,16))
+*         mx = bcm(jj,4)
+*         mx2 = bcm(jj,18)
+*         tbx = bcm(jj,30)*yeardy
+*         eccx = bcm(jj,32)
+*         WRITE(11,111)tmax,kw,kw2,mx,mx2,eccx,tbx
 *
       enddo
 *
