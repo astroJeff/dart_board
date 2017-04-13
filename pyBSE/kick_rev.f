@@ -62,7 +62,8 @@
       r = sep
 
 * Determine the magnitude of the new relative velocity.
-      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
+*      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
+      vn2 = vk2+vr2+2.d0*vk*vr*ctheta
 * Calculate the new semi-major axis.
       sep = 2.d0/r - vn2/(gmrkm*(m1n+m2))
       sep = 1.d0/sep
