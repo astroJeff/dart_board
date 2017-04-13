@@ -2,12 +2,14 @@ import sys
 import numpy as np
 import time
 
+import matplotlib
+matplotlib.use('Agg')
 
 sys.path.append("../pyBSE/")
 import pybse
 import dart_board
 
-pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper)
+pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper, nwalkers=160)
 pub.aim_darts_separate()
 
 
