@@ -6,6 +6,6 @@ setup(name='dart_board',
       url='http://github.com/astroJeff/dart_board',
       author='Jeff Andrews',
       author_email='andrews@physics.uoc.gr',
-      license='',
+      license='MIT',
       packages=find_packages(),
       zip_safe=False)
