@@ -17,14 +17,19 @@ start_time = time.time()
 pub.throw_darts(nburn=100000, nsteps=200000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
+# Acceptance fraction
 print("Acceptance fractions:",pub.sampler.acceptance_fraction)
-# print(pub.sampler.flatlnprobability)
 
+# Autocorrelation length
+try:
+    print("Autocrrelation length:", pub.sample.acor)
+except:
+    print("Acceptance fraction is too low.")
 
 
 # Pickle results
 import pickle
-pickle.dump(pub.sampler, open("../data/HMXB_sampler.obj", "wb"))
+pickle.dump(pub.sampler.chain, open("../data/HMXB_chain.obj", "wb"))
 pickle.dump(pub.binary_data, open("../data/HMXB_binary_data.obj", "wb"))
 
 
