@@ -32,3 +32,6 @@ dart_board.egg-info
 dart_board/__pycache__
 examples/*.out
 notebooks
+dart_board/sf_history/__pycache__
+examples/.ipynb_checkpoints
+dart_board/sf_history/*.dat
