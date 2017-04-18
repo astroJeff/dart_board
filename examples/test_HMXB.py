@@ -10,7 +10,7 @@ import pybse
 import dart_board
 
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper, nwalkers=320)
-pub.aim_darts_separate()
+pub.aim_darts()
 
 
 start_time = time.time()
@@ -22,7 +22,7 @@ print("Acceptance fractions:",pub.sampler.acceptance_fraction)
 
 # Autocorrelation length
 try:
-    print("Autocrrelation length:", pub.sample.acor)
+    print("Autocorrelation length:", pub.sample.acor)
 except:
     print("Acceptance fraction is too low.")
 

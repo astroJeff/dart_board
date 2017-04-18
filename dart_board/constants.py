@@ -34,6 +34,11 @@ max_z = 0.03
 min_t = 0.0
 max_t = 1.0e4  # in Myr
 
+ra_max = None
+ra_min = None
+dec_max = None
+dec_min = None
+
 
 
 ###################  STAR FORMATION HISTORY SCHEME #################

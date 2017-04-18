@@ -11,7 +11,7 @@ import dart_board
 
 kwargs = {"M1" : 6.98, "M1_err" : 0.56, "M2" : 3.63, "M2_err" : 0.57, "P_orb" : 1.7, "P_orb_err" : 0.1}
 pub = dart_board.DartBoard("BHHMXB", evolve_binary=pybse.evolv_wrapper, nwalkers=320, kwargs=kwargs)
-pub.aim_darts_separate()
+pub.aim_darts()
 
 
 start_time = time.time()
@@ -23,7 +23,7 @@ print("Acceptance fractions:",pub.sampler.acceptance_fraction)
 
 # Autocorrelation length
 try:
-    print("Autocrrelation length:", pub.sample.acor)
+    print("Autocorrelation length:", pub.sample.acor)
 except:
     print("Acceptance fraction is too low.")
 
