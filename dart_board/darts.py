@@ -405,8 +405,9 @@ class DartBoard():
                         phi_kick2_set[i] = phi_kick2*(1.0 + np.random.normal(0.0, C, 1))
 
                     # Position
-                    ra_set[i] = ra*(1.0 + np.random.normal(0.0, 0.001*C, 1))
-                    dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.001*C, 1))
+                    if self.prior_pos is not None:
+                        ra_set[i] = ra*(1.0 + np.random.normal(0.0, 0.001*C, 1))
+                        dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.001*C, 1))
 
 
                     # Birth time
