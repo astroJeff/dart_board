@@ -40,8 +40,7 @@ def load_lmc_data():
     out_line = np.recarray(1, dtype=dtypes)
 
     # Test to load data
-    this_dir, this_filename = os.path.split(__file__)
-    file_path = os.path.join(this_dir, "lmc_sfh_reduced.dat")
+    file_path = "lmc_sfh_reduced.dat"
 
     with open(file_path) as f:
 #    with open("./lmc_sfh_reduced.dat") as f:
@@ -90,8 +89,7 @@ def load_lmc_coor():
 
 
     # Load data
-    this_dir, this_filename = os.path.split(__file__)
-    data_file = os.path.join(this_dir, "lmc_coordinates.dat")
+    data_file = "lmc_coordinates.dat" 
 
     lmc_coor_2 = np.genfromtxt(data_file, dtype="S10,S2,S2,S3,S2")
 
