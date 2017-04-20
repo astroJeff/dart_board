@@ -100,7 +100,7 @@ def ln_posterior(x, dart):
 
     # Check for kwargs arguments
     ll = 0
-    if not dart.kwargs == {}: ll = posterior_properties(output, **dart.kwargs)
+    if not dart.kwargs == {}: ll = posterior_properties(x, output, **dart.kwargs)
 
 
     return ll+lp, np.array([output])
@@ -108,18 +108,30 @@ def ln_posterior(x, dart):
 
 
 
-def posterior_properties(output, **kwargs):
+def posterior_properties(x, output, **kwargs):
     """
     Calculate the (log of the) posterior probability given specific observables.
 
     """
 
-    M1, M2, a, ecc, v_sys, mdot, t_SN1, k1, k2 = output
-    P_orb = A_to_P(M1, M2, a)
+    M1_out, M2_out, a_out, ecc_out, v_sys, mdot_out, t_SN1, k1_out, k2_out = output
+    P_orb_out = A_to_P(M1_out, M2_out, a_out)
+
+
+    if dart.second_SN:
+        if dart.prior_pos is None:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b = x
+        else:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, t_b = x
+    else:
+        if dart.prior_pos is None:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, t_b = x
+        else:
+            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, t_b = x
 
 
     # Calculate an X-ray luminosity
-    L_x = calculate_L_x(M1, mdot, k1)
+    L_x_out = calculate_L_x(M1_out, mdot_out, k1_out)
 
 
     def get_error_from_kwargs(param, **kwargs):
@@ -136,8 +148,8 @@ def posterior_properties(output, **kwargs):
 
 
     # Possible observables
-    observables = ["M1","M2","P_orb","a","ecc","L_x","v_sys"]
-    model_vals = [M1,M2,P_orb,a,ecc,L_x,v_sys]
+    observables = ["M1", "M2", "P_orb", "a", "ecc", "L_x", "v_sys"]
+    model_vals = [M1_out, M2_out, P_orb_out, a_out, ecc_out, L_x_out, v_sys]
 
 
     # Add log probabilities for each observable
@@ -147,6 +159,36 @@ def posterior_properties(output, **kwargs):
             if key == param:
                 error = get_error_from_kwargs(param, **kwargs)
                 ll += np.log(norm.pdf(model_vals[i], loc=value, scale=error))
+
+
+    # Add log probabilities if position is provided
+    ra_obs = None
+    dec_obs = None
+    for key, value in kwargs.items():
+        if key == "ra": ra_obs = value
+        if key == "dec": dec_obs = value
+    if ra_obs is not None and dec_obs is not None:
+
+        # Projected travel angle
+        theta_proj = get_theta_proj(c.deg_to_rad*ra_obs, c.deg_to_rad*dec_obs, c.deg_to_rad*ra_b, c.deg_to_rad*dec_b)
+
+        # Travel time in years
+        t_sn = (t_SN1 - t_b) * 1.0e6 * c.yr_to_sec
+
+        # Maximum angle
+        angle_max = (v_sys * t_sn) / c.distance
+
+        # Define conditional
+        conds = [theta_proj>=angle_max, theta_proj<angle_max]
+        funcs = [lambda theta_proj: -np.inf,
+                 lambda theta_proj: np.log(np.tan(np.arcsin(theta_proj/angle_max))/angle_max)]
+
+        # Jacobian for coordinate change
+        J_coor = np.abs(get_J_coor(c.deg_to_rad*ra_obs, c.deg_to_rad*dec_obs, c.deg_to_rad*ra_b, c.deg_to_rad*dec_b))
+        P_omega = 1.0 / (2.0 * np.pi)
+
+        # Likelihood
+        ll += np.piecewise(theta_proj, conds, funcs) + np.log(P_omega) + np.log(J_coor)
 
     return ll
 
@@ -244,3 +286,64 @@ def check_output(output, binary_type):
         if ecc_out < 0.0 or ecc_out >= 1.0: return False
 
     return True
+
+
+def get_theta_proj(ra, dec, ra_b, dec_b):
+    """ Get the angular distance between two coordinates
+
+    Parameters
+    ----------
+    ra : float
+        RA of coordinate 1 (radians)
+    dec : float
+        Dec of coordinate 1 (radians)
+    ra_b : float
+        RA of coordinate 2 (radians)
+    dec_b : float
+        Dec of coordinate 2 (radians)
+
+    Returns
+    -------
+    theta : float
+        Angular separation of the two coordinates (radians)
+    """
+
+    return np.sqrt((ra-ra_b)**2 * np.cos(dec)*np.cos(dec_b) + (dec-dec_b)**2)
+
+
+# Functions for coordinate jacobian transformation
+def get_dtheta_dalpha(alpha, delta, alpha_b, delta_b):
+    """ Calculate the coordinate transformation derivative dtheta/dalpha """
+
+    theta_proj = get_theta_proj(alpha, delta, alpha_b, delta_b)
+    return (alpha-alpha_b) * np.cos(delta) * np.cos(delta_b) / theta_proj
+
+def get_dtheta_ddelta(alpha, delta, alpha_b, delta_b):
+    """ Calculate the coordinate transformation derivative dtheta/ddelta """
+
+    theta_proj = get_theta_proj(alpha, delta, alpha_b, delta_b)
+    return 1.0/(2.0*theta_proj) * (-np.cos(delta_b)*np.sin(delta)*(alpha_b-alpha)**2 + 2.0*(delta_b-delta))
+
+def get_domega_dalpha(alpha, delta, alpha_b, delta_b):
+    """ Calculate the coordinate transformation derivative domega/dalpha """
+
+    z = (delta_b-delta) / ((alpha_b-alpha) * np.cos(delta_b))
+    return 1.0 / (1.0 + z*z) * z / (alpha_b - alpha)
+
+def get_domega_ddelta(alpha, delta, alpha_b, delta_b):
+    """ Calculate the coordinate transformation derivative domega/ddelta """
+
+    z = (delta_b-delta) / ((alpha_b-alpha) * np.cos(delta_b))
+    return - 1.0 / (1.0 + z*z) / ((alpha_b-alpha) * np.cos(delta_b))
+
+def get_J_coor(alpha, delta, alpha_b, delta_b):
+    """ Calculate the Jacobian (determinant of the jacobian matrix) of
+    the coordinate transformation
+    """
+
+    dt_da = get_dtheta_dalpha(alpha, delta, alpha_b, delta_b)
+    dt_dd = get_dtheta_ddelta(alpha, delta, alpha_b, delta_b)
+    do_da = get_domega_dalpha(alpha, delta, alpha_b, delta_b)
+    do_dd = get_domega_ddelta(alpha, delta, alpha_b, delta_b)
+
+    return dt_da*do_dd - dt_dd*do_da

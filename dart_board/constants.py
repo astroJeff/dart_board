@@ -1,4 +1,6 @@
-# Constants to be used throughout module
+
+
+##################### CONSTANTS TO BE USED THROUGHOUT MODULE #####################
 G = 6.674e-8 # Gravitational constant in cgs
 GGG = 1.909e5 # Gravitational constant in Rsun * (km/s)^2 / Msun
 c_light = 2.9979e10 # speed of light in cgs
@@ -22,7 +24,8 @@ v_kick_sigma_ECS = 50.0  # Kick velocity Maxwellian dispersion - ECS
 alpha = -2.35  # IMF index
 
 
-# Parameter ranges
+
+##################### PARAMETER RANGES #####################
 min_mass_M1 = 8.0
 max_mass_M1 = 39.0
 min_mass_M2 = 2.0
@@ -41,8 +44,8 @@ dec_min = None
 
 
 
-###################  STAR FORMATION HISTORY SCHEME #################
-sf_scheme = None
+###################  DISTANCE TO OBJECT #################
+distance = None
 
 
 dist_LMC = 5.0e4 * pc_to_km # Distance to Large Magellanic Cloud (in km)

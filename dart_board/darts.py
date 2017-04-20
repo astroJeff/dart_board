@@ -302,7 +302,7 @@ class DartBoard():
 
 
         # Iterate around data point until solution is stable
-        C = 0.001
+        C = 0.002
 
 
         lp_prev = -1.0e4 * np.ones(20)

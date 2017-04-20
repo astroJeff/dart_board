@@ -5,6 +5,7 @@ from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
 
 from dart_board import constants as c
+from dart_board import darts
 from .sf_plotting import get_plot_polar
 
 
@@ -255,6 +256,7 @@ def prior_lmc(ra, dec, t_b):
 
     """
 
+
     if c.ra_min is None or c.ra_max is None or c.dec_min is None or c.dec_max is None:
         load_sf_history()
 
@@ -269,6 +271,62 @@ def prior_lmc(ra, dec, t_b):
         return -np.inf
     else:
         return np.log(lp_pos)
+
+
+# def prior_lmc_position(x, dart):
+#
+#     if dart.second_SN:
+#         M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, t_b = x
+#     else:
+#         M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, t_b = x
+#
+#     for key, value in dart.kwargs.items():
+#         if key == "ra": ra_obs = value
+#         if key == "dec": dec_obs = value
+#
+#
+#     ############ Get the time limits of the binary ############
+#     t_min, t_max = get_time_limits()
+#
+#     # Limits on time
+#     if t_b < t_min or t_b > t_max: return -np.inf
+#
+#
+#     ############ Evolve the binary ############
+#     # Get initial orbital period
+#     orbital_period = A_to_P(M1, M2, a)
+#
+#     # Proxy values if binary_type does not include second SN
+#     if not dart.second_SN:
+#         v_kick2 = v_kick1
+#         theta_kick2 = theta_kick1
+#         phi_kick2 = phi_kick1
+#
+#     # Call binary population synthsis code
+#     output = dart.evolve_binary(1, M1, M2, orbital_period, ecc,
+#                                 v_kick1, theta_kick1, phi_kick1,
+#                                 v_kick2, theta_kick2, phi_kick2,
+#                                 t_b, dart.metallicity, False)
+#
+#     M1_out, M2_out, a_out, ecc_out, v_sys, mdot_out, t_SN1, k1_out, k2_out = output
+#
+#
+#     ############ Calculate the prior ############
+#     theta_C = (v_sys * (t_max - t_min)) / c.distance
+#
+#     stars_formed = get_stars_formed(ra_obs, dec_obs, t_min, t_max, v_sys)
+#
+#     # Outside the region of star formation
+#     if stars_formed == 0.0: return -np.inf
+#
+#     volume_cone = (np.pi/3.0 * theta_C**2 * (t_max - t_min) / c.yr_to_sec / 1.0e6)
+#     sfh = get_SFH(ra, dec, t_b)
+#
+#     ln_pos = np.log(sfh / stars_formed / volume_cone)
+#
+#     return ln_pos
+#
+#
 
 
 def plot_lmc_map(t_b, fig_in=None, ax=None, gs=None):
@@ -293,3 +351,47 @@ def plot_lmc_map(t_b, fig_in=None, ax=None, gs=None):
                    rot_angle=rot_angle,
                    sfh_bins=sfh_bins,
                    sfh_levels=sfh_levels)
+
+
+
+
+def get_stars_formed(ra, dec, t_min, t_max, v_sys, N_size=512):
+    """ Get the normalization constant for stars formed at ra and dec
+
+    Parameters
+    ----------
+    ra : float
+        right ascension input (decimals)
+    dec : float
+        declination input (decimals)
+    t_min : float
+        minimum time for a star to have been formed (Myr)
+    t_max : float
+        maximum time for a star to have been formed (Myr)
+    v_sys : float
+        Systemic velocity of system (km/s)
+
+    Returns
+    -------
+    SFR : float
+        Star formation normalization constant
+    """
+
+    ran_phi = 2.0 * np.pi * uniform.rvs(size = N_size)
+
+    c_1 = 3.0 / np.pi / (t_max - t_min)**3 * (c.distance/v_sys)**2
+    ran_x = uniform.rvs(size = N_size)
+    ran_t_b = (3.0 * ran_x / (c_1 * np.pi * (v_sys/c.distance)**2))**(1.0/3.0) + t_min
+
+    theta_c = v_sys / c.distance * (ran_t_b - t_min)
+    c_2 = 1.0 / (np.pi * theta_c**2)
+    ran_y = uniform.rvs(size = N_size)
+    ran_theta = np.sqrt(ran_y / (c_2 * np.pi))
+
+    ran_ra = c.rad_to_deg * ran_theta * np.cos(ran_phi) / np.cos(c.deg_to_rad * dec) + ra
+    ran_dec = c.rad_to_deg * ran_theta * np.sin(ran_phi) + dec
+
+    # Specific star formation rate (Msun/Myr/steradian)
+    SFR = get_SFH(ran_ra, ran_dec, ran_t_b/(c.yr_to_sec*1.0e6))
+
+    return np.mean(SFR)
