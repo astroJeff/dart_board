@@ -3,6 +3,9 @@
 import sys
 import numpy as np
 from scipy.stats import norm
+from scipy.integrate import quad
+
+import time as tm  # For testing
 
 from . import constants as c
 from . import darts
@@ -100,7 +103,7 @@ def ln_posterior(x, dart):
 
     # Check for kwargs arguments
     ll = 0
-    if not dart.kwargs == {}: ll = posterior_properties(x, output, **dart.kwargs)
+    if not dart.kwargs == {}: ll = posterior_properties(x, output, dart)
 
 
     return ll+lp, np.array([output])
@@ -108,7 +111,7 @@ def ln_posterior(x, dart):
 
 
 
-def posterior_properties(x, output, **kwargs):
+def posterior_properties(x, output, dart):
     """
     Calculate the (log of the) posterior probability given specific observables.
 
@@ -116,7 +119,6 @@ def posterior_properties(x, output, **kwargs):
 
     M1_out, M2_out, a_out, ecc_out, v_sys, mdot_out, t_SN1, k1_out, k2_out = output
     P_orb_out = A_to_P(M1_out, M2_out, a_out)
-
 
     if dart.second_SN:
         if dart.prior_pos is None:
@@ -154,26 +156,35 @@ def posterior_properties(x, output, **kwargs):
 
     # Add log probabilities for each observable
     ll = 0
-    for key, value in kwargs.items():
+    for key, value in dart.kwargs.items():
         for i,param in enumerate(observables):
             if key == param:
-                error = get_error_from_kwargs(param, **kwargs)
-                ll += np.log(norm.pdf(model_vals[i], loc=value, scale=error))
+                error = get_error_from_kwargs(param, **dart.kwargs)
+                likelihood = norm.pdf(model_vals[i], loc=value, scale=error)
+                if likelihood == 0.0: return -np.inf
+                ll += np.log(likelihood)
+
+        # Mass function must be treated specially
+        if key == "m_f":
+            error = get_error_from_kwargs("m_f", **dart.kwargs)
+            likelihood = calc_prob_from_mass_function(M1_out, M2_out, value, error)
+            if likelihood == 0.0: return -np.inf
+            ll += np.log(likelihood)
+
+        if key == "ecc_max":
+            if ecc_out > value: return -np.inf
+
 
 
     # Add log probabilities if position is provided
-    ra_obs = None
-    dec_obs = None
-    for key, value in kwargs.items():
-        if key == "ra": ra_obs = value
-        if key == "dec": dec_obs = value
-    if ra_obs is not None and dec_obs is not None:
+    if dart.ra_obs is not None and dart.dec_obs is not None:
 
         # Projected travel angle
-        theta_proj = get_theta_proj(c.deg_to_rad*ra_obs, c.deg_to_rad*dec_obs, c.deg_to_rad*ra_b, c.deg_to_rad*dec_b)
+        theta_proj = get_theta_proj(c.deg_to_rad*dart.ra_obs, c.deg_to_rad*dart.dec_obs, \
+                                    c.deg_to_rad*ra_b, c.deg_to_rad*dec_b)
 
         # Travel time in years
-        t_sn = (t_SN1 - t_b) * 1.0e6 * c.yr_to_sec
+        t_sn = (t_b - t_SN1) * 1.0e6 * c.yr_to_sec
 
         # Maximum angle
         angle_max = (v_sys * t_sn) / c.distance
@@ -184,7 +195,8 @@ def posterior_properties(x, output, **kwargs):
                  lambda theta_proj: np.log(np.tan(np.arcsin(theta_proj/angle_max))/angle_max)]
 
         # Jacobian for coordinate change
-        J_coor = np.abs(get_J_coor(c.deg_to_rad*ra_obs, c.deg_to_rad*dec_obs, c.deg_to_rad*ra_b, c.deg_to_rad*dec_b))
+        J_coor = np.abs(get_J_coor(c.deg_to_rad*dart.ra_obs, c.deg_to_rad*dart.dec_obs, \
+                        c.deg_to_rad*ra_b, c.deg_to_rad*dec_b))
         P_omega = 1.0 / (2.0 * np.pi)
 
         # Likelihood
@@ -218,6 +230,49 @@ def calculate_L_x(M1, mdot, k1):
     return L_x
 
 
+def calc_prob_from_mass_function(M1, M2, f_obs, f_err):
+    """ Calculate the contribution to the posterior probability for an observation of the mass function """
+
+    # Function to calculate h from Equation 15 from Andrews et al. 2014, ApJ, 797, 32
+    def model_h(M1, M2, f):
+
+        Mtot = M1 + M2
+
+        if M2*M2 < (f*Mtot*Mtot)**(2.0/3.0): return 0.0
+
+        numerator = Mtot**(4.0/3.0)
+        denomonator = 3.0 * f**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f*Mtot*Mtot)**(2.0/3.0))
+
+        return numerator / denomonator
+
+    # Integrand in which h is multiplied by the error on the mass function
+    def func_integrand(f, f_obs, f_err, M1, M2):
+
+        h = model_h(M1, M2, f)
+
+        obs = norm.pdf(f, loc=f_obs, scale=f_err)
+
+        return obs * h
+
+    # Wrapper for integration
+    def calc_f(f_obs, f_err, M1, M2):
+
+        # Limit integral to 5-sigma and/or 0
+        f_min = max(0.0, f_obs - 5.0*f_err)
+        f_max = f_obs + 5.0*f_err
+
+        args = f_obs, f_err, M1, M2
+
+        result = quad(func_integrand, f_min, f_max, args=args, epsabs=1.0e-04)
+
+        return result[0]
+
+
+    likelihood = calc_f(f_obs, f_err, M1, M2)
+
+    return likelihood
+
+
 def check_output(output, binary_type):
     """ Determine if the resulting binary from binary population synthesis
     is of the type desired.
@@ -248,7 +303,7 @@ def check_output(output, binary_type):
 
     m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
-    type_options = np.array(["BHHMXB", "HMXB", "BHBH", "NSNS", "BHNS"])
+    type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "BHBH", "NSNS", "BHNS"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
@@ -264,6 +319,14 @@ def check_output(output, binary_type):
 
     if binary_type == "BHHMXB":
         if k1 != 14: return False
+        if k2 > 9: return False
+        if a_out <= 0.0: return False
+        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if mdot <= 0.0: return False
+        if m2_out < 0.5: return False
+
+    if binary_type == "NSHMXB":
+        if k1 != 13: return False
         if k2 > 9: return False
         if a_out <= 0.0: return False
         if ecc_out < 0.0 or ecc_out >= 1.0: return False

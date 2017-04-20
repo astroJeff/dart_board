@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import emcee
 
-import time # temporary for testing
+import time as tm # temporary for testing
 
 from . import priors
 from . import posterior
@@ -135,6 +135,14 @@ class DartBoard():
                 print("%s = %s" % (key, value))
 
 
+        # Save observed position
+        self.ra_obs = None
+        self.dec_obs = None
+        for key, value in kwargs.items():
+            if key == "ra": self.ra_obs = value
+            if key == "dec": self.dec_obs = value
+
+
         # Determine the number of dimensions
         if ln_prior_pos is None:
             if self.second_SN:
@@ -206,8 +214,12 @@ class DartBoard():
                     phi_kick2 = np.pi * np.random.uniform(size=1)
 
                 if self.prior_pos is not None:
-                    ra = (c.ra_max-c.ra_min) * np.random.uniform(size=1) + c.ra_min
-                    dec = (c.dec_max-c.dec_min) * np.random.uniform(size=1) + c.dec_min
+                    if self.ra_obs is None or self.dec_obs is None:
+                        ra = (c.ra_max-c.ra_min) * np.random.uniform(size=1) + c.ra_min
+                        dec = (c.dec_max-c.dec_min) * np.random.uniform(size=1) + c.dec_min
+                    else:
+                        ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
+                        dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
 
                 time = 40.0 * np.random.uniform(size=1)
 
@@ -393,8 +405,8 @@ class DartBoard():
                         phi_kick2_set[i] = phi_kick2*(1.0 + np.random.normal(0.0, C, 1))
 
                     # Position
-                    ra_set[i] = ra*(1.0 + np.random.normal(0.0, 0.1*C, 1))
-                    dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.1*C, 1))
+                    ra_set[i] = ra*(1.0 + np.random.normal(0.0, 0.001*C, 1))
+                    dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.001*C, 1))
 
 
                     # Birth time

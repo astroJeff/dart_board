@@ -5,7 +5,6 @@ from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
 
 from dart_board import constants as c
-from dart_board import darts
 from .sf_plotting import get_plot_polar
 
 
@@ -181,15 +180,21 @@ def load_sf_history(z=0.008):
 
     global coor
     global sfh
+    global lmc_dist
+
 
     coor = load_lmc_coor()
     sfh = load_lmc_sfh(z)
     pad = 0.2
 
+    # Set the coordinate bounds for the LMC
     c.ra_min = min(coor['ra'])-pad
     c.ra_max = max(coor['ra'])+pad
     c.dec_min = min(coor['dec'])-pad
     c.dec_max = max(coor['dec'])+pad
+
+    # Set distance to the LMC
+    c.distance = lmc_dist
 
 
 def get_SFH(ra, dec, t_b):
@@ -329,10 +334,11 @@ def prior_lmc(ra, dec, t_b):
 #
 
 
-def plot_lmc_map(t_b, fig_in=None, ax=None, gs=None):
+def plot_lmc_map(t_b, fig_in=None, ax=None, gs=None,
+                 xcenter=0.0, ycenter=21.0,
+                 xwidth=5.0, ywidth=5.0,
+                 ra=None, dec=None):
 
-    xcenter, ycenter = 0.0, 21.0
-    xwidth, ywidth = 5.0, 5.0
 
     rot_angle = 0.2
 
@@ -350,7 +356,9 @@ def plot_lmc_map(t_b, fig_in=None, ax=None, gs=None):
                    ywidth=ywidth,
                    rot_angle=rot_angle,
                    sfh_bins=sfh_bins,
-                   sfh_levels=sfh_levels)
+                   sfh_levels=sfh_levels,
+                   ra=ra,
+                   dec=dec)
 
 
 

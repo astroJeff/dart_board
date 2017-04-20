@@ -1,3 +1,3 @@
-__all__ = ["sf_plotting", "lmc"]
+__all__ = ["sf_plotting", "flat", "lmc"]
 
 from . import *
