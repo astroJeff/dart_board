@@ -15,7 +15,7 @@ pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=100000, nsteps=200000)
+pub.throw_darts(nburn=50000, nsteps=50000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 # Acceptance fraction
@@ -31,6 +31,7 @@ except:
 # Pickle results
 import pickle
 pickle.dump(pub.sampler.chain, open("../data/LMC-X3_chain.obj", "wb"))
+pickle.dump(pub.sampler.lnprobability, open("../data/LMC-X3_lnprobability.obj", "wb"))
 pickle.dump(pub.binary_data, open("../data/LMC-X3_binary_data.obj", "wb"))
 
 
