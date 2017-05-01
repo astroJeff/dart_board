@@ -135,6 +135,10 @@ def posterior_properties(x, output, dart):
         else:
             ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
 
+    M1 = np.exp(ln_M1)
+    M2 = np.exp(ln_M2)
+    a = np.exp(ln_a)
+    t_b = np.exp(ln_t_b)
 
     # Calculate an X-ray luminosity
     L_x_out = calculate_L_x(M1_out, mdot_out, k1_out)
