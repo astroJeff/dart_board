@@ -89,7 +89,7 @@ def load_lmc_coor():
 
 
     # Load data
-    data_file = "lmc_coordinates.dat" 
+    data_file = "lmc_coordinates.dat"
 
     lmc_coor_2 = np.genfromtxt(data_file, dtype="S10,S2,S2,S3,S2")
 
@@ -252,13 +252,15 @@ def get_SFH(ra, dec, t_b):
             return sfh[index](np.log10(t_b*1.0e6))
 
 
-def prior_lmc(ra, dec, t_b):
+def prior_lmc(ra, dec, ln_t_b):
     """
     Prior on position and time based on the spatially resolved star formation
     history maps of the LMC from Harris & Zaritsky (2004).
 
     """
 
+    # Used only when input variable is ln_t_b
+    t_b = np.exp(ln_t_b)
 
     if c.ra_min is None or c.ra_max is None or c.dec_min is None or c.dec_max is None:
         load_sf_history()
@@ -270,10 +272,11 @@ def prior_lmc(ra, dec, t_b):
     # Get star formation history
     lp_pos = get_SFH(ra, dec, t_b)
 
+    # TO DO: This probability is still unnormalized. Fix by dividing by total number of stars in the LMC.
     if lp_pos == 0:
         return -np.inf
     else:
-        return np.log(lp_pos)
+        return np.log(lp_pos * t_b)
 
 
 # def prior_lmc_position(x, dart):
