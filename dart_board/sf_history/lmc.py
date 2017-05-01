@@ -40,7 +40,9 @@ def load_lmc_data():
     out_line = np.recarray(1, dtype=dtypes)
 
     # Test to load data
-    file_path = "lmc_sfh_reduced.dat"
+    this_dir, this_filename = os.path.split(__file__)
+    file_path = os.path.join(this_dir, "lmc_sfh_reduced.dat")
+    # file_path = "lmc_sfh_reduced.dat"
 
     with open(file_path) as f:
 #    with open("./lmc_sfh_reduced.dat") as f:
@@ -89,7 +91,9 @@ def load_lmc_coor():
 
 
     # Load data
-    data_file = "lmc_coordinates.dat"
+    this_dir, this_filename = os.path.split(__file__)
+    data_file = os.path.join(this_dir, "lmc_coordinates.dat")
+    #data_file = "lmc_coordinates.dat" 
 
     lmc_coor_2 = np.genfromtxt(data_file, dtype="S10,S2,S2,S3,S2")
 
@@ -260,7 +264,7 @@ def prior_lmc(ra, dec, ln_t_b):
     """
 
     # Used only when input variable is ln_t_b
-    t_b = np.exp(ln_t_b)
+    t_b = np.exp(ln_t_b) 
 
     if c.ra_min is None or c.ra_max is None or c.dec_min is None or c.dec_max is None:
         load_sf_history()
@@ -272,7 +276,7 @@ def prior_lmc(ra, dec, ln_t_b):
     # Get star formation history
     lp_pos = get_SFH(ra, dec, t_b)
 
-    # TO DO: This probability is still unnormalized. Fix by dividing by total number of stars in the LMC.
+    # TO DO: This probability is unnormalized. To fix it should be dividied by the number of stars in the LMC. 
     if lp_pos == 0:
         return -np.inf
     else:
