@@ -8,6 +8,7 @@ matplotlib.use('Agg')
 sys.path.append("../pyBSE/")
 import pybse
 import dart_board
+from dart_board import sf_history
 
 
 pub = dart_board.DartBoard("HMXB",
