@@ -14,7 +14,7 @@ pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=10, nsteps=10)
+pub.throw_darts(nburn=10, nsteps=30)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 # Acceptance fraction
@@ -27,3 +27,8 @@ except:
     print("Acceptance fraction is too low.")
 
 
+print(pub.chains.shape)
+print(pub.derived.shape)
+print(pub.lnprobability.shape)
+
+print(pub.derived)

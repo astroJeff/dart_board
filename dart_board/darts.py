@@ -157,6 +157,7 @@ class DartBoard():
 
 
         # Saved data
+        self.sampler = []
         self.chains = []
         self.derived = []
         self.lnprobability = []
@@ -517,9 +518,11 @@ class DartBoard():
 
 
         # Save only every 10th sample
-        self.chains = sampler.chains[:,::10,:]
-        self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::10,:]
-        self.lnprobability = sampler.lnprobability[:,::10,:]
+        self.chains = sampler.chain[:,::10,:]
+        self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::10,0,:]
+        self.lnprobability = sampler.lnprobability[:,::10]
+
+        self.sampler = sampler
 
 
 
