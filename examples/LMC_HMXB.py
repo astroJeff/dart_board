@@ -14,8 +14,7 @@ from dart_board import sf_history
 pub = dart_board.DartBoard("HMXB",
                            evolve_binary=pybse.evolv_wrapper,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
-                           nwalkers=320,
-                           kwargs=kwargs)
+                           nwalkers=320)
 pub.aim_darts()
 
 
