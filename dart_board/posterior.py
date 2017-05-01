@@ -59,15 +59,19 @@ def ln_posterior(x, dart):
 
     if dart.second_SN:
         if dart.prior_pos is None:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ln_t_b = x
         else:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, ln_t_b = x
     else:
         if dart.prior_pos is None:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ln_t_b = x
         else:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
 
+    M1 = np.exp(ln_M1)
+    M2 = np.exp(ln_M2)
+    a = np.exp(ln_a)
+    t_b = np.exp(ln_t_b)
 
     # Empty array for emcee blobs
     empty_arr = np.zeros(9)
@@ -122,14 +126,14 @@ def posterior_properties(x, output, dart):
 
     if dart.second_SN:
         if dart.prior_pos is None:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ln_t_b = x
         else:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, ln_t_b = x
     else:
         if dart.prior_pos is None:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ln_t_b = x
         else:
-            M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, t_b = x
+            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
 
 
     # Calculate an X-ray luminosity

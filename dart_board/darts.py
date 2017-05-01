@@ -31,14 +31,14 @@ class DartBoard():
     def __init__(self,
                  binary_type,
                  metallicity=0.02,
-                 ln_prior_M1=priors.ln_prior_M1,
-                 ln_prior_M2=priors.ln_prior_M2,
-                 ln_prior_a=priors.ln_prior_a,
+                 ln_prior_M1=priors.ln_prior_ln_M1,
+                 ln_prior_M2=priors.ln_prior_ln_M2,
+                 ln_prior_a=priors.ln_prior_ln_a,
                  ln_prior_ecc=priors.ln_prior_ecc,
                  ln_prior_v_kick=priors.ln_prior_v_kick,
                  ln_prior_theta_kick=priors.ln_prior_theta_kick,
                  ln_prior_phi_kick=priors.ln_prior_phi_kick,
-                 ln_prior_t=priors.ln_prior_t,
+                 ln_prior_t=priors.ln_prior_ln_t,
                  ln_prior_pos=None,
                  ln_posterior_function=None,
                  generate_M1=forward_pop_synth.get_M1,
@@ -226,14 +226,14 @@ class DartBoard():
 
                 if self.second_SN:
                     if dart.prior_pos is None:
-                        x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, time
+                        x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, np.log(time)
                     else:
-                        x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra, dec, time
+                        x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra, dec, np.log(time)
                 else:
                     if self.prior_pos is None:
-                        x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, time
+                        x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, np.log(time)
                     else:
-                        x = M1, M2, a, ecc, v_kick1, theta_kick1, phi_kick1, ra, dec, time
+                        x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, ra, dec, np.log(time)
 
 
                 # If the system has a viable posterior probability
@@ -265,20 +265,20 @@ class DartBoard():
         # Save and return the walker positions
         if self.second_SN:
             if self.prior_pos is None:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
                                     phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    time_set]).T
+                                    np.log(time_set)]).T
             else:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
                                     phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    ra_set, dec_set, time_set]).T
+                                    ra_set, dec_set, np.log(time_set)]).T
         else:
             if self.prior_pos is None:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, time_set]).T
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, np.log(time_set)]).T
             else:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, ra_set, dec_set, time_set]).T
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, ra_set, dec_set, np.log(time_set)]).T
 
 
 
@@ -361,25 +361,25 @@ class DartBoard():
 
                 if self.second_SN:
                     if self.prior_pos is None:
-                        p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                 v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
                                 v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                time_set[i]
+                                np.log(time_set[i])
                     else:
-                        p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                 v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
                                 v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                ra_set[i], dec_set[i], time_set[i]
+                                ra_set[i], dec_set[i], np.log(time_set[i])
 
                 else:
                     if self.prior_pos is None:
-                        p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                 v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                time_set[i]
+                                np.log(time_set[i])
                     else:
-                        p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                 v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                ra_set[i], dec_set[i], time_set[i]
+                                ra_set[i], dec_set[i], np.log(time_set[i])
 
 
                 ln_posterior = self.posterior_function(p, self)[0]
@@ -417,25 +417,25 @@ class DartBoard():
 
                     if self.second_SN:
                         if self.prior_pos is None:
-                            p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                     v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
                                     v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                    time_set[i]
+                                    np.log(time_set[i])
                         else:
-                            p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                     v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
                                     v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                    ra_set[i], dec_set[i], time_set[i]
+                                    ra_set[i], dec_set[i], np.log(time_set[i])
 
                     else:
                         if self.prior_pos is None:
-                            p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                     v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                    time_set[i]
+                                    np.log(time_set[i])
                         else:
-                            p = M1_set[i], M2_set[i], a_set[i], ecc_set[i], \
+                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
                                     v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                    ra_set[i], dec_set[i], time_set[i]
+                                    ra_set[i], dec_set[i], np.log(time_set[i])
 
 
                     ln_posterior = self.posterior_function(p, self)[0]
@@ -451,20 +451,20 @@ class DartBoard():
         # Save and return the walker positions
         if self.second_SN:
             if self.prior_pos is None:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
                                     phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    time_set]).T
+                                    np.log(time_set)]).T
             else:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
                                     phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    ra_set, dec_set, time_set]).T
+                                    ra_set, dec_set, np.log(time_set)]).T
         else:
             if self.prior_pos is None:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, time_set]).T
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, np.log(time_set)]).T
             else:
-                self.p0 = np.array([M1_set, M2_set, a_set, ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, ra_set, dec_set, time_set]).T
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, ra_set, dec_set, np.log(time_set)]).T
 
 
         print("...walkers are set")
