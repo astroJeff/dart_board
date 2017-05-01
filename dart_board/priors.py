@@ -72,7 +72,16 @@ def ln_prior_ln_M1(ln_M1):
     norm_const = (c.alpha+1.0) / (np.power(c.max_mass_M1, c.alpha+1.0) - np.power(c.min_mass_M1, c.alpha+1.0))
     return np.log( norm_const * np.power(M1, c.alpha+1.0) )
 
-def ln_prior_M2(ln_M2, ln_M1):
+def ln_prior_M2(M2, M1):
+    """
+    Return the prior probability on M2: P(M2 | M1).
+
+    """
+
+    if M2 < c.min_mass_M2 or M2 > M1: return -np.inf
+    return np.log(1.0 / M1)
+
+def ln_prior_ln_M2(ln_M2, ln_M1):
     """
     Return the prior probability on the natural log of M2: P(ln_M2 | M1).
 
@@ -83,7 +92,6 @@ def ln_prior_M2(ln_M2, ln_M1):
 
     if M2 < c.min_mass_M2 or M2 > M1: return -np.inf
     return np.log(M2 / M1)
-
 
 def ln_prior_a(a, ecc):
     """
