@@ -157,9 +157,9 @@ class DartBoard():
 
 
         # Saved data
-        self.sampler = []
-        self.binary_x_i = []
-        self.binary_data = []
+        self.chains = []
+        self.derived = []
+        self.lnprobability = []
 
 
 
@@ -508,14 +508,18 @@ class DartBoard():
         pos,prob,state,binary_data = sampler.run_mcmc(self.p0, N=nburn)
         print("...finished running burn-in")
 
+
         # Full run
         print("Starting full run...")
         sampler.reset()
         pos,prob,state,binary_data = sampler.run_mcmc(pos, N=nsteps)
         print("...full run finished")
 
-        self.sampler = sampler
-        self.binary_data = binary_data
+
+        # Save only every 10th sample
+        self.chains = sampler.chains[:,::10,:]
+        self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::10,:]
+        self.lnprobability = sampler.lnprobability[:,::10,:]
 
 
 

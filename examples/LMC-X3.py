@@ -30,9 +30,9 @@ except:
 
 # Pickle results
 import pickle
-pickle.dump(pub.sampler.chain, open("../data/LMC-X3_chain.obj", "wb"))
-pickle.dump(pub.sampler.lnprobability, open("../data/LMC-X3_lnprobability.obj", "wb"))
-pickle.dump(pub.binary_data, open("../data/LMC-X3_binary_data.obj", "wb"))
+pickle.dump(pub.chains, open("../data/LMC-X3_chain.obj", "wb"))
+pickle.dump(pub.lnprobability, open("../data/LMC-X3_lnprobability.obj", "wb"))
+pickle.dump(pub.derived, open("../data/LMC-X3_derived.obj", "wb"))
 
 
 

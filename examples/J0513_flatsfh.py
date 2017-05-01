@@ -38,6 +38,6 @@ except:
 
 # Pickle results
 import pickle
-pickle.dump(pub.sampler.chain, open("../data/J0513_flatsfh_chain.obj", "wb"))
-pickle.dump(pub.sampler.lnprobability, open("../data/J0513_flatsfh_lnprobability.obj", "wb"))
-pickle.dump(pub.binary_data, open("../data/J0513_flatsfh_binary_data.obj", "wb"))
+pickle.dump(pub.chains, open("../data/J0513_flatsfh_chain.obj", "wb"))
+pickle.dump(pub.lnprobability, open("../data/J0513_flatsfh_lnprobability.obj", "wb"))
+pickle.dump(pub.derived, open("../data/J0513_flatsfh_derived.obj", "wb"))
