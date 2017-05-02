@@ -44,7 +44,12 @@ def generate_population(dart, N):
         dec = np.zeros(N)
         t_b = dart.generate_t(N)
     else:
-        ra, dec, t_b = dart.generate_pos(N)
+        ra = np.zeros(N)
+        dec = np.zeros(N)
+        t_b = dart.generate_t(N)
+        for i in range(N):
+            ra[i], dec[i], N_stars = dart.generate_pos(1, t_b[i])
+
 
     return M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, \
             v_kick2, theta_kick2, phi_kick2, ra, dec, t_b
@@ -101,10 +106,10 @@ def get_M1(N):
         Array of random primary masses
     """
 
-    A = (c.alpha+1.0) / (np.power(c.max_mass, c.alpha+1.0) - np.power(c.min_mass, c.alpha+1.0))
+    A = (c.alpha+1.0) / (np.power(c.max_mass_M1, c.alpha+1.0) - np.power(c.min_mass_M1, c.alpha+1.0))
     x = uniform.rvs(size = N)
 
-    return np.power(x*(c.alpha+1.0)/A + np.power(c.min_mass, c.alpha+1.0), 1.0/(c.alpha+1.0))
+    return np.power(x*(c.alpha+1.0)/A + np.power(c.min_mass_M1, c.alpha+1.0), 1.0/(c.alpha+1.0))
 
 def get_M2(M1, N):
     """
@@ -117,8 +122,12 @@ def get_M2(M1, N):
 
     """
 
+    # Limits on M2
+    M2_min = c.min_mass_M2
+    M2_max = np.min((np.ones(N)*c.max_mass_M2, M1), axis=0)
+
     # Flat in mass ratio
-    return M1 * uniform.rvs(size = N)
+    return (M2_max - M2_min) * uniform.rvs(size = N) + M2_min
 
 def get_a(N):
     """ Generate random orbital separations

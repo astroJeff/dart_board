@@ -99,9 +99,8 @@ class DartBoard():
         self.generate_phi_kick2 = generate_phi_kick
 
         self.generate_pos = None
-        if generate_pos is None:
-            self.generate_t = generate_t
-        else:
+        self.generate_t = generate_t
+        if generate_pos is not None:
             self.generate_pos = generate_pos
 
 
@@ -541,9 +540,16 @@ class DartBoard():
         M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
                 phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, num_darts)
 
+        # Get ln of parameters
+        ln_M1 = np.log(M1)
+        ln_M2 = np.log(M2)
+        ln_a = np.log(posterior.P_to_A(M1, M2, orbital_period))
+        ln_t_b = np.log(t_b)
+
         # Now, we want to zero the outputs
-        self.binary_x_i = np.zeros((num_darts, 11))
-        self.binary_data = np.zeros((num_darts, 9))
+        self.chains = np.zeros((num_darts, 13))
+        self.derived = np.zeros((num_darts, 9))
+        self.likelihood = np.zeros(num_darts, dtype=float)
         success = np.zeros(num_darts, dtype=bool)
 
 
@@ -554,14 +560,38 @@ class DartBoard():
                                         v_kick2[i], theta_kick2[i], phi_kick2[i],
                                         t_b[i], self.metallicity, False)
 
-            x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
-                    phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], t_b[i]
-
             if posterior.check_output(output, self.binary_type):
-                self.binary_x_i[i] = np.array([x_i])
-                self.binary_data[i] = np.array([output])
+
+                # For likelihood function, we need to input specific number of parameters
+                if self.second_SN:
+                    if self.prior_pos is None:
+                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ln_t_b[i]
+                    else:
+                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], ln_t_b[i]
+                else:
+                    if self.prior_pos is None:
+                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ln_t_b[i]
+                    else:
+                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ra[i], dec[i], ln_t_b[i]
+
+                self.likelihood[i] = posterior.posterior_properties(x_i, output, self)
+
+                # Only store if it likelihood is finite
+                if(np.isinf(self.likelihood[i])): continue
+
+
+
+                x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
+                        phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], t_b[i]
+
+                # Save chains and derived
+                self.chains[i] = np.array([x_i])
+                self.derived[i] = np.array([output])
+
+
                 success[i] = True
 
         # Now, let's only return successful values in binary_x_i, binary_data
-        self.binary_x_i = self.binary_x_i[success]
-        self.binary_data = self.binary_data[success]
+        self.chains = self.chains[success]
+        self.derived = self.derived[success]
+        self.likelihood = self.likelihood[success]

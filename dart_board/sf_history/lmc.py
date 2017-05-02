@@ -3,6 +3,7 @@ import numpy as np
 
 from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
+from scipy.stats import uniform
 
 from dart_board import constants as c
 from .sf_plotting import get_plot_polar
@@ -93,7 +94,7 @@ def load_lmc_coor():
     # Load data
     this_dir, this_filename = os.path.split(__file__)
     data_file = os.path.join(this_dir, "lmc_coordinates.dat")
-    #data_file = "lmc_coordinates.dat" 
+    #data_file = "lmc_coordinates.dat"
 
     lmc_coor_2 = np.genfromtxt(data_file, dtype="S10,S2,S2,S3,S2")
 
@@ -264,7 +265,7 @@ def prior_lmc(ra, dec, ln_t_b):
     """
 
     # Used only when input variable is ln_t_b
-    t_b = np.exp(ln_t_b) 
+    t_b = np.exp(ln_t_b)
 
     if c.ra_min is None or c.ra_max is None or c.dec_min is None or c.dec_max is None:
         load_sf_history()
@@ -276,12 +277,102 @@ def prior_lmc(ra, dec, ln_t_b):
     # Get star formation history
     lp_pos = get_SFH(ra, dec, t_b)
 
-    # TO DO: This probability is unnormalized. To fix it should be dividied by the number of stars in the LMC. 
+    # TO DO: This probability is unnormalized. To fix it should be dividied by the number of stars in the LMC.
     if lp_pos == 0:
         return -np.inf
     else:
         return np.log(lp_pos * t_b)
 
+
+
+
+
+def get_random_positions(N, t_b, ra_in=None, dec_in=None):
+    """ Use the star formation history to generate a population of new binaries
+
+    Parameters
+    ----------
+    N : integer
+        Number of positions to calculate
+    t_b : float
+        Birth time to calculate star formation history (Myr)
+    ra_in : float
+        RA of system (optional)
+    dec_in : float
+        Dec of system (optional)
+
+    Returns
+    -------
+    ra_out : ndarray
+        Array of output RA's (degrees)
+    dec_out : ndarray
+        Array of output Dec's (degrees)
+    N_stars : int
+        Normalization constant calculated from number of stars formed at time t_b
+    """
+
+    global coor
+    global sfh
+
+    if sfh is None or coor is None:
+        load_sf_history()
+
+    N_regions = len(coor)
+
+    # If provided with an ra and dec, only generate stars within 3 degrees of input position
+    SF_regions = np.zeros((2,N_regions))
+    for i in np.arange(N_regions):
+        SF_regions[0,i] = i
+
+        if ra_in is None or dec_in is None:
+            SF_regions[1,i] = sfh[i](np.log10(t_b*1.0e6))
+        elif sf_history.get_theta_proj_degree(coor["ra"][i], coor["dec"][i], ra_in, dec_in) < c.deg_to_rad * 3.0:
+            SF_regions[1,i] = sfh[i](np.log10(t_b*1.0e6))
+        else:
+            SF_regions[1,i] = 0.0
+
+    N_stars = np.sum(SF_regions, axis=1)[1]
+
+    # Normalize
+    SF_regions[1] = SF_regions[1] / N_stars
+
+    # Sort
+    SF_sort = SF_regions[:,SF_regions[1].argsort()]
+
+    # Move from normed PDF to CDF
+    SF_sort[1] = np.cumsum(SF_sort[1])
+
+    # Random numbers
+    y = uniform.rvs(size=N)
+
+    # Create a 2D grid of CDFs, and random numbers
+    SF_out, y_out = np.meshgrid(SF_sort[1], y)
+
+    # Get index of closest region in sorted array
+    indices = np.argmin((SF_out - y_out)**2,axis=1)
+
+    # Move to indices of stored LMC SFH data array
+    indices = SF_sort[0][indices].astype(int)
+
+    # Get random ra's and dec's of each region
+    ra_out = coor["ra"][indices]
+    dec_out = coor["dec"][indices]
+
+    # Width is 12 arcmin or 12/60 degrees for outermost regions
+    # Width is 6 arcmin or 6/60 degrees for inner regions
+#    width = 12.0 / 60.0 * np.ones(len(indices))
+    width = 6.0 / 60.0 * np.ones(len(indices))
+#    for i in np.arange(len(indices)):
+#        if str(smc_coor["region"][indices[i]]).find("_") != -1:
+#            width[i] = 6.0 / 60.0
+
+    tmp_delta_ra = width * (2.0 * uniform.rvs(size=len(indices)) - 1.0) / np.cos(c.deg_to_rad * dec_out) * 2.0
+    tmp_delta_dec = width * (2.0 * uniform.rvs(size=len(indices)) - 1.0)
+
+    ra_out = ra_out + tmp_delta_ra
+    dec_out = dec_out + tmp_delta_dec
+
+    return ra_out, dec_out, N_stars
 
 # def prior_lmc_position(x, dart):
 #
