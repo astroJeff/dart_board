@@ -183,7 +183,6 @@
 * In this example we will search for CVs.
 *
 
-
          jj = 0
          do while (bcm(jj,1).lt.tmax)
            m1_out = bcm(jj,4)
@@ -201,7 +200,10 @@
      &                   ecc_out, a_out, p_out, mdot1, mdot2
            endif
 
-           if(jj.gt.2.and.bcm(jj,1).eq.0.0) EXIT
+           if(jj.gt.2.and.bcm(jj,1).eq.0.0)then
+             jj = jj - 3
+             EXIT
+           endif
 
            jj = jj + 1
 

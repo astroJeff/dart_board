@@ -36,3 +36,4 @@ dart_board/sf_history/__pycache__
 examples/.ipynb_checkpoints
 dart_board/sf_history/*.dat
 examples/*.sbatch
+examples/*.dat

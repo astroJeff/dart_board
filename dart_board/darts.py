@@ -330,6 +330,8 @@ class DartBoard():
                 lp_prev[i] = lp_prev[i+1]
             lp_prev[19] = ln_posterior_best
 
+            # FOR TESTING
+            if lp_prev[17] > -100.0: break
             if(abs(lp_prev[0] - lp_prev[19]) < 0.2): break
 
             print("ln_posterior:", idx, ln_posterior_best, lp_prev[0])
