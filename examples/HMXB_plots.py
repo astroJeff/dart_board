@@ -16,6 +16,13 @@ chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)
 
 
+# Move from ln parameters to parameters in chains
+chains[:,0] = np.exp(chains[:,0])
+chains[:,1] = np.exp(chains[:,1])
+chains[:,2] = np.exp(chains[:,2])
+chains[:,9] = np.exp(chains[:,9])
+
+
 # Create a corner plot to show the posterior distribution
 
 fontProperties = {'family':'serif', 'serif':['Times New Roman'], 'weight':'normal', 'size':12}

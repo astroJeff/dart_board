@@ -37,3 +37,6 @@ examples/.ipynb_checkpoints
 dart_board/sf_history/*.dat
 examples/*.sbatch
 examples/*.dat
+examples/fort.*
+examples/.pdf*
+examples/*.pdf
