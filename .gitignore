@@ -40,3 +40,4 @@ examples/*.dat
 examples/fort.*
 examples/.pdf*
 examples/*.pdf
+docs/*.pdf

@@ -249,9 +249,9 @@ def calc_prob_from_mass_function(M1, M2, f_obs, f_err):
         if M2*M2 < (f*Mtot*Mtot)**(2.0/3.0): return 0.0
 
         numerator = Mtot**(4.0/3.0)
-        denomonator = 3.0 * f**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f*Mtot*Mtot)**(2.0/3.0))
+        denominator = 3.0 * f**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f*Mtot*Mtot)**(2.0/3.0))
 
-        return numerator / denomonator
+        return numerator / denominator
 
     # Integrand in which h is multiplied by the error on the mass function
     def func_integrand(f, f_obs, f_err, M1, M2):

@@ -27,10 +27,10 @@ def prior_probability(x, dart):
 
     # Calculate prior probabilities
     lp = 0.0
-    lp += dart.prior_M1(ln_M1)
-    lp += dart.prior_M2(ln_M2, ln_M1)
+    lp += dart.prior_ln_M1(ln_M1)
+    lp += dart.prior_ln_M2(ln_M2, ln_M1)
     lp += dart.prior_ecc(ecc)
-    lp += dart.prior_a(ln_a, ecc)
+    lp += dart.prior_ln_a(ln_a, ecc)
     lp += dart.prior_v_kick1(v_kick1)
     lp += dart.prior_theta_kick1(theta_kick1)
     lp += dart.prior_phi_kick1(phi_kick1)
