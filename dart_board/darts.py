@@ -224,7 +224,7 @@ class DartBoard():
                 time = 40.0 * np.random.uniform(size=1)
 
                 if self.second_SN:
-                    if dart.prior_pos is None:
+                    if self.prior_pos is None:
                         x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, np.log(time)
                     else:
                         x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra, dec, np.log(time)
