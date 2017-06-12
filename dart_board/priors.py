@@ -100,7 +100,7 @@ def ln_prior_a(a, ecc):
     """
 
     if a*(1.0-ecc) < c.min_a or a*(1.0+ecc) > c.max_a: return -np.inf
-    norm_const = 1.0 / (np.log(c.max_a) - np.log(c.min_a))
+    norm_const = 1.0 / (np.log(c.max_a / (1.0+ecc)) - np.log(c.min_a / (1.0-ecc)))
 
     return np.log( norm_const / a )
 
@@ -113,7 +113,7 @@ def ln_prior_ln_a(ln_a, ecc):
     a = np.exp(ln_a)
 
     if a*(1.0-ecc) < c.min_a or a*(1.0+ecc) > c.max_a: return -np.inf
-    norm_const = 1.0 / (np.log(c.max_a) - np.log(c.min_a))
+    norm_const = 1.0 / (np.log(c.max_a / (1.0+ecc)) - np.log(c.min_a / (1.0-ecc)))
 
     return np.log( norm_const )
 

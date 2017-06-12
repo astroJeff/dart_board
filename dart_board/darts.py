@@ -68,9 +68,9 @@ class DartBoard():
         self.metallicity = metallicity
 
         # Set the functions for the priors on each parameter
-        self.prior_M1 = ln_prior_ln_M1
-        self.prior_M2 = ln_prior_ln_M2
-        self.prior_a = ln_prior_ln_a
+        self.prior_M1 = ln_prior_M1
+        self.prior_M2 = ln_prior_M2
+        self.prior_a = ln_prior_a
         self.prior_ecc = ln_prior_ecc
         self.prior_v_kick1 = ln_prior_v_kick
         self.prior_theta_kick1 = ln_prior_theta_kick

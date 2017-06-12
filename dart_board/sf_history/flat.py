@@ -33,8 +33,10 @@ def load_lmc_sf_history(z=0.008):
     c.distance = lmc_dist
 
 
-def prior_lmc(ra, dec, t_b):
+def prior_lmc(ra, dec, ln_t_b):
     """ This function returns a flat star formation history for the lmc """
+
+    t_b = np.exp(ln_t_b)
 
     if c.ra_min is None or c.ra_max is None or c.dec_min is None or c.dec_max is None:
         load_lmc_sf_history()
@@ -43,4 +45,4 @@ def prior_lmc(ra, dec, t_b):
     if ra < c.ra_min or ra > c.ra_max or dec < c.dec_min or dec > c.dec_max:
         return -np.inf
     else:
-        return np.log(1.0)
+        return np.log(t_b)
