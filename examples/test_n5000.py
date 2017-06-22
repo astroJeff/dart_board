@@ -34,3 +34,6 @@ print(pub.lnprobability.shape)
 
 import pickle
 pickle.dump(pub.sampler.acceptance_fraction, open("test_n5000_accept_frac.dat", "wb"))
+
+pickle.dump(pub.chains, open("../data/test_n5000_chains.obj", "wb"))
+
