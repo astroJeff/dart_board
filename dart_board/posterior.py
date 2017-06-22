@@ -246,12 +246,30 @@ def calc_prob_from_mass_function(M1, M2, f_obs, f_err):
 
         Mtot = M1 + M2
 
-        if M2*M2 < (f*Mtot*Mtot)**(2.0/3.0): return 0.0
+        h_out = np.zeros(len(f))
+
+        # idx = np.where(f > 0.0)[0]
+        # idx = idx[M2*M2 > (f[idx]*Mtot*Mtot)**(2.0/3.0)]
+        idx = M2*M2 > (f*Mtot*Mtot)**(2.0/3.0)
 
         numerator = Mtot**(4.0/3.0)
-        denominator = 3.0 * f**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f*Mtot*Mtot)**(2.0/3.0))
+        denominator = 3.0 * f[idx]**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f[idx]*Mtot*Mtot)**(2.0/3.0))
 
-        return numerator / denominator
+        h_out[idx] = numerator / denominator
+        #
+        # print(len(h_out))
+        # print(len(h_out[M2*M2 > (f*Mtot*Mtot)**(2.0/3.0)]))
+        # h_out[M2*M2 > (f*Mtot*Mtot)**(2.0/3.0)] = Mtot**(4.0/3.0) / (3.0 * f**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f*Mtot*Mtot)**(2.0/3.0)))
+
+        # if M2*M2 < (f*Mtot*Mtot)**(2.0/3.0): return 0.0
+        #
+        # numerator = Mtot**(4.0/3.0)
+        # denominator = 3.0 * f**(1.0/3.0) * M2 * np.sqrt(M2*M2 - (f*Mtot*Mtot)**(2.0/3.0))
+        #
+        # return numerator / denominator
+
+        return h_out
+
 
     # Integrand in which h is multiplied by the error on the mass function
     def func_integrand(f, f_obs, f_err, M1, M2):
@@ -265,15 +283,22 @@ def calc_prob_from_mass_function(M1, M2, f_obs, f_err):
     # Wrapper for integration
     def calc_f(f_obs, f_err, M1, M2):
 
-        # Limit integral to 5-sigma and/or 0
-        f_min = max(0.0, f_obs - 5.0*f_err)
-        f_max = f_obs + 5.0*f_err
+        # Calculate using scipy.integrate.quad
+        # # Limit integral to 5-sigma and/or 0
+        # f_min = max(0.0, f_obs - 5.0*f_err)
+        # f_max = f_obs + 5.0*f_err
+        #
+        # args = f_obs, f_err, M1, M2
+        #
+        # result = quad(func_integrand, f_min, f_max, args=args, epsabs=1.0e-04)
+        # val = result[0]
 
-        args = f_obs, f_err, M1, M2
+        # Calculate using Monte Carlo
+        N = 100000
+        ran_f = norm.rvs(size=N, loc=f_obs, scale=f_err)
+        val = np.mean(model_h(M1, M2, ran_f))
 
-        result = quad(func_integrand, f_min, f_max, args=args, epsabs=1.0e-04)
-
-        return result[0]
+        return val
 
 
     likelihood = calc_f(f_obs, f_err, M1, M2)

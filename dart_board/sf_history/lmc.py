@@ -277,6 +277,7 @@ def prior_lmc(ra, dec, ln_t_b):
     # Get star formation history
     lp_pos = get_SFH(ra, dec, t_b)
 
+
     # TO DO: This probability is unnormalized. To fix it should be dividied by the number of stars in the LMC.
     if lp_pos == 0:
         return -np.inf
