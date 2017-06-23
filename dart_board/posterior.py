@@ -412,13 +412,14 @@ def get_dtheta_dalpha(alpha, delta, alpha_b, delta_b):
     """ Calculate the coordinate transformation derivative dtheta/dalpha """
 
     theta_proj = get_theta_proj(alpha, delta, alpha_b, delta_b)
-    return (alpha-alpha_b) * np.cos(delta) * np.cos(delta_b) / theta_proj
+    return (alpha_b-alpha) * np.cos(delta) * np.cos(delta_b) / theta_proj
 
 def get_dtheta_ddelta(alpha, delta, alpha_b, delta_b):
     """ Calculate the coordinate transformation derivative dtheta/ddelta """
 
     theta_proj = get_theta_proj(alpha, delta, alpha_b, delta_b)
-    return 1.0/(2.0*theta_proj) * (-np.cos(delta_b)*np.sin(delta)*(alpha_b-alpha)**2 + 2.0*(delta_b-delta))
+    # return 1.0/(2.0*theta_proj) * (-np.cos(delta_b)*np.sin(delta)*(alpha_b-alpha)**2 + 2.0*(delta_b-delta))
+    return (delta_b-delta) / theta_proj
 
 def get_domega_dalpha(alpha, delta, alpha_b, delta_b):
     """ Calculate the coordinate transformation derivative domega/dalpha """
