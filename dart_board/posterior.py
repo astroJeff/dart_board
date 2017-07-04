@@ -56,6 +56,46 @@ def ln_posterior(x, dart):
 
     """
 
+    # Empty array for emcee blobs
+    empty_arr = np.zeros(9)
+
+
+    # Calculate the prior probability
+    lp = priors.ln_prior(x, dart)
+
+    if dart.ntemps is None:
+
+        if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
+
+        ll, output = ln_likelihood(x, dart)
+        return lp+ll, output
+
+    else:
+
+        if np.isinf(lp) or np.isnan(lp): return -np.inf
+
+        ll = ln_likelihood(x, dart)
+        return lp+ll
+
+
+def ln_likelihood(x, dart):
+    """ Calculate the natural log of the likelihood
+
+    Parameters
+    ----------
+    x : floats
+        Model parameters
+
+    dart : DartBoard
+        Positions of the dart
+
+    Returns
+    -------
+    lp : float
+        Natural log of the posterior probability
+
+    """
+
 
     if dart.second_SN:
         if dart.prior_pos is None:
@@ -76,10 +116,6 @@ def ln_posterior(x, dart):
     # Empty array for emcee blobs
     empty_arr = np.zeros(9)
 
-
-    # Calculate the prior probability
-    lp = priors.prior_probability(x, dart)
-    if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
 
 
     # Get initial orbital period
@@ -102,15 +138,21 @@ def ln_posterior(x, dart):
 
 
     # Return posterior probability and blobs
-    if not check_output(output, dart.binary_type): return -np.inf, empty_arr
+    if not check_output(output, dart.binary_type):
+        if dart.ntemps is None:
+            return -np.inf, empty_arr
+        else:
+            return -np.inf
 
 
     # Check for kwargs arguments
     ll = 0
     if not dart.kwargs == {}: ll = posterior_properties(x, output, dart)
 
-
-    return ll+lp, np.array([output])
+    if dart.ntemps is None:
+        return ll, np.array([output])
+    else:
+        return ll
 
 
 
@@ -183,7 +225,6 @@ def posterior_properties(x, output, dart):
             if ecc_out > value: return -np.inf
 
 
-
     # Add log probabilities if position is provided
     if dart.ra_obs is not None and dart.dec_obs is not None:
 
@@ -191,20 +232,23 @@ def posterior_properties(x, output, dart):
         theta_proj = get_theta_proj(c.deg_to_rad*dart.ra_obs, c.deg_to_rad*dart.dec_obs, \
                                     c.deg_to_rad*ra_b, c.deg_to_rad*dec_b)
 
-        # Travel time in years
+        # Travel time in seconds
         t_sn = (t_b - t_SN1) * 1.0e6 * c.yr_to_sec
 
-        # Maximum angle
+        # Maximum angle in radians
         angle_max = (v_sys * t_sn) / c.distance
 
         # Define conditional
         conds = [theta_proj>=angle_max, theta_proj<angle_max]
         funcs = [lambda theta_proj: -np.inf,
                  lambda theta_proj: np.log(np.tan(np.arcsin(theta_proj/angle_max))/angle_max)]
+                #  lambda theta_proj: np.log( theta_proj / angle_max**2 / np.sqrt(1.0 - (theta_proj/angle_max)**2) )]
 
-        # Jacobian for coordinate change
+        # Jacobian for coordinate change - ra, dec in radians
         J_coor = np.abs(get_J_coor(c.deg_to_rad*dart.ra_obs, c.deg_to_rad*dart.dec_obs, \
                         c.deg_to_rad*ra_b, c.deg_to_rad*dec_b))
+        J_coor *= c.deg_to_rad * c.deg_to_rad  # Change jacobian from radians to degrees
+
         P_omega = 1.0 / (2.0 * np.pi)
 
         # Likelihood

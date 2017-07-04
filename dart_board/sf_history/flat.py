@@ -38,6 +38,10 @@ def prior_lmc(ra, dec, ln_t_b):
 
     t_b = np.exp(ln_t_b)
 
+    if t_b < c.min_t or t_b > c.max_t: return -np.inf
+    norm_const = 1.0 / (c.max_t - c.min_t)
+
+
     if c.ra_min is None or c.ra_max is None or c.dec_min is None or c.dec_max is None:
         load_lmc_sf_history()
 
@@ -45,4 +49,6 @@ def prior_lmc(ra, dec, ln_t_b):
     if ra < c.ra_min or ra > c.ra_max or dec < c.dec_min or dec > c.dec_max:
         return -np.inf
     else:
-        return np.log(t_b)
+        # sky_area = np.abs( (c.ra_max-c.ra_min) * (c.dec_max-c.dec_min) * np.cos((c.dec_max+c.dec_min)/2.*np.pi/180.0) )
+        sky_area = np.abs( (c.ra_max-c.ra_min) * (c.dec_max-c.dec_min))
+        return np.log(norm_const * t_b / sky_area)

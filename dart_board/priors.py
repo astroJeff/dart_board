@@ -6,7 +6,7 @@ from scipy.stats import maxwell
 from . import constants as c
 
 
-def prior_probability(x, dart):
+def ln_prior(x, dart):
     """
     Calculate all the prior probabilities.
 

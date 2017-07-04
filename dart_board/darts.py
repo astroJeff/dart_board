@@ -50,6 +50,7 @@ class DartBoard():
                  generate_phi_kick=forward_pop_synth.get_phi,
                  generate_t=forward_pop_synth.get_t,
                  generate_pos=None,
+                 ntemps=None,
                  nwalkers=80,
                  threads=1,
                  mpi=False,
@@ -111,6 +112,7 @@ class DartBoard():
             self.posterior_function = ln_posterior_function
 
         # emcee parameters
+        self.ntemps = ntemps
         self.nwalkers = nwalkers
         self.threads = threads
         self.mpi = mpi
@@ -161,6 +163,130 @@ class DartBoard():
         self.derived = []
         self.lnprobability = []
 
+
+    def aim_darts_PT(self):
+        """
+        Place darts at different temperatures in a viable region of parameter space
+
+        """
+
+        # Set walkers
+        print("Setting walkers...")
+
+
+        # Allocate walkers
+        M1_set = np.zeros((self.ntemps, self.nwalkers))
+        M2_set = np.zeros((self.ntemps, self.nwalkers))
+        a_set = np.zeros((self.ntemps, self.nwalkers))
+        ecc_set = np.zeros((self.ntemps, self.nwalkers))
+        v_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+        theta_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+        phi_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+        if self.second_SN:
+            v_kick2_set = np.zeros((self.ntemps, self.nwalkers))
+            theta_kick2_set = np.zeros((self.ntemps, self.nwalkers))
+            phi_kick2_set = np.zeros((self.ntemps, self.nwalkers))
+        time_set = np.zeros((self.ntemps, self.nwalkers))
+
+        if self.prior_pos is not None:
+            # Use first call of sf_history prior to set ra and dec bounds
+            tmp = self.prior_pos(0.0, 0.0, 20.0)
+            ra_set = np.zeros((self.ntemps, self.nwalkers))
+            dec_set = np.zeros((self.ntemps, self.nwalkers))
+
+
+        # Check if any of these have posteriors with -infinity
+        for i in range(self.ntemps):
+            for j in range(self.nwalkers):
+
+                # Iterate randomly through initial conditions until a viable parameter set is found
+                for k in range(100000):
+
+                    M1 = 30.0 * np.random.uniform(size=1) + 8.0
+                    M2 = M1 * (np.random.uniform(size=1))
+                    a = 5000.0 * np.random.uniform(size=1) + 20.0
+                    ecc = np.random.uniform(size=1)
+
+                    v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
+                    theta_kick1 = np.pi * np.random.uniform(size=1)
+                    phi_kick1 = np.pi * np.random.uniform(size=1)
+                    if self.second_SN:
+                        v_kick2 = 300.0 * np.random.uniform(size=1) + 20.0
+                        theta_kick2 = np.pi * np.random.uniform(size=1)
+                        phi_kick2 = np.pi * np.random.uniform(size=1)
+
+                    if self.prior_pos is not None:
+                        if self.ra_obs is None or self.dec_obs is None:
+                            ra = (c.ra_max-c.ra_min) * np.random.uniform(size=1) + c.ra_min
+                            dec = (c.dec_max-c.dec_min) * np.random.uniform(size=1) + c.dec_min
+                        else:
+                            ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
+                            dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
+
+                    time = 40.0 * np.random.uniform(size=1)
+
+                    if self.second_SN:
+                        if self.prior_pos is None:
+                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, np.log(time)
+                        else:
+                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra, dec, np.log(time)
+                    else:
+                        if self.prior_pos is None:
+                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, np.log(time)
+                        else:
+                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, ra, dec, np.log(time)
+
+
+                    # If the system has a viable posterior probability
+                    if self.posterior_function(x, self) > -500.0:
+
+                        M1_set[i,j] = M1
+                        M2_set[i,j] = M2
+                        a_set[i,j] = a
+                        ecc_set[i,j] = ecc
+                        v_kick1_set[i,j] = v_kick1
+                        theta_kick1_set[i,j] = theta_kick1
+                        phi_kick1_set[i,j] = phi_kick1
+                        if self.second_SN:
+                            v_kick2_set[i,j] = v_kick2
+                            theta_kick2_set[i,j] = theta_kick2
+                            phi_kick2_set[i,j] = phi_kick2
+                        if self.prior_pos is not None:
+                            ra_set[i,j] = ra
+                            dec_set[i,j] = dec
+                        time_set[i,j] = time
+
+                        print("Temp", i, "and Walker", j, "is set. Posterior probability:", self.posterior_function(x, self))
+
+                        # ...then use it as our starting system
+                        break
+
+        # Save and return the walker positions
+        if self.second_SN:
+            if self.prior_pos is None:
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+                                    np.log(time_set)])
+            else:
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+                                    ra_set, dec_set, np.log(time_set)])
+        else:
+            if self.prior_pos is None:
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, np.log(time_set)])
+            else:
+                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+                                    phi_kick1_set, ra_set, dec_set, np.log(time_set)])
+
+        # Swap axes for parallel tempered sampler
+        self.p0 = np.swapaxes(self.p0, 0, 1)
+        self.p0 = np.swapaxes(self.p0, 1, 2)
+
+
+        print("...walkers are set")
+
+        sys.stdout.flush()
 
 
     def aim_darts(self, dart=None):
@@ -557,9 +683,65 @@ class DartBoard():
 
             self.sampler = sampler
 
+
+        elif method == 'emcee_PT':
+
+            # THIS DOES NOT YET WORK #
+
+            # Define sampler
+            if self.mpi == True:
+                pool = MPIPool()
+                if not pool.is_master():
+                    pool.wait()
+                    sys.exit(0)
+                sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                                          logl=posterior.ln_likelihood, logp=priors.ln_prior,
+                                          loglargs=(self,), logpargs=(self,), pool=pool)
+
+            elif self.threads != 1:
+                sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                                          logl=posterior.ln_likelihood, logp=priors.ln_prior,
+                                          loglargs=(self,), logpargs=(self,), threads=self.threads)
+            else:
+                sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                                          logl=posterior.ln_likelihood, logp=priors.ln_prior,
+                                          loglargs=(self,), logpargs=(self,))
+
+
+
+            # Burn-in
+            print("Starting burn-in...")
+            for pos,prob,state in sampler.sample(self.p0, iterations=nburn):
+                pass
+            print("...finished running burn-in")
+
+            # Full run
+            print("Starting full run...")
+            sampler.reset()
+            for pos,prob,state in sampler.sample(pos, iterations=nsteps):
+                pass
+            print("...full run finished")
+
+
+
+            # Save only every 10th sample
+            self.chains = sampler.chain[:,::10,:]
+            # self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::10,0,:]
+            self.lnprobability = sampler.lnprobability[:,::10]
+
+            self.sampler = sampler
+
+
+
         elif method == 'nestle':
 
             print("nestle nested sampling is not yet implemented.")
+
+
+
+
+
+
 
         else:
             print("Your chosen method is not supported by dart_board.")

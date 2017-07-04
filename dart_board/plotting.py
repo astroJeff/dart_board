@@ -36,7 +36,7 @@ def plot_chains(chain, fileout=None, tracers=0):
     if fileout is None:
         plt.show()
     else:
-        plt.savefig(fileout)
+        plt.savefig(fileout, rasterized=True)
 
 
     return
