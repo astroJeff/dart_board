@@ -220,8 +220,8 @@ class DartBoard():
                             ra = (c.ra_max-c.ra_min) * np.random.uniform(size=1) + c.ra_min
                             dec = (c.dec_max-c.dec_min) * np.random.uniform(size=1) + c.dec_min
                         else:
-                            ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
-                            dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
+                            ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.01, 1))
+                            dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.01, 1))
 
                     time = 40.0 * np.random.uniform(size=1)
 
@@ -718,17 +718,15 @@ class DartBoard():
             # Full run
             print("Starting full run...")
             sampler.reset()
-            for pos,prob,state in sampler.sample(pos, iterations=nsteps):
+            for pos,prob,state in sampler.sample(pos, iterations=nsteps, thin=10):
                 pass
             print("...full run finished")
 
 
 
-            # Save only every 10th sample
-            self.chains = sampler.chain[:,::10,:]
-            # self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::10,0,:]
-            self.lnprobability = sampler.lnprobability[:,::10]
-
+            self.chains = sampler.chain
+            # self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)
+            self.lnprobability = sampler.lnprobability
             self.sampler = sampler
 
 
