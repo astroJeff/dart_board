@@ -164,3 +164,37 @@ def get_t(N):
     """
 
     return (c.max_t - c.min_t) * uniform.rvs(size=N) + c.min_t
+
+
+
+
+def get_new_ra_dec(ra, dec, theta_proj, pos_ang):
+    """ Find the new ra, dec from an initial ra, dec and how it moved
+    in angular distance and position angle
+
+    Parameters
+    ----------
+    ra : float
+        RA birth place (degrees)
+    dec : float
+        Dec birth place (degrees)
+    theta_proj : float
+        Projected distance traveled (radians)
+    pos_angle : float
+        Position angle moved (radians)
+
+    Returns
+    -------
+    ra_out : float
+        New RA
+    dec_out : float
+        New Dec
+    """
+
+    delta_dec = theta_proj * np.cos(pos_ang)
+    delta_ra = theta_proj * np.sin(pos_ang) / np.cos(c.deg_to_rad * dec)
+
+    ra_out = ra + c.rad_to_deg * delta_ra
+    dec_out = dec + c.rad_to_deg * delta_dec
+
+    return ra_out, dec_out

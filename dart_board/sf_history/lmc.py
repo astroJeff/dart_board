@@ -373,7 +373,7 @@ def get_random_positions(N, t_b, ra_in=None, dec_in=None):
     ra_out = ra_out + tmp_delta_ra
     dec_out = dec_out + tmp_delta_dec
 
-    return ra_out, dec_out, N_stars
+    return ra_out, dec_out
 
 # def prior_lmc_position(x, dart):
 #

@@ -4,6 +4,7 @@
 from .darts import *
 from .priors import *
 from .posterior import *
+from .plotting import *
 
 __version__ = "0.0.1"
 
