@@ -400,7 +400,7 @@ def check_output(output, binary_type):
         if a_out <= 0.0: return False
         if ecc_out < 0.0 or ecc_out >= 1.0: return False
         if mdot <= 0.0: return False
-        if m2_out < 0.5: return False
+        if m2_out < 6.0: return False
 
     if binary_type == "NSHMXB":
         if k1 != 13: return False
@@ -408,7 +408,7 @@ def check_output(output, binary_type):
         if a_out <= 0.0: return False
         if ecc_out < 0.0 or ecc_out >= 1.0: return False
         if mdot <= 0.0: return False
-        if m2_out < 0.5: return False
+        if m2_out < 6.0: return False
 
     elif binary_type == "BHBH":
         if k1 != 14 or k2 != 14: return False
