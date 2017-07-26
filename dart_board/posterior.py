@@ -130,10 +130,10 @@ def ln_likelihood(x, dart):
 
 
     # Run rapid binary evolution code
-    output = dart.evolve_binary(1, M1, M2, orbital_period, ecc,
+    output = dart.evolve_binary(M1, M2, orbital_period, ecc,
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
-                                t_b, dart.metallicity, False)
+                                t_b, dart.metallicity, False, **dart.model_kwargs)
     # m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
 
@@ -147,7 +147,7 @@ def ln_likelihood(x, dart):
 
     # Check for kwargs arguments
     ll = 0
-    if not dart.kwargs == {}: ll = posterior_properties(x, output, dart)
+    if not dart.system_kwargs == {}: ll = posterior_properties(x, output, dart)
 
     if dart.ntemps is None:
         return ll, np.array([output])
@@ -206,17 +206,17 @@ def posterior_properties(x, output, dart):
 
     # Add log probabilities for each observable
     ll = 0
-    for key, value in dart.kwargs.items():
+    for key, value in dart.system_kwargs.items():
         for i,param in enumerate(observables):
             if key == param:
-                error = get_error_from_kwargs(param, **dart.kwargs)
+                error = get_error_from_kwargs(param, **dart.system_kwargs)
                 likelihood = norm.pdf(model_vals[i], loc=value, scale=error)
                 if likelihood == 0.0: return -np.inf
                 ll += np.log(likelihood)
 
         # Mass function must be treated specially
         if key == "m_f":
-            error = get_error_from_kwargs("m_f", **dart.kwargs)
+            error = get_error_from_kwargs("m_f", **dart.system_kwargs)
             likelihood = calc_prob_from_mass_function(M1_out, M2_out, value, error)
             if likelihood == 0.0: return -np.inf
             ll += np.log(likelihood)

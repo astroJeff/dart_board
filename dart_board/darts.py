@@ -55,7 +55,9 @@ class DartBoard():
                  threads=1,
                  mpi=False,
                  evolve_binary=None,
-                 kwargs={}):
+                 prior_kwargs={},
+                 system_kwargs={},
+                 model_kwargs={}):
 
         # First, check that a binary evolution scheme was provided
         if evolve_binary is None:
@@ -130,19 +132,24 @@ class DartBoard():
 
 
         # Oservables to match
-        self.kwargs = kwargs
-        if not self.kwargs == {}:
-            for key, value in kwargs.items():
+        self.system_kwargs = system_kwargs
+        if not self.system_kwargs == {}:
+            for key, value in system_kwargs.items():
                 print("%s = %s" % (key, value))
 
 
         # Save observed position
         self.ra_obs = None
         self.dec_obs = None
-        for key, value in kwargs.items():
+        for key, value in system_kwargs.items():
             if key == "ra": self.ra_obs = value
             if key == "dec": self.dec_obs = value
 
+        # Stellar evolution options for BSE
+        self.model_kwargs = model_kwargs
+
+        # Options for prior probabilities
+        self.prior_kwargs = prior_kwargs
 
         # Determine the number of dimensions
         if ln_prior_pos is None:
@@ -776,10 +783,10 @@ class DartBoard():
 
         # Run binary evolution - must run one at a time
         for i in range(num_darts):
-            output = self.evolve_binary(1, M1[i], M2[i], orbital_period[i], ecc[i],
+            output = self.evolve_binary(M1[i], M2[i], orbital_period[i], ecc[i],
                                         v_kick1[i], theta_kick1[i], phi_kick1[i],
                                         v_kick2[i], theta_kick2[i], phi_kick2[i],
-                                        t_b[i], self.metallicity, False)
+                                        t_b[i], self.metallicity, False, **self.model_kwargs)
 
             if posterior.check_output(output, self.binary_type):
 

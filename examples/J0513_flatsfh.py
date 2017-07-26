@@ -12,11 +12,11 @@ from dart_board import sf_history
 
 
 # Values for Swift J0513.4-6547 from Coe et al. 2015, MNRAS, 447, 1630
-kwargs = {"P_orb" : 27.405, "P_orb_err" : 0.5, "ecc_max" : 0.17, "m_f" : 9.9,
+system_kwargs = {"P_orb" : 27.405, "P_orb_err" : 0.5, "ecc_max" : 0.17, "m_f" : 9.9,
           "m_f_err" : 2.0, "ra" : 78.36775, "dec" : -65.7885278}
 pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolv_wrapper,
                            ln_prior_pos=sf_history.flat.prior_lmc, nwalkers=320,
-                           kwargs=kwargs)
+                           system_kwargs=kwargs)
 
 pub.aim_darts()
 

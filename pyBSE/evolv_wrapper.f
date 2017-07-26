@@ -2,10 +2,17 @@
       SUBROUTINE evolv_wrapper(num_bin, m1, m2, tb, ecc, v_kick1,
      &                         theta_kick1, phi_kick1, v_kick2,
      &                         theta_kick2, phi_kick2, tmax, z,
+     &                         out_flag,
+     &                         neta_in, bwind_in, hewind_in,
+     &                         alpha1_in, lambda_in, ceflag_in,
+     &                         tflag_in, ifflag_in, wdflag_in,
+     &                         bhflag_in, nsflag_in, mxns_in,
+     &                         pts1_in, pts2_in, pts3_in, sigma_in,
+     &                         beta_in, xi_in, acc2_in, epsnov_in,
+     &                         eddfac_in, gamma_in,
      &                         m1_out, m2_out, a_out, ecc_out,
      &                         v_sys_out, mdot_out, t_SN1,
-     &                         k1_out, k2_out,
-     &                         out_flag)
+     &                         k1_out, k2_out)
 ***
 *
 * Evolves a population of binaries using input parameters
@@ -24,6 +31,13 @@
       real*8, intent(in) :: v_kick1, theta_kick1, phi_kick1
       real*8, intent(in) :: v_kick2, theta_kick2, phi_kick2
       real*8, intent(in) :: m1, m2, tmax, z
+      real*8, intent(in) :: neta_in, bwind_in, hewind_in
+      real*8, intent(in) :: alpha1_in, lambda_in, mxns_in
+      integer, intent(in) :: wdflag_in, nsflag_in, bhflag_in
+      integer, intent(in) :: ceflag_in, tflag_in, ifflag_in
+      real*8, intent(in) :: pts1_in, pts2_in, pts3_in, sigma_in
+      real*8, intent(in) :: beta_in, xi_in, acc2_in, epsnov_in
+      real*8, intent(in) :: eddfac_in, gamma_in
       real*8 mass0(2),mass(2),zpars(20)
       real*8 epoch(2),tms(2),tphys,tphysf,dtp
       real*8 rad(2),lum(2),ospin(2)
@@ -73,30 +87,29 @@
 * eddfac is Eddington limit factor for mass transfer (1.0).
 * gamma is the angular momentum factor for mass lost during Roche (-1.0).
 *
-      neta = 1.0
-      bwind = 0.0
-      hewind = 1.0
-*      alpha1 = 3.0
-      alpha1 = 1.0
-      lambda = 0.5
-      ceflag = 0
-      tflag = 1
-      ifflag = 0
-      wdflag = 1
-      bhflag = 0
-      nsflag = 1
-      mxns = 3.0
-      pts1 = 0.05
-      pts2 = 0.01
-      pts3 = 0.01
-      sigma = 190.0
-      beta = 0.125
-*      beta = 0.5
-      xi = 1.0
-      acc2 = 1.5
-      epsnov = 0.001
-      eddfac = 10.0
-      gamma = -1.0
+      neta = neta_in
+      bwind = bwind_in
+      hewind = hewind_in
+      alpha1 = alpha1_in
+      lambda = lambda_in
+      ceflag = ceflag_in
+      tflag = tflag_in
+      ifflag = ifflag_in
+      wdflag = wdflag_in
+      bhflag = bhflag_in
+      nsflag = nsflag_in
+      mxns = mxns_in
+      pts1 = pts1_in
+      pts2 = pts2_in
+      pts3 = pts3_in
+      sigma = sigma_in
+      beta = beta_in
+      xi = xi_in
+      acc2 = acc2_in
+      epsnov = epsnov_in
+      eddfac = eddfac_in
+      gamma = gamma_in
+
 *
 * Set the seed for the random number generator.
 *

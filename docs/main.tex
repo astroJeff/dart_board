@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{comment}
 
 
 \newcommand{\setof}[1]{\left\{{#1}\right\}}
@@ -17,10 +18,12 @@
 \newcommand{\Msun}{\ifmmode {M_{\odot}}\else${M_{\odot}}$\fi}
 \newcommand{\Porb}{\ifmmode {P_{\rm orb}}\else${P_{\rm orb}}$\fi}
 \newcommand{\sse}{{\tt SSE}}
+\newcommand{\bse}{{\tt BSE}}
+\newcommand{\dart}{{\tt dart\_board}}
 
 
 
-\title[dart_board: Pop. synth. with MCMC]{{\tt dart_board}: Binary population synthesis with MCMC}
+\title[Pop. synth. with MCMC]{Binary population synthesis with MCMC}
 \author[J. J. Andrews et al.]{Jeff J. Andrews$^{1,2}$\thanks{Contact e-mail: \href{mailto:andrews@physics.uoc.gr}{andrews@physics.uoc.gr}}, Andreas Zezas$^{1,2,3}$, Tassos Fragos$^{4}$ \\
 $^1$ Foundation for Research and Technology-Hellas, 71110 Heraklion, Crete, Greece \\
 $^2$ Physics Department \& Institute of Theoretical \& Computational Physics, University of Crete, 71003 Heraklion, Crete, Greece \\
@@ -33,7 +36,7 @@ $^4$ Geneva Observatory, University of Geneva, Chemin des Maillettes 51, 1290 Sa
 \maketitle
 
 \begin{abstract}
-By employing Monte Carlo random sampling, traditional binary population synthesis (BPS) offers a substantial improvement over brute force, grid-based studies. Even so, BPS models typically require a large number of simulation realizations, a computationally expensive endeavor, to generate statistically robust results. For certain problems, even this type of sampling is limited by its computational cost. In this work we describe a novel approach which treats the initial binary parameters as model parameters and uses a Markov Chain Monte Carlo technique to explore the valid region of parameter space, given the properties of an observed population. As a key aspect of this approach, we include the supernova kick magnitude and direction as model parameters. In addition to being substantially more efficient than traditional BPS methods for certain types of binaries, this approach builds in the fit to observations. Our technique is derived for correlating observed properties of high mass X-ray binaries (HMXBs) with spatially resolved star-formation histories in the Small Magellanic Cloud (SMC). However, this method can be flexibly adapted to other stellar binary populations. Using a toy model for binary evolution, we test our method using two mock HMXBs, and then apply our model to one particular system in the SMC, PSR J0045$-$7319. This method can be incorporated as a statistical wrapper to state-of-the-art rapid binary evolution codes and applied to binary compact object mergers detected by gravitational wave observatories to derive their evolutionary histories.
+By employing Monte Carlo random sampling, traditional binary population synthesis (BPS) offers a substantial improvement over brute force, grid-based studies. Even so, BPS models typically require a large number of simulation realizations, a computationally expensive endeavor, to generate statistically robust results. For certain problems, even this type of sampling is limited by its computational cost. In this work we describe a novel approach which treats the initial binary parameters as model parameters and uses a Markov Chain Monte Carlo technique to explore the valid region of parameter space, given the properties of an observed population. As a key aspect of this approach, we include the supernova kick magnitude and direction as model parameters. In addition to being substantially more efficient than traditional BPS methods for certain types of binaries, this approach builds in the fit to observations. We describe our publicly available code \dart, which is a statistical wrapper for rapid binary population synthesis codes. This method can be flexibly adapted to a variety of stellar binary populations, and we apply our code to four test cases: (i) the population of high mass X-ray binaries (HMXBs), (ii) the population of HMXBs in the Large Magellanic Cloud (LMC) in which the spatially resolved star-formation history is used as a prior, (iii) one particular HMXB in the LMC, Swift J0513.4$-$6547, in which we include observations of the system's component masses and orbital period, and (iv) the population of stellar-mass binary black holes detected by gravitational wave observatories. 
 \end{abstract}
 
 \begin{keywords}
@@ -56,31 +59,42 @@ These studies all rely on traditional binary population synthesis (BPS) in which
 One approach uses a Jacobian formalism to transform initial binary probability distributions to distributions of observed parameters. This method has been developed by \citet{kolb93} and \citet{politano96} for cataclysmic variables and extended by \citet{kalogera96} for high mass binaries including SN kicks \citep[see also][]{kalogera98, kalogera00}. Jacobian transformations have most recently been employed by \citet{bhadkamkar12,bhadkamkar14} to describe populations of HMXBs and LMXBs, respectively. Although analytic and efficient, these most recent works lack the flexibility to account for spatially resolved star-formation histories, and it remains to be seen whether analytic methods can incorporate the level of detail required to provide more than qualitative comparisons with observations.
 
 
+\newpage
+
 Many groups have recently developed methods to combine population synthesis with Bayesian inference, including matching stellar populations with isochrones \citep{stenning16}, deriving galactic properties from photometry and spectra \citep{krumholz15}, and obtaining photometric redshifts \citep{tanaka15}, among others. Specific to HMXBs, \citet{douna15} developed a Markov Chain Monte Carlo (MCMC) approach to correlate the X-ray luminosity function from a population of HMXBs with a galaxy's star-formation rate and metallicity. Previous works by \citet{ihm06} and \citet{andrews15} each used Bayesian statistical techniques in post-processing to compare traditional BPS results with observations of double neutron stars.
 
 
-In this work, we develop a fully Bayesian approach that models the formation of HMXBs in the SMC using an MCMC technique. We consider the initial binary parameters (including the SN kick magnitude and direction) as model parameters with prior probabilities based on the same initial distributions used by traditional BPS. Additionally, we add the SMC's spatially resolved star-formation history as a prior on the birth position and time. This increases the constraining power of our method since it incorporates the current positions of HMXBs in the fit. Our likelihood function flexibly combines available binary observables, which allows our method to be adaptable to model either individual HMXBs or a population. Crucially, because MCMC focuses computation power based on the posterior probability, little computation time is wasted on evolving binaries that disrupt or merge. The gain in efficiency can be substantial. Using simplified binary evolution prescriptions for the formation of neutron star (NS) HMXBs through one evolutionary formation channel, we demonstrate the viability of this method, which can be added as a statistical wrapper to modern BPS codes.
+In this work, we describe \dart, an open-source code that provides a statistical wrapper to rapid binary population synthesis codes. 
+%In this work, we develop a fully Bayesian approach that models the formation of binary stars HMXBs in the SMC using an MCMC technique. 
+We consider the initial binary parameters (including the SN kick magnitude and direction) as model parameters with prior probabilities based on the same initial distributions used by traditional BPS. We demonstrate how the star-formation history (either spatially resolved or not) can be used as a prior on the birth position and time. This increases the constraining power of our method since it incorporates the current positions of binaries in the fit. Our likelihood function flexibly combines available binary observables, which allows our method to be adaptable to model either individual systems or a population. Crucially, because MCMC focuses computation power based on the posterior probability (rather than the prior distributions as in traditional population synthesis), little computation time is wasted on evolving binaries that disrupt or merge. The gain in efficiency can be substantial. Using a modified version of the widely used rapid binary evolution code {\tt BSE} \citep{hurley00,hurley02} with {\tt python} bindings, we demonstrate the viability of this method. 
 
 
-In Section \ref{sec:stats_population} we describe our statistical method for producing a synthetic population of HMXBs and provide the relevant prior and posterior distributions. In Section \ref{sec:stats_individual} we extend our method to derive the constraints on the initial binary parameters that formed specific, individual systems and provide these updated prior and posterior distributions. We run our model to generate a population of HMXBs in the SMC in Section \ref{sec:results_population}. In Section \ref{sec:results_individual} we produce our results for individual systems, first running two synthetic test binaries then applying our model to the SMC binary PSR J0049$-$7319. Finally, we place our method in the broader context of binary population studies, providing some limitations and future directions as well as our conclusions in Section \ref{sec:discussion}.
-
-
-
-
-
+In Section \ref{sec:stats} we describe our statistical method for and provide the relevant prior and posterior distributions. We test our model on four separate samples in Section \ref{sec:results}. Finally, we place our method in the broader context of binary population studies, providing some limitations and future directions as well as our conclusions in Section \ref{sec:discussion}.
 
 
 
-\section{Statistical Method: HMXB Population} \label{sec:stats_population}
 
 
-BPS randomly produces a set of binaries by evolving the distribution of initial binary parameters through binary evolution prescriptions.\footnote{We focus on HMXBs, but the following discussion can be generalized to any binary population.} Since in general we do not {\it a priori} know which initial conditions will produce HMXBs (for intance, many systems are disrupted or merge during their evolution), we must test the entire region of initial binary parameter space that could plausibly produce HMXBs. Traditional binary BPS solves this problem by making random draws of $\vec{x}_{\rm i}$, the initial binary parameters, from observationally-derived distribution functions, $P(\vec{x}_{\rm i})$:
+
+
+
+\section{Statistical Method}
+\label{sec:stats}
+
+In this section we define our statistical method, with specific attention to the differences between our method and traditional population synthesis. In Section \ref{sec:stats_population} and \ref{sec:stats_individual} we define how our method can be used to model populations of binaries and individual binaries, respectively. Following that, we describe our prior probabilities in Section \ref{sec:priors} and our likelihood functions in Section \ref{sec:likelihoods}.
+
+
+\subsection{Modeling Populations}
+\label{sec:stats_population}
+
+
+BPS randomly produces a set of binaries by evolving the distribution of initial binary parameters through binary evolution prescriptions. Since in general we do not {\it a priori} know which initial conditions will produce systems of a certain population (for intance, many systems are disrupted or merge during their evolution), we must test the entire region of initial binary parameter space that could plausibly produce that population. Traditional binary BPS solves this problem by making random draws of $\vec{x}_{\rm i}$, the initial binary parameters, from observationally-derived distribution functions, $P(\vec{x}_{\rm i})$:
 \begin{equation}
 \vec{x}_{\rm i} \sim P(\vec{x}_{\rm i}).
 \end{equation}
-To first order, HMXBs can be determined uniquely by the binary's initial masses, $M_{\rm 1,i}$ and $M_{\rm 2,i}$, its separation, $a_{\rm i}$, and eccentricity, $e_{\rm i}$, and the kick velocity it received after the primary collapsed to form a NS or BH, $\vec{v}_{\rm k}$. For the problem at hand, we also include the coordinates for the binary's birth position, $\alpha_{\rm i}$ and $\delta_{\rm i}$, and its birth time, $t_{\rm i}$, for a total of ten parameters in our model:
+To first order, high mass binaries can be determined uniquely by only a few parameters: the binary's initial masses, $M_{\rm 1,i}$ and $M_{\rm 2,i}$, its separation, $a_{\rm i}$, and eccentricity, $e_{\rm i}$, the kick velocity it received after the primary collapsed to form a NS or BH, $\vec{v}_{\rm k}$, and its birth time $t_{\rm i}$. Depending on the population being modeled, we may optionally include the coordinates for the binary's birth position, $\alpha_{\rm i}$ and $\delta_{\rm i}$, and the kick velocity received when the secondary collapsed to form a compact object:
 \begin{equation}
-\vec{x}_{\rm i} \equiv ( M_{\rm 1,i}, M_{\rm 2,i}, a_{\rm i}, e_{\rm i}, \vec{v}_{\rm k}, \alpha_{\rm i}, \delta_{\rm i}, t_{\rm i} ). \label{eq:x_i}
+\vec{x}_{\rm i} \equiv ( M_{\rm 1,i}, M_{\rm 2,i}, a_{\rm i}, e_{\rm i}, \vec{v}_{\rm k, SN1}, \vec{v}_{\rm k, SN2}, \alpha_{\rm i}, \delta_{\rm i}, t_{\rm i} ). \label{eq:x_i}
 \end{equation}
 One key aspect of this model is that the SN kick magnitude and direction is included as model parameters rather than determined from random draws on-the-fly during binary evolution.
 
@@ -90,16 +104,563 @@ Using a binary evolution code, these initial binaries are then evolved from $\ve
 \begin{equation}
 \vec{x}_{\rm f} = f(\vec{x}_{\rm i}). \label{eq:xf_xi}
 \end{equation}
-We can now define a function $P(x_{\rm HMXB} \given \vec{x}_{\rm i})$ which is either unity or zero depending on whether $\vec{x}_{\rm f}$ represents an HMXB:
+We can now define a function $P(x_{\rm type} \given \vec{x}_{\rm i})$ which is either unity or zero depending on whether $\vec{x}_{\rm f}$ represents a system of a specific type:
 \begin{equation}
-P(x_{\rm HMXB} | \vec{x}_{\rm i}, M) = 
+P(x_{\rm type} | \vec{x}_{\rm i}, M) = 
 \begin{cases}
-1, & \vec{x}_{\rm f} \in x_{\rm HMXB} \\
-0, & \vec{x}_{\rm f} \notin x_{\rm HMXB},
+1, & \vec{x}_{\rm f} \in x_{\rm type} \\
+0, & \vec{x}_{\rm f} \notin x_{\rm type},
 \end{cases}
 \end{equation}
-where $M$ is our binary evolution model. Distributions of the components of $\vec{x}_{\rm f}$ (such as the HMXB spatial distribution, X-ray luminosity function, orbital period distribution, etc.) can then provide model predictions for populations of HMXBs or comparisons to observational samples.
+where $M$ is our binary evolution model. Distributions of the components of $\vec{x}_{\rm f}$ (such as the spatial distribution of systems, X-ray luminosity function of HMXBs, orbital period distribution, etc.) can then provide model predictions for populations or comparisons to observational samples.
 
+
+
+
+For binary populations involving NSs and black holes (BH), traditional BPS may be an inefficient tool; mass transfer and SN kicks may merge or disrupt the majority of systems before they evolve into objects of interest (i.e., $P(x_{\rm type} \given \vec{x}_{\rm i}) = 0$ for many or even most of the randomly drawn $\vec{x}_{\rm i}$). The fact that these binaries are discarded is a major source of computational expense in traditional BPS. 
+
+
+
+
+
+
+
+% MCMC population synthesis
+Instead of random draws of $\vec{x}_{\rm i}$, we consider the components of $\vec{x}_{\rm i}$ model parameters. In this formulation $P(\vec{x}_{\rm i})$ is the prior probability on the model parameters, and $P(x_{\rm type} \given \vec{x}_{\rm i})$ is the likelihood of producing a binary of a particular type from a given $\vec{x}_{\rm i}$. Using Bayes' Theorem, we can then identify the set of $\vec{x}_{\rm i}$ most likely to produce these binaries:
+\begin{equation}
+P(\vec{x}_{\rm i} \given x_{\rm type}) = \frac{P(x_{\rm type} \given \vec{x}_{\rm i}) P(\vec{x}_{\rm i})} {P(x_{\rm type})}. \label{eq:bayes_pop}
+\end{equation}
+We ignore $P(x_{\rm type})$, which serves as a normalization constant, and define the posterior probability as the numerator on the right hand side of Equation \ref{eq:bayes_pop}. Although in this work we ignore the denominator, it could be used to account for observational biases in future studies. The large dimensionality of $\vec{x}_{\rm i}$ argues for an efficient numerical method to probe the region of viable parameter space.
+
+
+In an MCMC code, a `walker' moves around the $\vec{x}_{\rm i}$ parameter space: the posterior probability of the current $\vec{x}_{\rm i}$ is calculated, a new trial $\vec{x}_{\rm i}$ is randomly selected, the posterior probability of the new position is compared to that of the current position, and depending on the ratio of the two posterior probabilities, the new $\vec{x}_{\rm i}$ is either selected and added to the chain or rejected and the current position is kept for another step. The chain stores a record of all the walker's past positions. Samples from this chain comprise the synthetic population analogous to the population generated by traditional BPS.\footnote{Since the current walker position will necessarily be closely related to the previous step, the posterior samples will be correlated with some characteristic length. The autocorrelation length needs to be calculated {\it a posteriori}, and only one sample per autocorrelation length can be considered independent. We return to this in Section \ref{sec:limitations}.}
+
+
+In principle, for an infinite number of iterations, the distribution of posterior samples of $\vec{x}_{\rm i}$ produced by this method will identically mimic the distribution generated by traditional BPS. Since we are limited to a finite sample, the computation time to produce a statistically robust sample using each method depends on the relative formation efficiency of systems and the autocorrelation length of the MCMC posterior distribution. For high formation efficiencies, traditional methods are preferred, since every random draw from BPS is independent. However for systems with low formation efficiencies or short lifetimes, MCMC is the preferred choice.
+
+
+Correct implementation requires careful attention to the prior distributions, $P(\vec{x}_{\rm i})$, and an efficient method to calculate $P(x_{\rm type} \given \vec{x}_{\rm i})$. We describe how we calculate the prior probabilities in Section \ref{sec:priors} and our single and binary evolution prescriptions in Sections \ref{sec:single_star} and \ref{sec:binary_evolve}, respectively.
+
+
+
+
+
+
+% % SSE
+% \subsection{Single Star Evolution} \label{sec:single_star}
+
+% Our single stellar evolutionary model is based on the stellar evolution fitting formulae, \sse\ \citep{hurley00}. Rather than using function calls within our code to \sse, we pre-compute a series of \sse\ models ranging in initial mass from 1.0 to 40.0 \Msun, with a spacing of 0.01 \Msun. These models use default parameters and a metallicity of 0.008 to match that of the SMC star-formation maps. 
+
+% From the evolutionary history computed by \sse\ for each star (typically 200-500 unequally-spaced time steps each), we use {\tt scipy}'s {\tt interp1d} routine to generate linear interpolations across the lifetimes of these stars. We separately interpolate as a function of time the key quantities: radius, mass, and mass loss rate. We then combine each of these interpolations into an array. For any arbitrary mass star, to obtain quantities of interest, we round down to the next lowest mass interpolation and access the corresponding interpolated curve. This method allows for fast calculation of fundamental properties of a star at an input age, while providing a sufficiently smooth transition over both mass and time.
+
+% For each star these models additionally provide the He core mass, maximum radius, stellar lifetime and H burning lifetime. We create additional interpolations as a function of initial mass for these quantities.
+
+% In addition to hydrogen star models, we pre-compute a separate series of {\tt sse} runs to model so-called naked helium star evolution, again for a metallicity of $Z=0.008$. We apply the updated He-star wind prescription found in \citep{belczynski10}. These models indicate that the mass lost in stellar winds prior to the star's core collapse can be substantial. We generate an interpolation curve of the final He-star mass prior to SN as a function of the initial He-star mass.
+
+
+% Binary evolution
+% \subsection{Binary Evolution} \label{sec:binary_evolve}
+
+% In this study, we only consider one evolutionary channel forming wind-fed NS-HMXBs. We further ignore many binary dynamical effects such as tidal evolution prior to the initial phase of mass transfer and during the X-ray luminous phase, which we only expect to be significant for the minority of HMXBs in which the donor is a supergiant. We use a simplified binary prescription scheme here to showcase how our MCMC method works.
+
+% After its initial state, there are three major stages that we include in our binary evolution prescriptions. First, the more massive primary evolves first off the main sequence, leading to stable, thermal-time-scale mass transfer onto the secondary. As a helium star, the primary can lose a substantial fraction of its mass to the interstellar medium in a strong stellar wind. After the primary has completed its evolution, it undergoes core-collapse forming a NS. The system suffers effectively instantaneous mass loss and a natal kick, both of which act to profoundly affect the binary's orbit. Finally, the system begins to emit in X-rays once the NS accretes from the secondary's stellar wind. The companion's mass and mass loss rate are both a function of time since they change as the system evolves. We discuss each of these three evolutionary transitions below.
+
+
+% % Thermal timescale mass transfer
+% \subsubsection{The First Mass Transfer Phase} \label{sec:trans_MT}
+
+% Once the first star evolves past its main sequence onto the giant branch, it begins overfilling its Roche lobe. We ignore binaries with large enough initial separations that avoid this phase of mass transfer. Our prior probability on $M_{\rm 2,i}$ selects for only those systems that will undergo stable mass accretion. As discussed in Section \ref{sec:priors} systems in our model with mass-ratios below 0.3 will enter unstable mass transfer. The HMXB formation channel where the binary goes through a common envelope, prior to the compact object formation, is not considered in this study. Since we are considering only wind-fed HMXBs, which tend to have longer orbital periods compared to their Roche-lobe overfilling counterparts, the contribution of the aforementioned channel is expected to be negligible. 
+
+% We assume that this initial phase of stable mass transfer instantaneously circularizes the orbit at the pericenter separation: $a_{\rm i} (1-e_{\rm i})$. The post mass transfer primary becomes the primary core mass ($M_{\rm 1,c}$), while the secondary incorporates the primary's lost envelope. We assume conservative mass transfer:
+% \begin{eqnarray} 
+% M_{\rm 1, MT} &=& M_{\rm 1,c} \\
+% M_{\rm 2, MT} &=& M_2 + M_1 - M_{\rm 1,c},
+% \end{eqnarray}
+% $M_{\rm 1,c}$ is determined by the interpolations between the \sse\ models described in Section \ref{sec:single_star}. The post-mass transfer orbital separation is therefore:
+% \begin{equation}
+% a_{\rm MT} = a_{\rm i} (1-e_{\rm i}) \left[ \frac{M_{\rm 1,i} M_{\rm 2,i}}{M_{\rm 1, MT} M_{\rm 2, MT}} \right]^2.
+% \end{equation}
+
+
+
+% From the first mass transfer phase, the secondary gained a significant amount of hydrogen, which, depending on the initial stellar parameters, could more than double its mass. Clearly such mass gain will affect the stellar lifetime of the secondary, and for single stellar evolution models to provide correct parameters for the secondary, we need to use an adjusted age. 
+
+% The first mass transfer phase will occur at roughly the He ignition time, $t_{\rm He} (M_{\rm 1,i})$, for a star of mass $M_{\rm 1,i}$. If we assume that stars burn H at a constant rate throughout their MS, the mass of H converted into He in the secondary at this point will be:
+% \begin{equation}
+% M_{\rm He,2} = \frac{t_{\rm He}(M_{\rm 1,i})}{t_{\rm He}(M_{\rm 2,i})} X M_{\rm He,core}(M_{\rm 2,i}), \label{eq:M_He}
+% \end{equation}
+% where $X$ is the initial H fraction and $M_{\rm He,core}(M_{\rm 2,i})$ is the He core mass (at He ignition) of a star with an initial mass of $M_{\rm 2,i}$. At this point, the secondary will accrete mass from the primary with an identical H fraction $X$. This mass transfer is assumed to be instantaneous since it occurs on a thermal time-scale, significantly shorter than the stellar lifetime. The rejuvenated secondary star now has a substantially different mass ($M_{\rm 2, MT}$), but it is not beginning at zero age. We can estimate its effective age immediately after mass transfer has completed ($t_{\rm eff}$) by comparing the mass already converted into He from Equation \ref{eq:M_He} with the total mass of H a star of mass $M_{\rm 2, MT}$ will burn on the MS, $X M_{\rm He,core}(M_{\rm 2, MT})$, multiplied by the He ignition time:
+% \begin{equation}
+% t_{\rm eff} = \frac{M_{\rm He, 2}}{X M_{\rm He, core} (M_{\rm 2, MT}) } t_{\rm He} (M_{\rm 2, MT}). \label{eq:t_eff_1}
+% \end{equation}
+% The secondary's effective age at the time of observation is $t_{\rm eff,obs} = t_{\rm eff} + t_i - t_{\rm He}(M_{\rm 1,i})$, which can be expressed using Equations \ref{eq:M_He} and \ref{eq:t_eff_1}:
+% \begin{eqnarray}
+% t_{\rm eff,obs} &=& \frac{M_{\rm He,core}(M_{\rm 2,i})}{M_{\rm He,core}(M_{\rm 2, MT})} \frac{t_{\rm He}(M_{\rm 1,i})}{t_{\rm He}(M_{\rm 2,i})} t_{\rm He}(M_{\rm 2, MT}) \nonumber \\
+%  & & \qquad + t_{\rm i} - t_{\rm He}(M_{\rm 1,i}). \label{eq:t_eff_obs_full}
+% \end{eqnarray}
+% \citet{tout97} provide a similar equation for the rejuvenation of a star due to mass accretion. Using $t_{\rm eff,obs}$ in the interpolations, we can determine the adjusted mass, radius, and wind mass loss rate of the secondary using single stellar evolution models. 
+
+
+
+% \subsubsection{The Primary's Core Collapse} \label{sec:trans_SN}
+
+% Prior to its core collapse, the primary star has survived for some time as a naked He-star with substantially enhanced winds \cite{belczynski10}. We ignore any accretion of these winds by the secondary, so mass loss tends to expand the binary's orbit. Our {\tt sse} interpolation provides the pre-SN He-star mass, $M_{\rm pre-SN}$ as a function of $M_{\rm MT}$. Using Jeans mode mass loss we can determine the pre-SN orbital separation, $a_{\rm pre-SN}$:
+% \begin{equation}
+% a_{\rm pre-SN} = \frac{M_{\rm 1, MT} + M_{\rm 2, MT}}{M_{\rm 1, pre-SN} + M_{\rm 2, MT}} a_{\rm MT}
+% \end{equation}
+
+
+% We next calculate the post-SN orbital separation, $a_{\rm SN}$, systemic velocity, $v_{\rm sys}$, and eccentricity, $e_{\rm SN}$, based on the equations in \citet{hills83} and \citet{kalogera96}. In our model, all core collapsing stars form 1.35 \Msun\ NSs. \citet{timmes96} suggest the maximum initial mass forming a NS is $\sim$20 \Msun, instead of the maximum mass of 30 \Msun\ we choose in this work; however as we will see below, our results are largely independent of this choice. Energy conservation provides $a_{\rm SN}$:
+% \begin{equation}
+% a_{\rm SN} = \left[ \frac{2 }{a_{\rm pre-SN}}  - \frac{v_1^2}{G(M_{\rm NS} + M_{\rm 2, MT})} \right]^{-1}. \label{eq:SN_A} \\
+% \end{equation}
+% where $v_1$ is the post-kick velocity of the primary (in the reference frame of an initially stationary secondary):
+% \begin{equation}
+% v_1^2 = 2v_{\rm k} v_{\rm r} \cos \theta_{\rm k} + v_{\rm k}^2 + v_{\rm r}^2, \label{eq:v_1}
+% \end{equation}
+% where $\theta_{\rm k}$ defines the angle between the kick velocity and the direction of orbital motion. Here, we have made the additional substitution:
+% \begin{equation}
+% v_{\rm r} = \sqrt{\frac{G (M_{\rm 1, pre-SN} + M_{\rm 2, MT})}{a_{\rm pre-SN}}}. \label{eq:v_r}
+% \end{equation}
+% The systemic velocity is:
+% \begin{equation}
+% v_{\rm sys}^2 = \beta^2 v_{\rm k}^2
+%   + v_{\rm r}^2 \left( \alpha - \beta \right)^2
+%   + 2 \beta v_{\rm r} v_{\rm k} \cos \theta_{\rm k} \left( \alpha - \beta \right)
+%     \label{eq:SN_v_sys}
+% \end{equation}
+% where we have included two substitutions:
+% \begin{eqnarray}
+% \alpha &=& \frac{M_{\rm 1, pre-SN}}{M_{\rm 1, pre-SN} + M_{\rm 2, MT}} \\
+% \beta &=& \frac{M_{\rm NS}}{M_{\rm NS} + M_{\rm 2, MT}}
+% \end{eqnarray}
+
+
+% The post-SN eccentricity is determined by angular momentum conservation:
+% \begin{eqnarray}
+% 1-e_{\rm SN}^2 &=& \frac{a_{\rm pre-SN}^2}{a_{\rm SN}\ G (M_{\rm NS} + M_{2, MT})} \nonumber \\
+%  & & \times \left( v_{\rm k}^2 \cos^2\theta_{\rm k} + v_{\rm k}^2 \sin^2 \theta_{\rm k} \sin^2 \phi_{\rm k} \right. \nonumber \\
+%  & & \qquad + \left. 2 v_{\rm k} v_{\rm r} \cos \theta_{\rm k} + v_{\rm r}^2  \right). \label{eq:SN_e}
+% \end{eqnarray}
+% Systems with $0 \leq e < 1$ remain bound. It should be noted that $\phi_{\rm k}$ only affects the post-SN orbit through the $\sin^2 \phi_{\rm k}$ term when solving for the post-SN orbital eccentricity in Equation \ref{eq:SN_e}. 
+
+
+
+% \subsubsection{The X-ray Luminous Phase} \label{sec:trans_XRB}
+
+% In the final stage of evolution, the NS accretes mass from the stellar wind of the massive secondary. Although we do not calculate the X-ray luminosity of the system, for it to be observed as an HMXB, accretion must be non-zero; if the secondary has completely evolved, the system is not observed as an HMXB. We ignore the effect of tides during this phase of evolution, but we do include the expansion of the orbit based on mass loss from the system:
+% \begin{eqnarray}
+% a_{\rm f} &=& \frac{M_{\rm NS} + M_{\rm 2, SN}}{M_{\rm NS} + M_{\rm 2,f}} a_{\rm SN} \\
+% e_{\rm f} &=& e_{\rm SN}.
+% \end{eqnarray}
+% Here, we have assumed that the NS accretes a negligible fraction of the secondary's wind. Therefore, the secular evolution of the orbit is very close to the fully non-conservative limit.
+
+
+
+
+
+% Individual HMXBs
+\subsection{Modeling Individual HMXBs} \label{sec:stats_individual}
+
+If we would like to quantitatively compare a model to a set of observationally derived properties, $D$, of a particular system rather than a population, we need to adapt our method. We may be interested in either deriving the initial binary conditions that could have produced the observed systems, $P(\vec{x}_{\rm i} \given D)$, or determining the current binary parameters, $P(\vec{x}_{\rm f} \given D)$. These two quantities are closely related since binary evolution directly relates $\vec{x}_{\rm i}$ to $\vec{x}_{\rm f}$. 
+
+
+
+Instead of calculating $P(\vec{x}_{\rm i} \given x_{\rm HMXB})$ as in Equation \ref{eq:bayes_pop}, we can again use Bayes' Theorem to calculate $P(\vec{x}_{\rm i} \given D)$:
+\begin{equation}
+P(\vec{x}_{\rm i} \given D) = \frac{P(D \given \vec{x}_{\rm i})\ P(\vec{x}_{\rm i})}{P(D)}, \label{eq:bayes_ind}
+\end{equation}
+where $P(D \given \vec{x}_{\rm i})$ is the likelihood function, $P(\vec{x}_{\rm i})$ is the prior probabilities on the model parameters, and $P(D)$ is again a normalization constant that for our purposes can be ignored. The posterior probability is the numerator in the right hand side of Equation \ref{eq:bayes_ind}.
+
+
+
+Traditional BPS takes a shotgun approach, making many random draws of $\vec{x}_{\rm i}$ from $P(\vec{x}_{\rm i})$. If one wants to then calculate a Bayesian likelihood, $P(\vec{x}_{\rm i} \given D)$ can be determined from those systems that are consistent with $D$ \citep{andrews15}. Results are then derived from the selected subset of systems. Since only a small subset of the binaries that form HMXBs will be consistent with any particular observed system, the likelihood function may be non-zero for only a small region of parameter space. The more precisely a system is measured, the smaller the phase space volume of interest. 
+
+
+
+
+
+
+We simulate individual HMXBs using the same model parameters that we use for a population of HMXBs, so $\vec{x}_{\rm i}$ is determined by Equation \ref{eq:x_i}. The priors on these parameters, which we discuss in Section \ref{sec:priors_indiv}, are somewhat different for individual systems, compared with those derived for populations of HMXBs.
+
+Individual HMXBs in the SMC may have well measured $P'_{\rm orb}$, $e'$, and $M'_2$ (primed quantities indicate observed rather than true, underlying quantities) determined from X-ray timing and observations of the optical counterpart to the X-ray source. Each of these measured quantities has some uncertainty associated with it which should be taken into account. Furthermore, individual HMXBs have a specific location that we are trying to associate with nearby star forming regions. We start by defining $D$ as:
+\begin{equation}
+D \equiv (\alpha, \delta, P'_{\rm orb}, e', M'_2). \label{eq:D}
+\end{equation}
+Uncertainties on the primed quantities are not explicitly included in $D$, and we ignore uncertainties on the position.
+
+
+To generate our likelihood function, we now marginalize over four parameters, the true orbital parameters, $P_{\rm orb}$ and $e$, the true (current) companion mass $M_2$, and the systemic velocity ($v_{\rm sys}$). Our model likelihood then becomes:
+\begin{eqnarray}
+P(D \given \vec{x}_{\rm i}, M) &=& \int \dd P_{\rm orb}\ \dd e\ \dd M_2\ \dd v_{\rm sys} \nonumber \\
+& & \qquad \times P( P_{\rm orb}, e, M_2, v_{\rm sys}, D \given \vec{x}_{\rm i}, M).
+\end{eqnarray}
+We substitute for $D$, and based on independence we factor the integrand into separate, tractable parts:
+\begin{eqnarray}
+P(D \given \vec{x}_{\rm i}, M) &=&  \int \dd P_{\rm orb}\ \dd e\ \dd M_2\ \dd v_{\rm sys}\ P(P'_{\rm orb} \given P_{\rm orb}) \nonumber \\
+	& & \qquad \times P(e' \given e)\ P(M'_2 \given M_2) \nonumber \\
+	& & \qquad \times P(P_{\rm orb}, e, M_2, v_{\rm sys} \given \vec{x}_{\rm i}) \nonumber \\
+	& & \qquad \times P(\alpha, \delta \given \vec{x}_{\rm i}, v_{\rm sys}). \label{eq:marginalized}
+\end{eqnarray}
+
+
+The first three terms in the integrand of Equation \ref{eq:marginalized}, $P(P'_{\rm orb} \given P_{\rm orb})$, $P(e' \given e)$, and $P(M'_2 \given M_2)$, account for the observational uncertainties on the binary's orbit. We model these with Gaussian uncertainties. In the future, $P(M'_2 \given M_2)$ could be based on the photometric data for the donor star, which in combination with stellar evolution models, can constrain its mass. We discuss these three Gaussian uncertainties along with the fourth term in the integrand, which describes the function evolving the binary from its {\it ab initio} state to the $P_{\rm orb}$, $e$, $M_2$, and $v_{\rm sys}$ of the system today, in Section \ref{sec:likelihood_ind_binary}.
+
+The last term in the integrand accounts for the fact that the system's birth place will, in general, be different from its observed position since the centre of mass of a system received a kick during the primary's core collapse. We explicitly include the dependence on $\vec{x_{\rm i}}$ and $v_{\rm sys}$ since the distance travelled depends on both the system's velocity and the time since the primary's SN. We derive this term in Section \ref{sec:ra_dec} below.
+
+
+
+
+% Priors
+\subsection{Prior Probabilities: $P(\vec{x}_{\rm i})$} 
+\label{sec:priors}
+
+
+
+Typically prior probabilities are determined within rapid BPS codes. In our model, BPS codes are used only to rapidly evolve binaries from their initial conditions. Since we define the prior distributions within our model, we describe them here. Our model includes between eight and 12 parameters, which can be factored into several parts:
+\begin{eqnarray}
+P(\vec{x}_{\rm i}) &=& P(M_{\rm 1,i}) P(M_{\rm 2,i}\given M_{\rm 1,i}) P(a_{\rm i}) \nonumber \\
+ & & \qquad  \times\ P(e_{\rm i}) P(\vec{v}_{\rm k,1}) P(\vec{v}_{\rm k,2}) P(\alpha_{\rm i}, \delta_{\rm i}, t_{\rm i})
+\end{eqnarray}
+We discuss each of these terms in turn below.
+
+
+
+
+\subsubsection{Initial Binary Parameters}
+
+Our prior probabilities over $M_{\rm 1,i}$, $M_{\rm 2,i}$, $a_{\rm i}$, and $e_{\rm i}$ are all equivalent or similar to the distributions used in other population synthesis codes \citep[e.g.,][]{belczynski08}.
+
+The initial primary mass follows a power law:
+\begin{equation}
+P(M_{\rm 1,i}) = C_{\rm m} M_{\rm 1,i}^{\alpha};\ M_{\rm 1,i} \in [M_{\rm 1,min}, M_{\rm 1,max}]
+%[8\Msun,\ 30\Msun],
+\end{equation}
+where $C_{\rm m}$ is a normalization constant dependent upon the limits of the distribution ($M_{\rm 1,min} = 8 \Msun$ and $M_{\rm 1,max} = 39 \Msun$) and $\alpha$:
+\begin{equation}
+C_{\rm m} = \frac{\alpha + 1}{M_{\rm 1,max}^{\alpha+1} - M_{\rm 1,min}^{\alpha+1}}.
+\end{equation}
+We choose 8 and 30 \Msun\ as the lower and upper mass limits that produce a NS; we do not consider HMXBs formed with BH accretors. In the present analysis, since the distribution strongly preferences lower mass stars, our results are relatively independent of the upper mass limit. We choose a Salpeter power law: $\alpha = -2.35$. 
+
+We choose a prior on the secondary mass based on a flat mass-ratio distribution which has the subtle effect that the prior on the secondary is dependent on the primary. The maximum mass-ratio is unity to ensure the primary is the more massive of the pair, and the minimum mass is set to 2 \Msun. 
+%informed by the limit for stable, thermal-time-scale mass transfer. Polytropic stellar models indicate that mass transfer will always be dynamically unstable for a more massive donor with a convective envelope \citep{hjellming87}. Such systems would evolve through evolutionary channels not considered here. Recent work using more realistic stellar models by \citet{ge15} and \citet{pavlovskii15} has cast doubt on this conclusion, suggesting instead that mass transfer may be stable for binaries with lower mass ratios. Lacking a comprehensive treatment of the lower mass ratio limit for stable mass transfer for donors with convective envelopes, we treat stars with convective and radiative envelopes equivalently and set the lower mass ratio limit to 0.3, the same as used by \citet{bhadkamkar12}. We note that this choice is also in rough agreement with the findings by \citet{pavlovskii15}. 
+This leads to a prior probability:
+\begin{equation}
+P(M_{\rm 2,i} \given M_{\rm 1,i}) = \frac{1}{0.7 M_{\rm 1,i}};\ M_{\rm 2,i} \in [0.3 M_{\rm 1,i}, 1.0 M_{\rm 1,i}]
+\end{equation}
+
+We choose a prior on the initial orbital separation of the binary that scales with $a_{\rm i}^{-1}$ \citep{abt83}:
+\begin{equation}
+P(a_i \given M_{\rm 1,i}, M_{\rm 2,i}, e_{\rm i}) = \frac{C_{\rm a}}{a_{\rm i}};\ a_{\rm i} \in [a_{\rm min}, a_{\rm max}],
+\end{equation}
+where $C_{\rm a}$ is a normalization constant
+\begin{equation}
+C_{\rm a} = \frac{1}{\log a_{\rm max} - \log a_{\rm min}},
+\end{equation}
+and $a_{\rm min}$ is the greater of either 10 $R_{\odot}$ or the separation such that the primary will not overfill its Roche lobe at ZAMS, and $a_{\rm max} = 10^4 R_{\odot}$. 
+
+Finally, we choose a thermal initial eccentricity distribution \citep{duquennoy91}:
+\begin{equation}
+P(e_{\rm i}) = 2e_{\rm i};\ e_{\rm i} \in[0,1].
+\end{equation}
+
+
+
+
+\begin{figure*}
+\begin{center}
+\includegraphics[width=0.95\textwidth]{fig1.pdf}
+\caption{The prior on both position of the binary's birth location and time depends on the SMC star-formation history maps derived from \citet{harris04}. We show samples of the star-formation history at four different times spanning the range of typical HMXB lifetimes. These demonstrate the typical resolution of the spatially resolved star-formation history.}
+\label{fig:SMC_SFH}
+\end{center}
+\end{figure*}
+
+
+\subsubsection{SN Kick Parameters}
+
+The SN kick velocity, $\vec{v}_{\rm k}$, is composed of three parameters, which we model as a kick magnitude ($v_{\rm k}$) and two angles ($\theta_{\rm k}, \phi_{\rm k}$). If the binary is a double compact object, the two SNe are independent. Typically, these parameters are determined through Monte Carlo random draws from a specific distribution on-the-fly during each binary's evolution. In our model, we instead include the SN kick magnitude and direction as model parameters with prior probabilities corresponding to standard distributions; we assume that $v_{\rm k}$ follows a Maxwellian distribution with a dispersion of 265 km s$^{-1}$ \citep{hobbs05}. We can therefore express the normalized probability of $v_{\rm k}$ as:
+\begin{equation}
+P(v_{\rm k}) = \sqrt{\frac{2}{\pi}} \frac{v_{\rm k}^2} {\sigma^3} {\rm exp} \left[ -v_{\rm k}^2 / 2 \sigma^2 \right];\ v_{\rm k} \in [0, \infty). \label{eq:P_v_k}
+\end{equation}
+
+
+Since the kick distribution is assumed to be isotropic, normalized probabilities for the kick polar, $\theta_{\rm k}$, and azimuthal, $\phi_{\rm k}$, angles are straightforward:
+\begin{eqnarray}
+P(\theta_{\rm k}) &=& \frac{\sin \theta_{\rm k}}{2};\ \theta_{\rm k} \in [0, \pi] \label{eq:P_theta_k} \\
+P(\phi_{\rm k}) &=& \frac{1}{\pi};\ \phi_{\rm k} \in [0, \pi] . \label{eq:P_phi_k}
+\end{eqnarray}
+Formally, $\phi_{\rm k}$ should vary between 0 and $2 \pi$; however, as described in Section \ref{sec:trans_SN}, the only contribution of $\phi_{\rm k}$ to the evolution of the binary is through a $\sin^2 \phi_{\rm k}$ term, which is periodic from 0 to $\pi$.
+
+
+
+
+
+\subsubsection{Star-Formation History}
+
+
+The priors on $\alpha_{\rm i}$, $\delta_{\rm i}$, and $t_{\rm i}$ depend on the local star-formation history at that position and time. Our model can be run with a basic time dependent star formation history, ignoring the systems' positions, but the most power is gained by including spatially resolved star-formation history maps as a prior on both position and time. We use the SMC star-formation history maps from \citet{harris04}. These maps cover the SMC with $\sim$1300 separate regions with angular resolutions of 12\amin\ on a side in the inner regions and 24\amin\ on a side in the outer regions. The star-formation history for each region has a resolution of 0.2 dex in $t$ ranging from 6.8 to 10.2 in log $t$. We ignore uncertainties on the star-formation histories, generating linear interpolation functions for each of the 1300 regions. We only take into account star-formation at a metallicity of $Z=0.008$, the dominant metallicity at which stars have been formed in the SMC over the past 1 Gyr. Since HMXBs have been born in the past 10$^8$ yrs, the older, lower-$Z$ population is irrelevant for the HMXB we study in this work.
+
+These histories provide ${\rm SFR}(\alpha_{\rm i}, \delta_{\rm i}, t_{\rm i})$, the rate per area on the sky that stars were formed at a specific location and time in the SMC. With a normalization constant this spatially dependent star-formation rate is the prior on position and time:
+\begin{equation}
+P(\alpha_{\rm i}, \delta_{\rm i}, t_{\rm i}) = \frac{1}{N_{\rm SMC}} {\rm SFR}(\alpha_{\rm i}, \delta_{\rm i}, t_{\rm i}),
+\end{equation}
+where $N_{\rm SMC}$ is the number of stars with $Z=0.008$ produced throughout the lifetime of the SMC. Figure \ref{fig:SMC_SFH} shows the star-formation rate map for four different times spanning the range of typical HMXB lifetimes. These maps indicate that the locations of high star-formation regions have substantially evolved over the past 5$\times10^7$ years.
+
+
+
+% \subsection{Priors} \label{sec:priors_indiv}
+
+
+% \begin{figure}
+% \begin{center}
+% \includegraphics[width=0.95\columnwidth]{fig2.pdf}
+% \caption{The prior on both position of the binary's birth location and time depends on the star-formation history. Only the star-formation history within the cone, the size and shape of which is set by the binary parameters, are taken into account. We show contours indicating regions of high (red) and low (blue) star-formation for three different ages. Determining the prior on the star-formation history involves integrating the star-formation history throughout the cone.}
+% \label{fig:prior_SFH}
+% \end{center}
+% \end{figure}
+
+
+% The binary evolution prescriptions and SN kick priors are the same as described in Section \ref{sec:priors}. Only the star-formation rate {\it normalization} for the prior on $\alpha_{\rm i}$, $\delta_{\rm i}$, and $t_{\rm i}$ differs; Figure \ref{fig:prior_SFH} demonstrates the source of the difference.
+
+
+% An object at a current location $(\alpha, \delta)$ could have been formed only within a region (bounded by circles) that progressively increases for older birth times since older systems have had more time to travel from their birth locations. Only stars formed within this cone contribute to the normalization constant; stars formed outside the cone could not have led to the observed system. The shape and size of the cone changes depending on the binary parameters (the `slope' of the cone depends on $v_{\rm sys}$), therefore the prior needs to be recalculated for each set of model parameters. Because of the function calls, determining this normalization constant is the most computationally expensive calculation of this method. 
+
+% The normalization constant is determined by integrating over the spatially resolved star-formation rate throughout the cone and setting the quantity to unity:
+% \begin{equation}
+% 1 = C_{\rm SFH}\ \int_{t_{\rm min}}^{t_{\rm max}} \int_0^{2 \pi} \int_0^{\theta_{\rm C}} \dd t_{\rm i}\ \dd \phi\ \dd \theta\ {\rm SFR}(\theta, \phi, t_{\rm i}). 
+% \end{equation}
+% where $\theta$ and $\phi$ are the polar and azimuthal angles (separate from similar parameters used to describe the SN kick direction) defining the cone. See Figure \ref{fig:prior_SFH} for the definition of these angles. $\theta_{\rm C}$ is the critical angle bounding the cone:
+% \begin{equation}
+% \theta_{\rm C} = \frac{v_{\rm sys} \left[ t_{\rm i} - t(M_{\rm 1,i}) \right]}{D_{\rm SMC}}, \label{eq:theta_c}
+% \end{equation}
+% where $t(M)$ is the lifetime of a star of mass $M$ and the distance to the SMC, $D_{\rm SMC}$, is 61 kpc \citep{hilditch05}. The bounds on the integral over $t_{\rm i}$ are set by the minimum and maximum times during which the system can emit X-rays: 
+% \begin{eqnarray}
+% t_{\rm min} &=& t(M_{\rm 1,i}) \\
+% t_{\rm max} &=& t(M_{\rm 2,MT}) - t_{\rm eff} + t_{\rm min},
+% \end{eqnarray}
+% where $t_{\rm eff}$ is defined in Equation \ref{eq:t_eff_1}.
+
+% We choose to calculate the integral using a Monte Carlo sampling technique. We draw $N$ random samples throughout the cone. The integral is the product of the average of the samples and the cone's volume:
+% \begin{equation}
+% \frac{1}{C_{\rm SFH}} \approx \frac{\pi \theta_{\rm C}^2 (t_{\rm max} - t_{\rm min})}{3N} \sum_j {\rm SFR}(\theta_j, \phi_j, t_{{\rm i},j}),
+% \end{equation}
+% where $(\theta_j, \phi_j, t_{{\rm i},j})$ are random samples, evenly distributed around the cone's volume. Formally, an infinite number of samples is required for the approximation above to become an equality. However, we find that for typical systems, 512 random samples provide a sufficiently accurate estimate of $C_{\rm SFH}$.
+
+
+
+% Random samples of $\phi$ are drawn from a uniform distribution between zero and $2\pi$. To obtain random samples of $\theta$ and $t$, we use inversion sampling, which involves obtaining random samples of the cumulative distribution function. The random values of $\theta$ and $t$ are the inversions of those samples:
+%  \begin{eqnarray}
+% \phi &\sim& U(0, 2\pi) \\
+% \theta &=& \sqrt{y_{\theta}} \theta_{\rm C}: y_{\theta} \sim U(0,1) \\
+% t &=& \sqrt[3]{y_{t}}\left( t_{\rm max} - t_{\rm min} \right) + t_{\rm min}: y_t \sim U(0,1).
+% \end{eqnarray}
+
+
+
+\subsection{Binary Parameter Likelihood} \label{sec:likelihoods}
+
+Given a birth time and a particular set of initial binary parameters, the binary likelihood provides the probability that a binary of interest will be formed. For populations of systems, the likelihood is simply the function provided in Equation \ref{eq:}. Determining this function nevertheless requires evolving the system through its evolution. Currently, this requires rapid binary evolution codes. We provide a modified version of one such code, \bse\ along with \dart. Our minor modifications are described in Appendix \ref{sec:pybse}
+
+\subsubsection{Fitting Observables with Uncertainties}
+
+If we would like to model an individual system with a set of observations, the likelihood function includes the observations and their uncertainties. For evolved stellar binaries, determining this term relies first on the evolution from $\vec{x}_{\rm i}$ to $\vec{x}_{\rm f}$ described determined by our rapid binary evolution code provides the term $P(P_{\rm orb}, e, M_2, v_{\rm sys} \given \vec{x}_{\rm i})$ in Equation \ref{eq:marginalized}. 
+
+Then we need to compare with observations of the system. For an observed parameter with known, Gaussian standard deviation (measurement uncertainty), the likelihood function is straightforward and involves the evaluation of the probability density of the normalized Gaussian distribution at $\vec{x}_{\rm f}$:
+\begin{equation}
+P(x'|x) = \mathcal{N}(x' | x, \sigma_{x'}).
+\end{equation}
+
+Our method can adapt to any observation of an individual stellar parameter included in our model; we only need to compare the evolved binary parameters to the observations. To simultaneously fit multiple observations, the resulting likelihood is then a product of the fits to each of the individual observed quantities:
+\begin{equation}
+P(\vec{x}' | \vec{x}_{\rm f}) = \prod_k \mathcal{N}(x'_k | x_k, \sigma_{x'_k}),
+\end{equation}
+for all $k$ observed quantities.
+
+
+\subsubsection{Mass Function}
+\label{sec:mass_function}
+
+
+
+
+
+\subsubsection{Position Likelihood} 
+\label{sec:ra_dec}
+
+The position likelihood provides the probability that, given a system's position, systemic velocity, and time since SN, the system would be observed at its current position. 
+% Since HMXBs are generally short lived, this probability is non-zero for only a small region around any given HMXB's observed position. 
+To solve the positional component of Equation \ref{eq:marginalized}, we first marginalize over $\omega$, the angle between the line of sight vector to the birth location and the systemic velocity vector:
+\begin{equation}
+P(\alpha, \delta \given \vec{x}_{\rm i}, v_{\rm sys} ) = \int \dd \omega\ P(\alpha, \delta, \omega \given \vec{x}_{\rm i}, v_{\rm sys} ). \label{eq:P_pos_1}
+\end{equation}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.95\columnwidth]{fig3.pdf}
+\caption{Our representation of the current position $(\alpha, \delta)$ in relation to its birth position $(\alpha_{\rm i}, \delta_{\rm i})$. The distance the system traveled is $d$, which has a projected separation $s$. We express this transportation as a function of $\theta_{\rm proj}$ and position angle, $\phi$. Note, for typical systems $d << D_{\rm SMC}$.}
+\label{fig:position_projection}
+\end{center}
+\end{figure}
+
+
+We next perform a coordinate transformation from the absolute positional coordinates $\alpha$ and $\delta$ to the relative angular separation, $\theta_{\rm proj}$, and the position angle, $\phi$, measured from the system's birth location. Figure \ref{fig:position_projection} shows our parameterization of the transformation from a system's birth location at $\alpha_{\rm i}$ and $\delta_{\rm i}$ to its current location at $\alpha$ and $\delta$. The determinant of the Jacobian matrix for this transformation is:
+\begin{equation}
+J_{\rm coor} = \left| \frac{\partial \theta_{\rm proj}}{\partial \alpha} \frac{\partial \phi}{\partial \delta} - \frac{\partial \theta_{\rm proj}}{\partial \delta}\frac{\partial \phi}{\partial \alpha}  \right|.
+\end{equation}
+These partial derivatives can be calculated by taking the derivatives of standard formulae for the angular separation and position angle of double stars. Equation \ref{eq:P_pos_1} now becomes:
+\begin{eqnarray}
+P(\alpha, \delta \given \vec{x}_{\rm i}, v_{\rm sys} ) &=& \int \dd \omega\ P(\theta_{\rm proj}, \phi, \omega \given \vec{x}_{\rm i}, v_{\rm sys} )\ J_{\rm coor} \nonumber \\
+&=& \int \dd \omega\ P(\theta_{\rm proj} \given \omega,  \vec{x}_{\rm i}, v_{\rm sys} ) \nonumber \\
+& & \qquad \times\ P(\phi)\ P(\omega)\ J_{\rm coor}, \label{eq:P_pos_2}
+\end{eqnarray}
+where we have separated terms based on independence. $\omega$ is a randomly chosen polar angle and $\phi$ is a randomly chosen azimuthal angle: 
+\begin{eqnarray}
+P(\omega) &=& \frac{\sin \omega} {2};\ \omega \in [0,\pi] \\
+P(\phi) &=& \frac{1}{2 \pi};\ \phi \in [0, 2\pi].
+\end{eqnarray}
+
+
+The physical distance a system travels is the product of $v_{\rm sys}$ and the time since the primary's core collapse:
+\begin{equation}
+d = v_{\rm sys} \left[t_{\rm i} - t(M_{\rm 1,i}) \right].
+\end{equation}
+We ignore the effects of the SMC's gravitational potential and assume the systems move in free space after receiving a kick. We can only observe the projection of $d$ onto the sky, $s = d \sin \omega$. We can also approximate $s$ as the product of $D_{\rm SMC}$ and $\theta_{\rm proj}$. After equating these two expressions for $s$ and solving for $\theta_{\rm proj}$, the first term of the integrand in Equation \ref{eq:P_pos_2} becomes a delta function:
+\begin{equation}
+P(\theta_{\rm proj} \given \omega, \vec{x}_{\rm i}, v_{\rm sys}) = \delta \left[G(\omega)\right], \label{eq:P_theta_proj}
+\end{equation}
+where:
+\begin{equation}
+G(\omega) = \theta_{\rm proj} - \frac{v_{\rm sys} \left[t_{\rm i} - t(M_{\rm 1,i}) \right] \sin \omega}{D_{\rm SMC}}.\end{equation}
+
+
+With the delta function from Equation \ref{eq:P_theta_proj}, the integral in Equation \ref{eq:P_pos_2} can be reduced:
+\begin{equation}
+\int \dd \omega\ P(\phi) P(\omega) \delta \left[ G(\omega) \right]  J_{\rm coor}\  =\ \sum_j\ \frac{P(\omega_j^{\star}) P(\phi)  J_{\rm coor}}{ \left| \frac{ \dd G (\omega) }{\dd \omega} \right|_{\omega_j^*}},
+\end{equation}
+where the sum is over $\omega_j^*$, the $j$ roots of $G(\omega)$. There are two roots corresponding to whether the object is in front of or behind its birth location. This integral can now be evaluated analytically:
+\begin{equation}
+P(\alpha, \delta \given \vec{x}_{\rm i}, v_{\rm sys} ) =
+\begin{cases} 
+      0, & \theta_{\rm proj} \geq \theta_{\rm C}\\
+     \frac{\tan \omega^*}{2 \pi \theta_{\rm C}}  J_{\rm coor}, & \theta_{\rm proj} < \theta_{\rm C} 
+   \end{cases}
+\end{equation}
+where:
+\begin{equation}
+\omega^{\star} = \sin^{-1} \left[ \frac{\theta_{\rm proj}}{\theta_{\rm C}} \right].
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{comment}
+
+
+
+\section{Statistical Method} \label{sec:stats}
+
+
+BPS randomly produces a set of binaries by evolving the distribution of initial binary parameters through binary evolution prescriptions. To first order, high mass binaries can be determined uniquely by only a few parameters: the binary's initial masses, $M_{\rm 1,i}$ and $M_{\rm 2,i}$, its separation, $a_{\rm i}$, and eccentricity, $e_{\rm i}$, the kick velocity it received after the primary collapsed to form a NS or BH, $\vec{v}_{\rm k}$, and its birth time $t_{\rm i}$. Depending on the population being modeled, we may optionally include the coordinates for the binary's birth position, $\alpha_{\rm i}$ and $\delta_{\rm i}$, and the kick velocity received when the secondary collapsed to form a compact object:
+\begin{equation}
+\vec{x}_{\rm i} \equiv ( M_{\rm 1,i}, M_{\rm 2,i}, a_{\rm i}, e_{\rm i}, \vec{v}_{\rm k, SN1}, \vec{v}_{\rm k, SN2}, \alpha_{\rm i}, \delta_{\rm i}, t_{\rm i} ). \label{eq:x_i}
+\end{equation}
+
+
+From a Bayesian perspective, we would like to determine the set of binaries simulated by a particular binary evolution model: $P(\vec{x}_{\rm i} \given M)$. For clarity, we will drop the $M$ throughout the remainder of this analysis. Typically, we are interested in selecting those systems that appear similar to one particular observed system or a population of systems (e.g., HMXBs with X-ray luminosities above some detection limit). We can denote this probability mathematically as $P(\vec{x}_{\rm i} \given D)$, where $D$ describes the constraint on the resulting systems of interest, whether data or abstract constraints. Using Bayes's theorem, this can be described:
+\begin{equation}
+P(\vec{x}_{\rm i} \given D) = \frac{P(D \given \vec{x}_{\rm i})\ P(\vec{x}_{\rm i})}{P(D)}, \label{eq:bayes_ind}
+\end{equation}
+where $P(D \given \vec{x}_{\rm i})$ is the likelihood function, $P(\vec{x}_{\rm i})$ is the prior probability on the model parameters, and $P(D)$ is a normalization constant that for our purposes can be ignored.
+
+
+Traditional BPS uses an intuitive, but brute force, method to identify $P(\vec{x}_{\rm i} \given D)$ that consists of three parts: First, generate a random distribution of $\vec{x}_{\rm i}$ based on observationally-motivated prior probabilities for initial binaries:
+\begin{equation}
+\vec{x}_{\rm i} \sim P(\vec{x}_{\rm i}).
+\end{equation}
+Second, use a rapid binary evolution code to evolve those binaries from their initial state ($\vec{x}_{\rm i}$) until its current state ($\vec{x}_{\rm f}$):
+\begin{equation}
+\vec{x}_{\rm f} = f(\vec{x}_{\rm i}). \label{eq:xf_xi}
+\end{equation}
+We note here that although we describe $\vec{x}_{\rm f}$ as a set of parameters describing the current state of the binary, it may also include information about the binary at any point along its evolution. Finally, select the subset of those modeled binaries that are similar to the observations. Results are then derived from the selected subset of systems:
+\begin{equation}
+P(D | \vec{x}_{\rm f}).
+\end{equation}
+
+For example, if one wants to determine the orbital period and eccentricity distribution of double NSs \citep{andrews15}, one evolves a population of high mass binaries and the orbital period and eccentricity distribution from the resulting systems that exist as DNSs. Mathematically:
+\begin{equation}
+P(P_{\rm orb}, e | x_{\rm HMXB}) \approx \frac{1}{N} \sum_i^N f(\vec{x}_{\rm i}),
+\end{equation}
+where $f$ is a function providing the $P_{\rm orb}$ and $e$ calculated by a binary evolution code for a set of initial conditions, $\vec{x}_{\rm i}$.
+
+For example, since only a small subset of the binaries that form HMXBs will be consistent with any particular observed system, the likelihood function may be non-zero for only a small region of parameter space. The more precisely a system is measured, the smaller the phase space volume of interest.
+
+
+
+Since in general we do not {\it a priori} know which initial conditions will produce binaries which we are interested in modeling (for instance, many systems are disrupted or merge during their evolution), we must test the entire region of initial binary parameter space that could plausibly produce them. 
+
+
+Traditional BPS takes a shotgun approach, making many random draws of $\vec{x}_{\rm i}$ from $P(\vec{x}_{\rm i})$. 
+
+ 
+
+One key aspect of this parameterization is that the SN kick magnitude and direction is included as model parameters rather than determined from random draws on-the-fly during binary evolution.
+
+
+
+
+If we would like to quantitatively compare a model to a set of observationally derived properties, $D$, of a particular system rather than a population, we need to adapt our method. We may be interested in either deriving the initial binary conditions that could have produced the observed systems, $P(\vec{x}_{\rm i} \given D)$, or determining the current binary parameters, $P(\vec{x}_{\rm f} \given D)$. These two quantities are closely related since binary evolution directly relates $\vec{x}_{\rm i}$ to $\vec{x}_{\rm f}$. 
+
+
+
+
+
+
+
+
+
+
+
+
+We simulate individual HMXBs using the same model parameters that we use for a population of HMXBs, so $\vec{x}_{\rm i}$ is determined by Equation \ref{eq:x_i}. The priors on these parameters, which we discuss in Section \ref{sec:priors_indiv}, are somewhat different for individual systems, compared with those derived for populations of HMXBs.
+
+Individual HMXBs in the SMC may have well measured $P'_{\rm orb}$, $e'$, and $M'_2$ (primed quantities indicate observed rather than true, underlying quantities) determined from X-ray timing and observations of the optical counterpart to the X-ray source. Each of these measured quantities has some uncertainty associated with it which should be taken into account. Furthermore, individual HMXBs have a specific location that we are trying to associate with nearby star forming regions. We start by defining $D$ as:
+\begin{equation}
+D \equiv (\alpha, \delta, P'_{\rm orb}, e', M'_2). \label{eq:D}
+\end{equation}
+Uncertainties on the primed quantities are not explicitly included in $D$, and we ignore uncertainties on the position.
+
+
+
+
+
+
+
+
+
+This allows us to re-envision the formation of binary systems in a somewhat different manner. Stellar binaries are formed out of then entire range of binary parameter space, at a rate determined by the multidimensional prior probability distribution for that space. However, only a (potentially small) region of that space produces the binaries of interest. The likelihood function determines the boundaries of that space.
 
 
 
@@ -112,20 +673,20 @@ For binary populations involving NSs and black holes (BH), such as HMXBs, tradit
 
 
 % MCMC population synthesis
-Instead of random draws of $\vec{x}_{\rm i}$, we consider the components of $\vec{x}_{\rm i}$ model parameters. In this formulation $P(\vec{x}_{\rm i})$ is the prior probability on the model parameters, and $P(x_{\rm HMXB} \given \vec{x}_{\rm i})$ is the likelihood of producing an HMXB from a given $\vec{x}_{\rm i}$. Using Bayes' Theorem, we can then identify the set of $\vec{x}_{\rm i}$ most likely to produce HMXBs:
+Instead of random draws of $\vec{x}_{\rm i}$, we consider the components of $\vec{x}_{\rm i}$ model parameters. In this formulation $P(\vec{x}_{\rm i})$ is the prior probability on the model parameters, and $P(x_{\rm type} \given \vec{x}_{\rm i})$ is the likelihood of producing a binary of a particular type from a given $\vec{x}_{\rm i}$. Using Bayes' Theorem, we can then identify the set of $\vec{x}_{\rm i}$ most likely to produce these binaries:
 \begin{equation}
-P(\vec{x}_{\rm i} \given x_{\rm HMXB}) = \frac{P(x_{\rm HMXB} \given \vec{x}_{\rm i}) P(\vec{x}_{\rm i})} {P(x_{\rm HMXB})}. \label{eq:bayes_pop}
+P(\vec{x}_{\rm i} \given x_{\rm type}) = \frac{P(x_{\rm type} \given \vec{x}_{\rm i}) P(\vec{x}_{\rm i})} {P(x_{\rm type})}. \label{eq:bayes_pop}
 \end{equation}
-We ignore $P(x_{\rm HMXB})$, which serves as a normalization constant, and define the posterior probability as the numerator on the right hand side of Equation \ref{eq:bayes_pop}. Although in this work we ignore the denominator, it could be used to account for observational biases in future studies. The large dimensionality of $\vec{x}_{\rm i}$ argues for an efficient numerical method to probe the region of viable parameter space.
+We ignore $P(x_{\rm type})$, which serves as a normalization constant, and define the posterior probability as the numerator on the right hand side of Equation \ref{eq:bayes_pop}. Although in this work we ignore the denominator, it could be used to account for observational biases in future studies. The large dimensionality of $\vec{x}_{\rm i}$ argues for an efficient numerical method to probe the region of viable parameter space.
 
 
 In an MCMC code, a `walker' moves around the $\vec{x}_{\rm i}$ parameter space: the posterior probability of the current $\vec{x}_{\rm i}$ is calculated, a new trial $\vec{x}_{\rm i}$ is randomly selected, the posterior probability of the new position is compared to that of the current position, and depending on the ratio of the two posterior probabilities, the new $\vec{x}_{\rm i}$ is either selected and added to the chain or rejected and the current position is kept for another step. The chain stores a record of all the walker's past positions. Samples from this chain comprise the synthetic population analogous to the population generated by traditional BPS.\footnote{Since the current walker position will necessarily be closely related to the previous step, the posterior samples will be correlated with some characteristic length. The autocorrelation length needs to be calculated {\it a posteriori}, and only one sample per autocorrelation length can be considered independent. We return to this in Section \ref{sec:limitations}.}
 
 
-In principle, for an infinite number of iterations, the distribution of posterior samples of $\vec{x}_{\rm i}$ produced by this method will identically mimic the distribution generated by traditional BPS. Since we are, unfortunately, limited to a finite sample, the computation time to produce a statistically robust sample using each method depends on the relative formation efficiency of HMXBs and the autocorrelation length of the MCMC posterior distribution. For high formation efficiencies, traditional methods are preferred, since every random draw from BPS is independent. However for HMXBs with low formation efficiencies, two separate effects make MCMC the preferred choice: most high mass binaries never become HMXBs and those that do are only X-ray emitting for a short portion of their lifetime.
+In principle, for an infinite number of iterations, the distribution of posterior samples of $\vec{x}_{\rm i}$ produced by this method will identically mimic the distribution generated by traditional BPS. Since we are, unfortunately, limited to a finite sample, the computation time to produce a statistically robust sample using each method depends on the relative formation efficiency of HMXBs and the autocorrelation length of the MCMC posterior distribution. For high formation efficiencies, traditional methods are preferred, since every random draw from BPS is independent. However for high mass binaries with low formation efficiencies, two separate effects make MCMC the preferred choice: most high mass binaries disrupt, merger, or never interact, and those that do typically only exist in an interesting phase of their evolution for a short portion of their lifetime.
 
 
-Correct implementation requires careful attention to the prior distributions, $P(\vec{x}_{\rm i})$, and an efficient method to calculate $P(x_{\rm HMXB} \given \vec{x}_{\rm i})$. We describe how we calculate the prior probabilities in Section \ref{sec:priors} and our single and binary evolution prescriptions in Sections \ref{sec:single_star} and \ref{sec:binary_evolve}, respectively.
+Correct implementation requires careful attention to the prior distributions, $P(\vec{x}_{\rm i})$, and an efficient method to calculate $P(x_{\rm type} \given \vec{x}_{\rm i})$. We describe how we calculate the prior probabilities in Section \ref{sec:priors} and the likelihoods in Section \ref{sec:likelihoods}.
 
 
 
@@ -133,10 +694,10 @@ Correct implementation requires careful attention to the prior distributions, $P
 % Priors
 \subsection{Prior Probabilities: $P(\vec{x}_{\rm i})$} \label{sec:priors}
 
-Our model includes ten parameters, which can be factored into several parts:
+Typically prior probabilities are determined within rapid BPS codes. In our model, BPS codes are used only to rapidly evolve binaries from their initial conditions. Since we define the prior distributions within our model, we describe them here. Our model includes ten parameters, which can be factored into several parts:
 \begin{eqnarray}
 P(\vec{x}_{\rm i}) &=& P(M_{\rm 1,i}) P(M_{\rm 2,i}\given M_{\rm 1,i}) P(a_{\rm i}) \nonumber \\
- & & \qquad  \times\ P(e_{\rm i}) P(\vec{v}_{\rm k}) P(\alpha_{\rm i}, \delta_{\rm i}, t_{\rm i})
+ & & \qquad  \times\ P(e_{\rm i}) P(\vec{v}_{\rm k,1}) P(\vec{v}_{\rm k,2}) P(\alpha_{\rm i}, \delta_{\rm i}, t_{\rm i})
 \end{eqnarray}
 We discuss each of these terms in turn below.
 
@@ -149,13 +710,15 @@ The initial primary mass follows a power law:
 P(M_{\rm 1,i}) = C_{\rm m} M_{\rm 1,i}^{\alpha};\ M_{\rm 1,i} \in [M_{\rm 1,min}, M_{\rm 1,max}]
 %[8\Msun,\ 30\Msun],
 \end{equation}
-where $C_{\rm m}$ is a normalization constant dependent upon the limits of the distribution ($M_{\rm 1,min} = 8 \Msun$ and $M_{\rm 1,max} = 30 \Msun$) and $\alpha$:
+where $C_{\rm m}$ is a normalization constant dependent upon the limits of the distribution ($M_{\rm 1,min} = 8 \Msun$ and $M_{\rm 1,max} = 39 \Msun$) and $\alpha$:
 \begin{equation}
 C_{\rm m} = \frac{\alpha + 1}{M_{\rm 1,max}^{\alpha+1} - M_{\rm 1,min}^{\alpha+1}}.
 \end{equation}
 We choose 8 and 30 \Msun\ as the lower and upper mass limits that produce a NS; we do not consider HMXBs formed with BH accretors. In the present analysis, since the distribution strongly preferences lower mass stars, our results are relatively independent of the upper mass limit. We choose a Salpeter power law: $\alpha = -2.35$. 
 
-We choose a prior on the secondary mass based on a flat mass-ratio distribution which has the subtle effect that the prior on the secondary is dependent on the primary. The maximum mass-ratio is unity to ensure the primary is the more massive of the pair, and the minimum mass-ratio is informed by the limit for stable, thermal-time-scale mass transfer. Polytropic stellar models indicate that mass transfer will always be dynamically unstable for a more massive donor with a convective envelope \citep{hjellming87}. Such systems would evolve through evolutionary channels not considered here. Recent work using more realistic stellar models by \citet{ge15} and \citet{pavlovskii15} has cast doubt on this conclusion, suggesting instead that mass transfer may be stable for binaries with lower mass ratios. Lacking a comprehensive treatment of the lower mass ratio limit for stable mass transfer for donors with convective envelopes, we treat stars with convective and radiative envelopes equivalently and set the lower mass ratio limit to 0.3, the same as used by \citet{bhadkamkar12}. We note that this choice is also in rough agreement with the findings by \citet{pavlovskii15}. This leads to a prior probability:
+We choose a prior on the secondary mass based on a flat mass-ratio distribution which has the subtle effect that the prior on the secondary is dependent on the primary. The maximum mass-ratio is unity to ensure the primary is the more massive of the pair, and the minimum mass is set to 2 \Msun. 
+%informed by the limit for stable, thermal-time-scale mass transfer. Polytropic stellar models indicate that mass transfer will always be dynamically unstable for a more massive donor with a convective envelope \citep{hjellming87}. Such systems would evolve through evolutionary channels not considered here. Recent work using more realistic stellar models by \citet{ge15} and \citet{pavlovskii15} has cast doubt on this conclusion, suggesting instead that mass transfer may be stable for binaries with lower mass ratios. Lacking a comprehensive treatment of the lower mass ratio limit for stable mass transfer for donors with convective envelopes, we treat stars with convective and radiative envelopes equivalently and set the lower mass ratio limit to 0.3, the same as used by \citet{bhadkamkar12}. We note that this choice is also in rough agreement with the findings by \citet{pavlovskii15}. 
+This leads to a prior probability:
 \begin{equation}
 P(M_{\rm 2,i} \given M_{\rm 1,i}) = \frac{1}{0.7 M_{\rm 1,i}};\ M_{\rm 2,i} \in [0.3 M_{\rm 1,i}, 1.0 M_{\rm 1,i}]
 \end{equation}
@@ -179,7 +742,7 @@ P(e_{\rm i}) = 2e_{\rm i};\ e_{\rm i} \in[0,1].
 
 \subsubsection{SN Kick Parameters}
 
-The SN kick velocity, $\vec{v}_{\rm k}$, is composed of three parameters, which we model as a kick magnitude ($v_{\rm k}$) and two angles ($\theta_{\rm k}, \phi_{\rm k}$). Typically, these parameters are determined through Monte Carlo random draws from a specific distribution on-the-fly during each binary's evolution. In our model, we instead include the SN kick magnitude and direction as model parameters with prior probabilities corresponding to standard distributions; we assume that $v_{\rm k}$ follows a Maxwellian distribution with a dispersion of 265 km s$^{-1}$ \citep{hobbs05}. We can therefore express the normalized probability of $v_{\rm k}$ as:
+The SN kick velocity, $\vec{v}_{\rm k}$, is composed of three parameters, which we model as a kick magnitude ($v_{\rm k}$) and two angles ($\theta_{\rm k}, \phi_{\rm k}$). If the binary is a double compact object, the two SNe are independent. Typically, these parameters are determined through Monte Carlo random draws from a specific distribution on-the-fly during each binary's evolution. In our model, we instead include the SN kick magnitude and direction as model parameters with prior probabilities corresponding to standard distributions; we assume that $v_{\rm k}$ follows a Maxwellian distribution with a dispersion of 265 km s$^{-1}$ \citep{hobbs05}. We can therefore express the normalized probability of $v_{\rm k}$ as:
 \begin{equation}
 P(v_{\rm k}) = \sqrt{\frac{2}{\pi}} \frac{v_{\rm k}^2} {\sigma^3} {\rm exp} \left[ -v_{\rm k}^2 / 2 \sigma^2 \right];\ v_{\rm k} \in [0, \infty). \label{eq:P_v_k}
 \end{equation}
@@ -217,148 +780,30 @@ where $N_{\rm SMC}$ is the number of stars with $Z=0.008$ produced throughout th
 
 
 
-% SSE
-\subsection{Single Star Evolution} \label{sec:single_star}
 
-Our single stellar evolutionary model is based on the stellar evolution fitting formulae, \sse\ \citep{hurley00}. Rather than using function calls within our code to \sse, we pre-compute a series of \sse\ models ranging in initial mass from 1.0 to 40.0 \Msun, with a spacing of 0.01 \Msun. These models use default parameters and a metallicity of 0.008 to match that of the SMC star-formation maps. 
-
-From the evolutionary history computed by \sse\ for each star (typically 200-500 unequally-spaced time steps each), we use {\tt scipy}'s {\tt interp1d} routine to generate linear interpolations across the lifetimes of these stars. We separately interpolate as a function of time the key quantities: radius, mass, and mass loss rate. We then combine each of these interpolations into an array. For any arbitrary mass star, to obtain quantities of interest, we round down to the next lowest mass interpolation and access the corresponding interpolated curve. This method allows for fast calculation of fundamental properties of a star at an input age, while providing a sufficiently smooth transition over both mass and time.
-
-For each star these models additionally provide the He core mass, maximum radius, stellar lifetime and H burning lifetime. We create additional interpolations as a function of initial mass for these quantities.
-
-In addition to hydrogen star models, we pre-compute a separate series of {\tt sse} runs to model so-called naked helium star evolution, again for a metallicity of $Z=0.008$. We apply the updated He-star wind prescription found in \citep{belczynski10}. These models indicate that the mass lost in stellar winds prior to the star's core collapse can be substantial. We generate an interpolation curve of the final He-star mass prior to SN as a function of the initial He-star mass.
+\subsection{Likelihood Functions: $P(x_{\rm obs} \given \vec{x}_{\rm i})$}
 
 
-% Binary evolution
-\subsection{Binary Evolution} \label{sec:binary_evolve}
+We can now define a likelihood function $P(x_{\rm obs} \given \vec{x}_{\rm i})$ which represents how likely the initial conditions are to produce a binary similar to the observations. 
 
-In this study, we only consider one evolutionary channel forming wind-fed NS-HMXBs. We further ignore many binary dynamical effects such as tidal evolution prior to the initial phase of mass transfer and during the X-ray luminous phase, which we only expect to be significant for the minority of HMXBs in which the donor is a supergiant. We use a simplified binary prescription scheme here to showcase how our MCMC method works.
-
-After its initial state, there are three major stages that we include in our binary evolution prescriptions. First, the more massive primary evolves first off the main sequence, leading to stable, thermal-time-scale mass transfer onto the secondary. As a helium star, the primary can lose a substantial fraction of its mass to the interstellar medium in a strong stellar wind. After the primary has completed its evolution, it undergoes core-collapse forming a NS. The system suffers effectively instantaneous mass loss and a natal kick, both of which act to profoundly affect the binary's orbit. Finally, the system begins to emit in X-rays once the NS accretes from the secondary's stellar wind. The companion's mass and mass loss rate are both a function of time since they change as the system evolves. We discuss each of these three evolutionary transitions below.
-
-
-% Thermal timescale mass transfer
-\subsubsection{The First Mass Transfer Phase} \label{sec:trans_MT}
-
-Once the first star evolves past its main sequence onto the giant branch, it begins overfilling its Roche lobe. We ignore binaries with large enough initial separations that avoid this phase of mass transfer. Our prior probability on $M_{\rm 2,i}$ selects for only those systems that will undergo stable mass accretion. As discussed in Section \ref{sec:priors} systems in our model with mass-ratios below 0.3 will enter unstable mass transfer. The HMXB formation channel where the binary goes through a common envelope, prior to the compact object formation, is not considered in this study. Since we are considering only wind-fed HMXBs, which tend to have longer orbital periods compared to their Roche-lobe overfilling counterparts, the contribution of the aforementioned channel is expected to be negligible. 
-
-We assume that this initial phase of stable mass transfer instantaneously circularizes the orbit at the pericenter separation: $a_{\rm i} (1-e_{\rm i})$. The post mass transfer primary becomes the primary core mass ($M_{\rm 1,c}$), while the secondary incorporates the primary's lost envelope. We assume conservative mass transfer:
-\begin{eqnarray} 
-M_{\rm 1, MT} &=& M_{\rm 1,c} \\
-M_{\rm 2, MT} &=& M_2 + M_1 - M_{\rm 1,c},
-\end{eqnarray}
-$M_{\rm 1,c}$ is determined by the interpolations between the \sse\ models described in Section \ref{sec:single_star}. The post-mass transfer orbital separation is therefore:
+When modeling a population of systems, the likelihood is  either unity or zero depending on whether $\vec{x}_{\rm f}$ represents a binary of interest:
 \begin{equation}
-a_{\rm MT} = a_{\rm i} (1-e_{\rm i}) \left[ \frac{M_{\rm 1,i} M_{\rm 2,i}}{M_{\rm 1, MT} M_{\rm 2, MT}} \right]^2.
+P(x_{\rm type} | \vec{x}_{\rm i}, M) = 
+\begin{cases}
+1, & \vec{x}_{\rm f} \in x_{\rm type} \\
+0, & \vec{x}_{\rm f} \notin x_{\rm type},
+\end{cases}
 \end{equation}
+where $M$ is our binary evolution model. This can be intuitively understood. For example, if $\vec{x}_{\rm f}$ represents a double NS, it has a zero likelihood of being considered a HMXB, and vice versa. Note that, since $t_{\rm i}$ is a model parameter, 
+
+Distrihas a zero likelihood of being considered a BHBH, even if it will ultimately evolve into a BHBH.b
+
+When modeling a specific, individual system, the likelihood function may flexibly incorporate observational constraints. Instead of 
 
 
-
-From the first mass transfer phase, the secondary gained a significant amount of hydrogen, which, depending on the initial stellar parameters, could more than double its mass. Clearly such mass gain will affect the stellar lifetime of the secondary, and for single stellar evolution models to provide correct parameters for the secondary, we need to use an adjusted age. 
-
-The first mass transfer phase will occur at roughly the He ignition time, $t_{\rm He} (M_{\rm 1,i})$, for a star of mass $M_{\rm 1,i}$. If we assume that stars burn H at a constant rate throughout their MS, the mass of H converted into He in the secondary at this point will be:
-\begin{equation}
-M_{\rm He,2} = \frac{t_{\rm He}(M_{\rm 1,i})}{t_{\rm He}(M_{\rm 2,i})} X M_{\rm He,core}(M_{\rm 2,i}), \label{eq:M_He}
-\end{equation}
-where $X$ is the initial H fraction and $M_{\rm He,core}(M_{\rm 2,i})$ is the He core mass (at He ignition) of a star with an initial mass of $M_{\rm 2,i}$. At this point, the secondary will accrete mass from the primary with an identical H fraction $X$. This mass transfer is assumed to be instantaneous since it occurs on a thermal time-scale, significantly shorter than the stellar lifetime. The rejuvenated secondary star now has a substantially different mass ($M_{\rm 2, MT}$), but it is not beginning at zero age. We can estimate its effective age immediately after mass transfer has completed ($t_{\rm eff}$) by comparing the mass already converted into He from Equation \ref{eq:M_He} with the total mass of H a star of mass $M_{\rm 2, MT}$ will burn on the MS, $X M_{\rm He,core}(M_{\rm 2, MT})$, multiplied by the He ignition time:
-\begin{equation}
-t_{\rm eff} = \frac{M_{\rm He, 2}}{X M_{\rm He, core} (M_{\rm 2, MT}) } t_{\rm He} (M_{\rm 2, MT}). \label{eq:t_eff_1}
-\end{equation}
-The secondary's effective age at the time of observation is $t_{\rm eff,obs} = t_{\rm eff} + t_i - t_{\rm He}(M_{\rm 1,i})$, which can be expressed using Equations \ref{eq:M_He} and \ref{eq:t_eff_1}:
-\begin{eqnarray}
-t_{\rm eff,obs} &=& \frac{M_{\rm He,core}(M_{\rm 2,i})}{M_{\rm He,core}(M_{\rm 2, MT})} \frac{t_{\rm He}(M_{\rm 1,i})}{t_{\rm He}(M_{\rm 2,i})} t_{\rm He}(M_{\rm 2, MT}) \nonumber \\
- & & \qquad + t_{\rm i} - t_{\rm He}(M_{\rm 1,i}). \label{eq:t_eff_obs_full}
-\end{eqnarray}
-\citet{tout97} provide a similar equation for the rejuvenation of a star due to mass accretion. Using $t_{\rm eff,obs}$ in the interpolations, we can determine the adjusted mass, radius, and wind mass loss rate of the secondary using single stellar evolution models. 
+utions of tan HMXB he components of $\vec{x}_{\rm f}$ (such as the spatial distribution of binaries, X-ray luminosity function, orbital period distribution, etc.) can then provide model predictions for binary populations or comparisons to observational samples.
 
 
-
-\subsubsection{The Primary's Core Collapse} \label{sec:trans_SN}
-
-Prior to its core collapse, the primary star has survived for some time as a naked He-star with substantially enhanced winds \cite{belczynski10}. We ignore any accretion of these winds by the secondary, so mass loss tends to expand the binary's orbit. Our {\tt sse} interpolation provides the pre-SN He-star mass, $M_{\rm pre-SN}$ as a function of $M_{\rm MT}$. Using Jeans mode mass loss we can determine the pre-SN orbital separation, $a_{\rm pre-SN}$:
-\begin{equation}
-a_{\rm pre-SN} = \frac{M_{\rm 1, MT} + M_{\rm 2, MT}}{M_{\rm 1, pre-SN} + M_{\rm 2, MT}} a_{\rm MT}
-\end{equation}
-
-
-We next calculate the post-SN orbital separation, $a_{\rm SN}$, systemic velocity, $v_{\rm sys}$, and eccentricity, $e_{\rm SN}$, based on the equations in \citet{hills83} and \citet{kalogera96}. In our model, all core collapsing stars form 1.35 \Msun\ NSs. \citet{timmes96} suggest the maximum initial mass forming a NS is $\sim$20 \Msun, instead of the maximum mass of 30 \Msun\ we choose in this work; however as we will see below, our results are largely independent of this choice. Energy conservation provides $a_{\rm SN}$:
-\begin{equation}
-a_{\rm SN} = \left[ \frac{2 }{a_{\rm pre-SN}}  - \frac{v_1^2}{G(M_{\rm NS} + M_{\rm 2, MT})} \right]^{-1}. \label{eq:SN_A} \\
-\end{equation}
-where $v_1$ is the post-kick velocity of the primary (in the reference frame of an initially stationary secondary):
-\begin{equation}
-v_1^2 = 2v_{\rm k} v_{\rm r} \cos \theta_{\rm k} + v_{\rm k}^2 + v_{\rm r}^2, \label{eq:v_1}
-\end{equation}
-where $\theta_{\rm k}$ defines the angle between the kick velocity and the direction of orbital motion. Here, we have made the additional substitution:
-\begin{equation}
-v_{\rm r} = \sqrt{\frac{G (M_{\rm 1, pre-SN} + M_{\rm 2, MT})}{a_{\rm pre-SN}}}. \label{eq:v_r}
-\end{equation}
-The systemic velocity is:
-\begin{equation}
-v_{\rm sys}^2 = \beta^2 v_{\rm k}^2
-   + v_{\rm r}^2 \left( \alpha - \beta \right)^2
-   + 2 \beta v_{\rm r} v_{\rm k} \cos \theta_{\rm k} \left( \alpha - \beta \right)
-    \label{eq:SN_v_sys}
-\end{equation}
-where we have included two substitutions:
-\begin{eqnarray}
-\alpha &=& \frac{M_{\rm 1, pre-SN}}{M_{\rm 1, pre-SN} + M_{\rm 2, MT}} \\
-\beta &=& \frac{M_{\rm NS}}{M_{\rm NS} + M_{\rm 2, MT}}
-\end{eqnarray}
-
-
-The post-SN eccentricity is determined by angular momentum conservation:
-\begin{eqnarray}
-1-e_{\rm SN}^2 &=& \frac{a_{\rm pre-SN}^2}{a_{\rm SN}\ G (M_{\rm NS} + M_{2, MT})} \nonumber \\
- & & \times \left( v_{\rm k}^2 \cos^2\theta_{\rm k} + v_{\rm k}^2 \sin^2 \theta_{\rm k} \sin^2 \phi_{\rm k} \right. \nonumber \\
- & & \qquad + \left. 2 v_{\rm k} v_{\rm r} \cos \theta_{\rm k} + v_{\rm r}^2  \right). \label{eq:SN_e}
-\end{eqnarray}
-Systems with $0 \leq e < 1$ remain bound. It should be noted that $\phi_{\rm k}$ only affects the post-SN orbit through the $\sin^2 \phi_{\rm k}$ term when solving for the post-SN orbital eccentricity in Equation \ref{eq:SN_e}. 
-
-
-
-\subsubsection{The X-ray Luminous Phase} \label{sec:trans_XRB}
-
-In the final stage of evolution, the NS accretes mass from the stellar wind of the massive secondary. Although we do not calculate the X-ray luminosity of the system, for it to be observed as an HMXB, accretion must be non-zero; if the secondary has completely evolved, the system is not observed as an HMXB. We ignore the effect of tides during this phase of evolution, but we do include the expansion of the orbit based on mass loss from the system:
-\begin{eqnarray}
-a_{\rm f} &=& \frac{M_{\rm NS} + M_{\rm 2, SN}}{M_{\rm NS} + M_{\rm 2,f}} a_{\rm SN} \\
-e_{\rm f} &=& e_{\rm SN}.
-\end{eqnarray}
-Here, we have assumed that the NS accretes a negligible fraction of the secondary's wind. Therefore, the secular evolution of the orbit is very close to the fully non-conservative limit.
-
-
-
-
-
-% Individual HMXBs
-\section{Statistical Method: Individual HMXBs} \label{sec:stats_individual}
-
-If we would like to quantitatively compare a model to a set of observationally derived properties, $D$, of a particular system rather than a population, we need to adapt our method. We may be interested in either deriving the initial binary conditions that could have produced the observed systems, $P(\vec{x}_{\rm i} \given D)$, or determining the current binary parameters, $P(\vec{x}_{\rm f} \given D)$. These two quantities are closely related since binary evolution directly relates $\vec{x}_{\rm i}$ to $\vec{x}_{\rm f}$. 
-
-
-
-Instead of calculating $P(\vec{x}_{\rm i} \given x_{\rm HMXB})$ as in Equation \ref{eq:bayes_pop}, we can again use Bayes' Theorem to calculate $P(\vec{x}_{\rm i} \given D)$:
-\begin{equation}
-P(\vec{x}_{\rm i} \given D) = \frac{P(D \given \vec{x}_{\rm i})\ P(\vec{x}_{\rm i})}{P(D)}, \label{eq:bayes_ind}
-\end{equation}
-where $P(D \given \vec{x}_{\rm i})$ is the likelihood function, $P(\vec{x}_{\rm i})$ is the prior probabilities on the model parameters, and $P(D)$ is again a normalization constant that for our purposes can be ignored. The posterior probability is the numerator in the right hand side of Equation \ref{eq:bayes_ind}.
-
-
-
-Traditional BPS takes a shotgun approach, making many random draws of $\vec{x}_{\rm i}$ from $P(\vec{x}_{\rm i})$. If one wants to then calculate a Bayesian likelihood, $P(\vec{x}_{\rm i} \given D)$ can be determined from those systems that are consistent with $D$ \citep{andrews15}. Results are then derived from the selected subset of systems. Since only a small subset of the binaries that form HMXBs will be consistent with any particular observed system, the likelihood function may be non-zero for only a small region of parameter space. The more precisely a system is measured, the smaller the phase space volume of interest. 
-
-
-
-
-
-
-We simulate individual HMXBs using the same model parameters that we use for a population of HMXBs, so $\vec{x}_{\rm i}$ is determined by Equation \ref{eq:x_i}. The priors on these parameters, which we discuss in Section \ref{sec:priors_indiv}, are somewhat different for individual systems, compared with those derived for populations of HMXBs.
-
-Individual HMXBs in the SMC may have well measured $P'_{\rm orb}$, $e'$, and $M'_2$ (primed quantities indicate observed rather than true, underlying quantities) determined from X-ray timing and observations of the optical counterpart to the X-ray source. Each of these measured quantities has some uncertainty associated with it which should be taken into account. Furthermore, individual HMXBs have a specific location that we are trying to associate with nearby star forming regions. We start by defining $D$ as:
-\begin{equation}
-D \equiv (\alpha, \delta, P'_{\rm orb}, e', M'_2). \label{eq:D}
-\end{equation}
-Uncertainties on the primed quantities are not explicitly included in $D$, and we ignore uncertainties on the position.
 
 
 To generate our likelihood function, we now marginalize over four parameters, the true orbital parameters, $P_{\rm orb}$ and $e$, the true (current) companion mass $M_2$, and the systemic velocity ($v_{\rm sys}$). Our model likelihood then becomes:
@@ -505,6 +950,41 @@ where:
 \begin{equation}
 \omega^{\star} = \sin^{-1} \left[ \frac{\theta_{\rm proj}}{\theta_{\rm C}} \right].
 \end{equation}
+
+
+
+
+\end{comment}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Testing with Mock Systems}
+\label{sec:mock}
+
+Particularly because of the multidimensional nature of binary population synthesis, along with the potential for any particular system to be formed from different evolutionary channels, extensive testing of our method is required. As a first test, we randomly choose three sets of initial conditions that produce HMXBs, evolve them forward using \bse, then attempt to recover the initial parameters using the current values of these parameters by adding uncertainties that mimic observational errors. Specifically, we test one system in which we observe only the companion mass, one in which we measure the orbital period, and the mass function, and one with a precisely measured companion mass, orbital period, and eccentricity. The exact values of the initial conditions and the observed quantities are provided in Table \ref{tab:mock}.
+
+
+
+{\bf ADD A TABLE HERE WITH MOCK DATA}
+
+{\bf ADD A FIGURE HERE SHOWING WE RECOVER MOCK DATA PARAMETERS}
+
+
+
+
+
 
 
 
@@ -770,7 +1250,7 @@ We describe a fully Bayesian method to identify the binary initial conditions fo
 
 
 \section*{Acknowledgements}
-We thank the referee for useful comments which improved the paper. It is a pleasure to thank Vicky Kalogera and Stephen Justham for useful conversations. We used the python module {\tt corner} \citep{dfm_corner} to produce several figures in this manuscript. J.J.A. and A.Z. acknowledge funding from the European Research Council under the European Union's Seventh Framework Programme (FP/2007-2013)/ERC Grant Agreement n. 617001. T.F. acknowledges support from the Ambizione Fellowship of the Swiss National Science Foundation (grant PZ00P2-148123). We acknowledge use of the Metropolis HPC Facility at the CCQCN Center of the University of Crete, supported by the European Union Seventh Framework Programme (FP7-REGPOT-2012-2013-1) under grant agreement no. 316165.
+It is a pleasure to thank Vicky Kalogera and Stephen Justham for useful conversations. J.J.A. and A.Z. acknowledge funding from the European Research Council under the European Union's Seventh Framework Programme (FP/2007-2013)/ERC Grant Agreement n. 617001. T.F. acknowledges support from the Ambizione Fellowship of the Swiss National Science Foundation (grant PZ00P2-148123). We acknowledge use of the Metropolis HPC Facility at the CCQCN Center of the University of Crete, supported by the European Union Seventh Framework Programme (FP7-REGPOT-2012-2013-1) under grant agreement no. 316165.
 
 
 \bibliographystyle{mnras}
@@ -784,13 +1264,13 @@ We thank the referee for useful comments which improved the paper. It is a pleas
 Only a small portion of the ten-dimensional parameter space has a non-zero posterior probability, and it is necessary to initialize the walkers in this small region. The most important parameters are $M_{\rm 1,i}$, $M_{\rm 2,i}$, and $t_{\rm i}$, since these are necessary to match the observed companion mass, $M'_2$. To initialize these parameters, we create and run a separate three-parameter MCMC model prior to running our larger ten-parameter model. 
 
 
-\begin{figure*}
-\begin{center}
-\includegraphics[width=0.95\textwidth]{figA1.pdf}
-\caption{The five columns show the evolution of chains from the four separate burn-in stages and the production stage from our test case 2, described in Section \ref{sec:test2}. The ten rows correspond to the ten parameters in $\vec{x}_{\rm i}$ in the order listed in Equation \ref{eq:x_i}. These chains show the typical burn-in time for our models. }
-\label{fig:burn-in_test2}
-\end{center}
-\end{figure*}
+% \begin{figure*}
+% \begin{center}
+% \includegraphics[width=0.95\textwidth]{figA1.pdf}
+% \caption{The five columns show the evolution of chains from the four separate burn-in stages and the production stage from our test case 2, described in Section \ref{sec:test2}. The ten rows correspond to the ten parameters in $\vec{x}_{\rm i}$ in the order listed in Equation \ref{eq:x_i}. These chains show the typical burn-in time for our models. }
+% \label{fig:burn-in_test2}
+% \end{center}
+% \end{figure*}
 
 
 We solve the following Bayesian posterior probability:
@@ -813,6 +1293,62 @@ For our models for individual HMXBs described in Section \ref{sec:results_indivi
 
 
 Our method of moving the walkers between burn-in stages shifts them to viable regions of parameter space. The last burn-in stage distributes the walkers throughout the parameter space, and we do not move any of the walkers between the last burn-in and our production stage. Our production run of 50,000 steps, shown in the rightmost column of Figure \ref{fig:burn-in_test2}, demonstrates that after these four burn-in stages, the walkers have converged. Conclusions are only drawn from the production stage, data from the burn-in stages are removed.
+
+
+
+
+\section{{\tt BSE} in {\tt Python}} \label{sec:pyBSE}
+
+
+
+
+
+\section{Supernova Kicks} \label{sec:trans_SN}
+
+Prior to its core collapse, the primary star has survived for some time as a naked He-star with substantially enhanced winds \cite{belczynski10}. We ignore any accretion of these winds by the secondary, so mass loss tends to expand the binary's orbit. Our {\tt sse} interpolation provides the pre-SN He-star mass, $M_{\rm pre-SN}$ as a function of $M_{\rm MT}$. Using Jeans mode mass loss we can determine the pre-SN orbital separation, $a_{\rm pre-SN}$:
+\begin{equation}
+a_{\rm pre-SN} = \frac{M_{\rm 1, MT} + M_{\rm 2, MT}}{M_{\rm 1, pre-SN} + M_{\rm 2, MT}} a_{\rm MT}
+\end{equation}
+
+
+We next calculate the post-SN orbital separation, $a_{\rm SN}$, systemic velocity, $v_{\rm sys}$, and eccentricity, $e_{\rm SN}$, based on the equations in \citet{hills83} and \citet{kalogera96}. In our model, all core collapsing stars form 1.35 \Msun\ NSs. \citet{timmes96} suggest the maximum initial mass forming a NS is $\sim$20 \Msun, instead of the maximum mass of 30 \Msun\ we choose in this work; however as we will see below, our results are largely independent of this choice. Energy conservation provides $a_{\rm SN}$:
+\begin{equation}
+a_{\rm SN} = \left[ \frac{2 }{a_{\rm pre-SN}}  - \frac{v_1^2}{G(M_{\rm NS} + M_{\rm 2, MT})} \right]^{-1}. \label{eq:SN_A} \\
+\end{equation}
+where $v_1$ is the post-kick velocity of the primary (in the reference frame of an initially stationary secondary):
+\begin{equation}
+v_1^2 = 2v_{\rm k} v_{\rm r} \cos \theta_{\rm k} + v_{\rm k}^2 + v_{\rm r}^2, \label{eq:v_1}
+\end{equation}
+where $\theta_{\rm k}$ defines the angle between the kick velocity and the direction of orbital motion. Here, we have made the additional substitution:
+\begin{equation}
+v_{\rm r} = \sqrt{\frac{G (M_{\rm 1, pre-SN} + M_{\rm 2, MT})}{a_{\rm pre-SN}}}. \label{eq:v_r}
+\end{equation}
+The systemic velocity is:
+\begin{equation}
+v_{\rm sys}^2 = \beta^2 v_{\rm k}^2
+   + v_{\rm r}^2 \left( \alpha - \beta \right)^2
+   + 2 \beta v_{\rm r} v_{\rm k} \cos \theta_{\rm k} \left( \alpha - \beta \right)
+    \label{eq:SN_v_sys}
+\end{equation}
+where we have included two substitutions:
+\begin{eqnarray}
+\alpha &=& \frac{M_{\rm 1, pre-SN}}{M_{\rm 1, pre-SN} + M_{\rm 2, MT}} \\
+\beta &=& \frac{M_{\rm NS}}{M_{\rm NS} + M_{\rm 2, MT}}
+\end{eqnarray}
+
+
+The post-SN eccentricity is determined by angular momentum conservation:
+\begin{eqnarray}
+1-e_{\rm SN}^2 &=& \frac{a_{\rm pre-SN}^2}{a_{\rm SN}\ G (M_{\rm NS} + M_{2, MT})} \nonumber \\
+ & & \times \left( v_{\rm k}^2 \cos^2\theta_{\rm k} + v_{\rm k}^2 \sin^2 \theta_{\rm k} \sin^2 \phi_{\rm k} \right. \nonumber \\
+ & & \qquad + \left. 2 v_{\rm k} v_{\rm r} \cos \theta_{\rm k} + v_{\rm r}^2  \right). \label{eq:SN_e}
+\end{eqnarray}
+Systems with $0 \leq e < 1$ remain bound. It should be noted that $\phi_{\rm k}$ only affects the post-SN orbit through the $\sin^2 \phi_{\rm k}$ term when solving for the post-SN orbital eccentricity in Equation \ref{eq:SN_e}. 
+
+
+
+
+
 
 
 \label{lastpage}
