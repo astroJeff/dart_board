@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import maxwell, uniform
 
 from . import constants as c
-from . import darts
+#from . import darts
 from .posterior import A_to_P
 
 def generate_population(dart, N):

@@ -38,7 +38,7 @@ def ln_prior(x, dart):
     # End defaults
 
     # Set values according to inputs
-    for key, value in dart.system_kwargs.items():
+    for key, value in dart.prior_kwargs.items():
         if key == 'kick_sigma': kick_sigma = value
         if key == 'M1_alpha': M1_alpha = value
         if key == 'M1_min': M1_min = value
