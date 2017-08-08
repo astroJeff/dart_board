@@ -209,7 +209,10 @@ class DartBoard():
                 # Iterate randomly through initial conditions until a viable parameter set is found
                 for k in range(100000):
 
-                    M1 = 30.0 * np.random.uniform(size=1) + 8.0
+                    if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
+                        M1 = 3.0 * np.random.uniform(size=1) + 8.0
+                    else:
+                        M1 = 30.0 * np.random.uniform(size=1) + 8.0
                     M2 = M1 * (np.random.uniform(size=1))
                     a = 5000.0 * np.random.uniform(size=1) + 20.0
                     ecc = np.random.uniform(size=1)
@@ -230,7 +233,10 @@ class DartBoard():
                             ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.01, 1))
                             dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.01, 1))
 
-                    time = 40.0 * np.random.uniform(size=1)
+                    if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
+                        time = 1.4e4 * np.random.uniform(size=1)
+                    else:
+                        time = 40.0 * np.random.uniform(size=1)
 
                     if self.second_SN:
                         if self.prior_pos is None:
@@ -336,7 +342,10 @@ class DartBoard():
                 # Iterate randomly through initial conditions until a viable parameter set is found
                 for i in range(100000):
 
-                    M1 = 30.0 * np.random.uniform(size=1) + 8.0
+                    if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
+                        M1 = 3.0 * np.random.uniform(size=1) + 8.0
+                    else:
+                        M1 = 30.0 * np.random.uniform(size=1) + 8.0
                     M2 = M1 * (np.random.uniform(size=1))
                     a = 5000.0 * np.random.uniform(size=1) + 20.0
                     ecc = np.random.uniform(size=1)
@@ -357,7 +366,10 @@ class DartBoard():
                             ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
                             dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
 
-                    time = 40.0 * np.random.uniform(size=1)
+                    if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
+                        time = 1.4e4 * np.random.uniform(size=1)
+                    else:
+                        time = 40.0 * np.random.uniform(size=1)
 
                     if self.second_SN:
                         if self.prior_pos is None:
