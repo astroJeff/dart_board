@@ -8,7 +8,7 @@ from scipy.integrate import quad
 import time as tm  # For testing
 
 from . import constants as c
-#from . import darts
+# from . import darts
 from . import priors
 
 
@@ -275,7 +275,7 @@ def calculate_L_x(M1, mdot, k1):
     else:
         return -1
 
-    L_bol = epsilon * c.G * (M1*c.Msun_to_g) * mdot / R_acc
+    L_bol = epsilon * c.G * (M1*c.Msun_to_g) * (mdot*c.Msun_to_g/c.yr_to_sec) / R_acc
 
     L_x = eta * L_bol
 
@@ -380,7 +380,7 @@ def check_output(output, binary_type):
 
     m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
-    type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS", "BHNS"])
+    type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS", "BHNS", "WDWD", "ELMWD", "ELMWD_WD"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
@@ -430,6 +430,21 @@ def check_output(output, binary_type):
 
     elif binary_type == "BHNS":
         if (k1 != 14 or k2 != 13) and (k1 != 13 or k2 != 14): return False
+        if a_out <= 0.0: return False
+        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+
+    elif binary_type == "WDWD":
+        if k1 < 10  or k1 > 12 or k2 < 10 or k2 > 12: return False
+        if a_out <= 0.0: return False
+        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+
+    elif binary_type == "ELMWD":
+        if (k1 != 10) and (k2 != 10): return False
+        if a_out <= 0.0: return False
+        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+
+    elif binary_type == "ELMWD_WD":
+        if k1 < 10  or k1 > 12 or k2 < 10 or k2 > 12 or (k1 != 10 and k2 != 10): return False
         if a_out <= 0.0: return False
         if ecc_out < 0.0 or ecc_out >= 1.0: return False
 
