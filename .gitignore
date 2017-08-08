@@ -1,3 +1,7 @@
+*.old
+dart_board/*.pyc
+dart_board/sf_history/*.pyc
+data/*
 pyBSE/*.o
 pyBSE/*.so
 pyBSE/*.in
@@ -41,3 +45,6 @@ examples/fort.*
 examples/.pdf*
 examples/*.pdf
 docs/*.pdf
+pyBSE_old
+examples/*test*
+examples/BHBH*

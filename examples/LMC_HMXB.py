@@ -12,14 +12,14 @@ from dart_board import sf_history
 
 
 pub = dart_board.DartBoard("HMXB",
-                           evolve_binary=pybse.evolv_wrapper,
+                           evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
-                           nwalkers=320)
+                           nwalkers=320, threads=20)
 pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=5000, nsteps=5000)
+pub.throw_darts(nburn=20000, nsteps=10000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 # Acceptance fraction

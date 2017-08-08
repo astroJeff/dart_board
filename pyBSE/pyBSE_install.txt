@@ -1,0 +1,17 @@
+Setting up the python API for BSE for use in dart_board
+
+1. Download BSE from Jarrod Hurley’s site into dart_board/pyBSE/
+
+2. untar the tarball with “tar -xvf bse.tar”
+
+3. pyBSE already contains the .f files kick_rev.f, evolv2_rev.f, and evolv_wrapper.f, as well as the update make file, Makefile_pyBSE.
+
+4. Replace comenv.f with comenv_pyBSE.f: “cp comenv_pyBSE.f comenv.f”
+
+5. Overwrite the old “Makefile” with “Makefile_pyBSE” using “cp Makefile_pyBSE Makefile”
+
+6. Make pyBSE with “make pybse”
+
+
+
+

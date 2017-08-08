@@ -13,10 +13,9 @@ from dart_board import sf_history
 
 # Values for Swift J0513.4-6547 from Coe et al. 2015, MNRAS, 447, 1630
 system_kwargs = {"P_orb" : 27.405, "P_orb_err" : 0.5, "ecc_max" : 0.17, "m_f" : 9.9,
-          "m_f_err" : 2.0, "ra" : 78.36775, "dec" : -65.7885278}
+                 "m_f_err" : 2.0}
 pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve,
-                           ln_prior_pos=sf_history.flat.prior_lmc, nwalkers=320,
-                           threads=20, system_kwargs=system_kwargs)
+                           nwalkers=320, threads=20, system_kwargs=system_kwargs)
 
 pub.aim_darts()
 
@@ -38,6 +37,6 @@ except:
 
 # Pickle results
 import pickle
-pickle.dump(pub.chains, open("../data/J0513_flatsfh_chain.obj", "wb"))
-pickle.dump(pub.lnprobability, open("../data/J0513_flatsfh_lnprobability.obj", "wb"))
-pickle.dump(pub.derived, open("../data/J0513_flatsfh_derived.obj", "wb"))
+pickle.dump(pub.chains, open("../data/J0513_nosfh_chain.obj", "wb"))
+pickle.dump(pub.lnprobability, open("../data/J0513_nosfh_lnprobability.obj", "wb"))
+pickle.dump(pub.derived, open("../data/J0513_nosfh_derived.obj", "wb"))

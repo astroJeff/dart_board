@@ -11,10 +11,16 @@ import dart_board
 from dart_board import sf_history
 
 
-# Values for Swift J0513.4-6547 from Coe et al. 2015, MNRAS, 447, 1630
-system_kwargs = {"P_orb" : 27.405, "P_orb_err" : 0.5, "ecc_max" : 0.17, "m_f" : 9.9,
-                 "m_f_err" : 2.0, "ra" : 78.36775, "dec" : -65.7885278}
-pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve,
+# Values for mock system 3
+# Input values: 11.01 7.42 744.19 0.20 167.69 1.79 2.08 83.2559 -69.9377 36.59
+# Output values:  1.30 7.46 31.53 0.0 22.46 5.75e-12 24.33 13 1
+
+system_kwargs = {"M2" : 7.25, "M2_err" : 0.25,
+                 "P_orb" : 7.0, "P_orb_err" : 1.0,
+                 "ecc_max" : 0.1,
+                 "L_x" : 9.5e33, "L_x_err" : 1.0e32,
+                 "ra" : 83.4989 , "dec" : -70.2366}
+pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc, nwalkers=320,
                            threads=20, system_kwargs=system_kwargs)
 
@@ -38,6 +44,6 @@ except:
 
 # Pickle results
 import pickle
-pickle.dump(pub.chains, open("../data/J0513_chain.obj", "wb"))
-pickle.dump(pub.lnprobability, open("../data/J0513_lnprobability.obj", "wb"))
-pickle.dump(pub.derived, open("../data/J0513_derived.obj", "wb"))
+pickle.dump(pub.chains, open("../data/mock_3_chain.obj", "wb"))
+pickle.dump(pub.lnprobability, open("../data/mock_3_lnprobability.obj", "wb"))
+pickle.dump(pub.derived, open("../data/mock_3_derived.obj", "wb"))
