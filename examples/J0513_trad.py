@@ -20,13 +20,13 @@ pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve,
 
 
 start_time = time.time()
-pub.scatter_darts(seconds=20)
+pub.scatter_darts(seconds=467648)
 # pub.throw_darts(nburn=50000, nsteps=50000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
 # Pickle results
-# import pickle
-# pickle.dump(pub.chains, open("../data/J0513_trad_x_i.obj", "wb"))
-# pickle.dump(pub.likelihood, open("../data/J0513_trad_likelihood.obj", "wb"))
-# pickle.dump(pub.derived, open("../data/J0513_trad_derived.obj", "wb"))
+import pickle
+pickle.dump(pub.chains, open("../data/J0513_trad_x_i.obj", "wb"))
+pickle.dump(pub.likelihood, open("../data/J0513_trad_likelihood.obj", "wb"))
+pickle.dump(pub.derived, open("../data/J0513_trad_derived.obj", "wb"))
