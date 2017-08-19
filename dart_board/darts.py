@@ -765,7 +765,7 @@ class DartBoard():
 
 
 
-    def scatter_darts(self, num_darts=100000):
+    def scatter_darts(self, num_darts=-1, seconds=-1, output_frequency=100000):
         """
         Rather than use the MCMC sampler, run a forward population synthesis analysis.
 
@@ -776,62 +776,94 @@ class DartBoard():
 
         """
 
-        # Generate the population
-        M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
-                phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, num_darts)
+        if num_darts == -1 and seconds  == -1:
+            print("You must provide either the number of systems you would like to run")
+            print("or the number of seconds you would like to run dart_board for.")
+            sys.exit(-1)
 
-        # Get ln of parameters
-        ln_M1 = np.log(M1)
-        ln_M2 = np.log(M2)
-        ln_a = np.log(posterior.P_to_A(M1, M2, orbital_period))
-        ln_t_b = np.log(t_b)
+        # We will save the likelihoods into self.likelihood
+        self.likelihood = []
 
-        # Now, we want to zero the outputs
-        self.chains = np.zeros((num_darts, 13))
-        self.derived = np.zeros((num_darts, 9))
-        self.likelihood = np.zeros(num_darts, dtype=float)
-        success = np.zeros(num_darts, dtype=bool)
+        # Initialize time and counter trackers
+        start_time = tm.time()
+        num_ran = 0
+
+        # Run for as long as constraints allow
+        while(num_ran < num_darts or (tm.time()-start_time) < seconds):
+
+            # Run in batches of 10000, or whatever is left over
+            if num_darts == -1:
+                batch_size = 1000
+            else:
+                batch_size = np.min([1000, num_darts - num_ran])
 
 
-        # Run binary evolution - must run one at a time
-        for i in range(num_darts):
-            output = self.evolve_binary(M1[i], M2[i], orbital_period[i], ecc[i],
-                                        v_kick1[i], theta_kick1[i], phi_kick1[i],
-                                        v_kick2[i], theta_kick2[i], phi_kick2[i],
-                                        t_b[i], self.metallicity, False, **self.model_kwargs)
+            # Generate the population
+            M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
+                    phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size)
 
-            if posterior.check_output(output, self.binary_type):
+            # Get ln of parameters
+            ln_M1 = np.log(M1)
+            ln_M2 = np.log(M2)
+            ln_a = np.log(posterior.P_to_A(M1, M2, orbital_period))
+            ln_t_b = np.log(t_b)
 
-                # For likelihood function, we need to input specific number of parameters
-                if self.second_SN:
-                    if self.prior_pos is None:
-                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ln_t_b[i]
+            # Now, we want to zero the outputs
+            chains = np.zeros((batch_size, 13))
+            derived = np.zeros((batch_size, 9))
+            likelihood = np.zeros(batch_size, dtype=float)
+            success = np.zeros(batch_size, dtype=bool)
+
+            # Run binary evolution - must run one at a time
+            for i in range(batch_size):
+                output = self.evolve_binary(M1[i], M2[i], orbital_period[i], ecc[i],
+                                            v_kick1[i], theta_kick1[i], phi_kick1[i],
+                                            v_kick2[i], theta_kick2[i], phi_kick2[i],
+                                            t_b[i], self.metallicity, False, **self.model_kwargs)
+
+                # Increment counter to keep track of the number of binaries run
+                num_ran += 1
+
+                if num_ran%output_frequency == 0:
+                    print ("Number run:", num_ran, "in", tm.time() - start_time, "seconds. Found", len(self.chains), "successful binaries.")
+
+
+                if posterior.check_output(output, self.binary_type):
+
+                    # For likelihood function, we need to input specific number of parameters
+                    if self.second_SN:
+                        if self.prior_pos is None:
+                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ln_t_b[i]
+                        else:
+                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], ln_t_b[i]
                     else:
-                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], ln_t_b[i]
-                else:
-                    if self.prior_pos is None:
-                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ln_t_b[i]
-                    else:
-                        x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ra[i], dec[i], ln_t_b[i]
+                        if self.prior_pos is None:
+                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ln_t_b[i]
+                        else:
+                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ra[i], dec[i], ln_t_b[i]
 
-                self.likelihood[i] = posterior.posterior_properties(x_i, output, self)
+                    likelihood[i] = posterior.posterior_properties(x_i, output, self)
 
-                # Only store if it likelihood is finite
-                if(np.isinf(self.likelihood[i])): continue
+                    # Only store if it likelihood is finite
+                    if(np.isinf(likelihood[i])): continue
 
 
 
-                x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
-                        phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], t_b[i]
+                    x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
+                            phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], t_b[i]
 
-                # Save chains and derived
-                self.chains[i] = np.array([x_i])
-                self.derived[i] = np.array([output])
+                    # Save chains and derived
+                    chains[i] = np.array([x_i])
+                    derived[i] = np.array([output])
 
+                    success[i] = True
 
-                success[i] = True
+            # Select those binaries with non-zero posteriors
+            chains_good = np.copy(chains[success])
+            derived_good = np.copy(derived[success])
+            likelihood_good = np.copy(likelihood[success])
 
-        # Now, let's only return successful values in binary_x_i, binary_data
-        self.chains = self.chains[success]
-        self.derived = self.derived[success]
-        self.likelihood = self.likelihood[success]
+            # Only save successful values in binary_x_i, binary_data
+            self.chains = np.append(self.chains, chains_good)
+            self.derived = np.append(self.derived, derived_good)
+            self.likelihood = np.append(self.likelihood, likelihood_good)
