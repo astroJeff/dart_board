@@ -13,18 +13,19 @@ from dart_board import sf_history
 
 # Values for mock system 2
 # Input values: 10.98 7.42 744.24 0.21 168.87 1.81 2.09 83.2554 -69.9390 36.99
-# Output values:  1.30 7.52 31.38 0.0 21.37 8.16e-12 24.44 13 1
+# Output values:  1.30 7.44 44.19 0.26 20.30 3.49e-12 24.47 13 1
 
-system_kwargs = {"ra" : 83.4989 , "dec" : -70.2366 }
+system_kwargs = {"ra" : 83.4989 , "dec" : -70.0366 }
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
-                           ln_prior_pos=sf_history.lmc.prior_lmc, nwalkers=320,
+                           ln_prior_pos=sf_history.lmc.prior_lmc, 
+                           nwalkers=320, threads=20,
                            system_kwargs=system_kwargs)
 
 pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=20000, nsteps=10000)
+pub.throw_darts(nburn=20000, nsteps=100000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 

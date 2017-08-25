@@ -695,10 +695,10 @@ class DartBoard():
             print("...full run finished")
 
 
-            # Save only every 10th sample
-            self.chains = sampler.chain[:,::10,:]
-            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::10,0,:]
-            self.lnprobability = sampler.lnprobability[:,::10]
+            # Save only every 100th sample
+            self.chains = sampler.chain[:,::100,:]
+            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::100,0,:]
+            self.lnprobability = sampler.lnprobability[:,::100]
 
             self.sampler = sampler
 
@@ -737,7 +737,7 @@ class DartBoard():
             # Full run
             print("Starting full run...")
             sampler.reset()
-            for pos,prob,state in sampler.sample(pos, iterations=nsteps, thin=10):
+            for pos,prob,state in sampler.sample(pos, iterations=nsteps, thin=100):
                 pass
             print("...full run finished")
 

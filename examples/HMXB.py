@@ -14,7 +14,7 @@ pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=20000, nsteps=10000)
+pub.throw_darts(nburn=20000, nsteps=100000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 # Acceptance fraction
