@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 from dart_board import constants as c
 
@@ -492,9 +493,10 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
             return pdf[pdf > x].sum() - confidence_level
 
         # Transform distribution
-        coor_dist_polar = tr.transform(np.array([ra_dist, dec_dist]))
-        # coor_dist_polar = tr.transform(zip(ra_dist, dec_dist))
-
+        if (sys.version_info > (3, 0)):
+            coor_dist_polar = tr.transform(np.array([ra_dist, dec_dist]))  # Python 3 code 
+        else:
+            coor_dist_polar = tr.transform(zip(ra_dist, dec_dist))  # Python 2 code
 
         # Create grid for binaries
         ra_width = c.ra_max - c.ra_min
@@ -505,6 +507,11 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         xy_tmp = tr.transform(np.array([XX.flatten(), YY.flatten()]).T)
 
         range_coor = [[np.min(xy_tmp[:,0]), np.max(xy_tmp[:,0])], [np.min(xy_tmp[:,1]), np.max(xy_tmp[:,1])]]
+        if ra is None or dec is None:
+            range_coor = [[xcenter-xwidth, xcenter+xwidth], [ycenter-ywidth, ycenter+ywidth]] 
+        else:
+            ra_transformed, dec_transformed = tr.transform(np.array([ra, dec]))
+            range_coor = [[ra_transformed-xwidth, ra_transformed+xwidth], [dec_transformed-ywidth, dec_transformed+ywidth]] 
 
         # Create 2D histogram
         nbins_x = dist_bins
@@ -543,7 +550,7 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
             sf_plot = plt.scatter(coor_pol[:,0], coor_pol[:,1], color='r', s=25, marker=".", zorder=10)
         else:
             coor_pol1, coor_pol2 = tr.transform(np.array([np.array([ra, ra]), np.array([dec, dec])]).T)
-            sf_plot = plt.scatter(coor_pol1[0], coor_pol1[1], color='r', s=75, marker="*", zorder=10)
+            sf_plot = plt.scatter(coor_pol1[0], coor_pol1[1], color='r', s=50, marker="*", zorder=10)
 
 
 
