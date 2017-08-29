@@ -13,13 +13,13 @@ from dart_board import sf_history
 
 # Values for mock system 3
 # Input values: 11.01 7.42 744.19 0.20 167.69 1.79 2.08 83.2559 -69.9377 36.59
-# Output values:  1.30 7.43 44.93 0.24 20.10 3.01e-12 24.34 13 1
+# Output values:  1.30 7.43 112.51 0.62 31.23 3.98e-13 25.68 13 1
 
 system_kwargs = {"M2" : 7.50, "M2_err" : 0.25,
-                 "P_orb" : 12.0, "P_orb_err" : 1.0,
-                 "ecc_max" : 0.3,
-                 "L_x" : 4.95e33, "L_x_err" : 1.0e32,
-                 "ra" : 83.4989 , "dec" : -70.0366}
+                 "P_orb" : 15.0, "P_orb_err" : 1.0,
+                 "ecc" : 0.60, "ecc_err" : 0.05,
+                 "L_x" : 1.90e33, "L_x_err" : 1.0e32,
+                 "ra" : 81.5858 , "dec" : -70.8483}
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc, nwalkers=320,
                            threads=20, system_kwargs=system_kwargs)

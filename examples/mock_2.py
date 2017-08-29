@@ -13,11 +13,11 @@ from dart_board import sf_history
 
 # Values for mock system 2
 # Input values: 10.98 7.42 744.24 0.21 168.87 1.81 2.09 83.2554 -69.9390 36.99
-# Output values:  1.30 7.44 44.19 0.26 20.30 3.49e-12 24.47 13 1
+# Output values:  1.30 7.43 104.50 0.60 31.48 4.73e-12 25.80 13 1
 
 system_kwargs = {"ra" : 83.4989 , "dec" : -70.0366 }
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
-                           ln_prior_pos=sf_history.lmc.prior_lmc, 
+                           ln_prior_pos=sf_history.lmc.prior_lmc,
                            nwalkers=320, threads=20,
                            system_kwargs=system_kwargs)
 

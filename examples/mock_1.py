@@ -13,9 +13,9 @@ from dart_board import sf_history
 
 # Values for mock system 1
 # Input values: 11.77 8.07 4850.81 0.83 153.04 2.05 2.33 34.74
-# Output values: 1.32 8.05 43.22 0.40 24.66 1.72e-11 21.66 13 1
+# Output values: 1.48 8.09 180.82 0.69 37.16 1.31e-12 22.12 13 1
 
-system_kwargs = {"M2" : 8.3, "M2_err" : 0.5, "ecc" : 0.42, "ecc_err" : 0.05}
+system_kwargs = {"M2" : 8.3, "M2_err" : 0.5, "ecc" : 0.70, "ecc_err" : 0.05}
 pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve,
                            nwalkers=320, threads=20,
                            system_kwargs=system_kwargs)
