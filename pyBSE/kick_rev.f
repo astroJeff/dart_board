@@ -50,6 +50,7 @@
       phi = theta_in
       theta = phi_in
 *
+      sphi = SIN(phi)
       cphi = COS(phi)
       stheta = SIN(theta)
       ctheta = COS(theta)
@@ -63,7 +64,7 @@
 
 * Determine the magnitude of the new relative velocity.
 *      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
-      vn2 = vk2+vr2+2.d0*vk*vr*ctheta
+      vn2 = vk2+vr2+2.d0*vk*vr*cphi
 * Calculate the new semi-major axis.
       sep = 2.d0/r - vn2/(gmrkm*(m1n+m2))
       sep = 1.d0/sep
@@ -73,8 +74,8 @@
 *     endif
 * Determine the magnitude of the cross product of the separation vector
 * and the new relative velocity.
-      v1 = vk2*sphi*sphi
-      v2 = (vk*ctheta*cphi-vr*salpha)**2
+      v1 = vk2 * sphi*sphi * stheta*stheta
+      v2 = (vk*cphi + vr)**2
       hn2 = r*r*(v1 + v2)
 * Calculate the new eccentricity.
       ecc2 = 1.d0 - hn2/(gmrkm*sep*(m1n+m2))
