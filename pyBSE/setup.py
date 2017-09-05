@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pybse',
-      version='0.0.1',
+      version='0.0.2',
       description='Python binding for BSE',
       url='http://github.com/astroJeff/dart_board',
       author='Jeff J. Andrews',

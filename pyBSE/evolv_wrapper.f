@@ -247,7 +247,7 @@
            kstar(1) = INT(bpp(jp,4))
            kstar(2) = INT(bpp(jp,5))
 
-*           write(*,*) bpp(jp,1), bpp(jp,4), bpp(jp,5)
+*            write(*,*) bpp(jp,1), bpp(jp,4), bpp(jp,5)
 
 * First time the loop encounters a NS or BH, set t_SN1 and exit loop
            if(kstar(1).gt.12.or.kstar(2).gt.12)then

@@ -203,7 +203,7 @@
       LOGICAL isave,iplot
       REAL*8 rl,mlwind,vrotf,corerd
       EXTERNAL rl,mlwind,vrotf,corerd
-      REAL bcm(50000,35),bpp(80,10)
+      REAL bcm(50000,35),bpp(100,10)
       COMMON /BINARY/ bcm,bpp
 *
 * Zero output arrays
@@ -414,7 +414,7 @@
             lacc = lacc/lumin(j1)
             if((lacc.gt.0.01d0.and..not.bsymb).or.
      &         (lacc.lt.0.01d0.and.bsymb))then
-               jp = MIN(80,jp + 1)
+               jp = MIN(100,jp + 1)
                bpp(jp,1) = tphys
                bpp(jp,2) = mass(1)
                bpp(jp,3) = mass(2)
@@ -825,7 +825,7 @@
 *
          if(kw.le.1.and.tm.lt.tphys.and..not.bss)then
             bss = .true.
-            jp = MIN(80,jp + 1)
+            jp = MIN(100,jp + 1)
             bpp(jp,1) = tphys
             bpp(jp,2) = mass(1)
             bpp(jp,3) = mass(2)
@@ -865,7 +865,7 @@
 *
       if((tphys.lt.tiny.and.ABS(dtm).lt.tiny.and.
      &    (mass2i.lt.0.1d0.or..not.sgl)).or.snova)then
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          bpp(jp,3) = mass(2)
@@ -1031,7 +1031,7 @@
       if(tphys.ge.tphysf.and.intpol.eq.0) goto 140
       if(change)then
          change = .false.
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          bpp(jp,3) = mass(2)
@@ -1072,7 +1072,7 @@
       radx(j1) = MAX(radc(j1),rol(j1))
       radx(j2) = rad(j2)
 *
-      jp = MIN(80,jp + 1)
+      jp = MIN(100,jp + 1)
       bpp(jp,1) = tphys
       bpp(jp,2) = mass(1)
       bpp(jp,3) = mass(2)
@@ -1279,7 +1279,7 @@
      &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel,
      &               v_kick,theta_kick,phi_kick)
 *
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
@@ -1527,7 +1527,7 @@
                   CALL gntage(mcx,mt2,kst,zpars,mass0(j2),aj(j2))
                   epoch(j2) = tphys + dtm - aj(j2)
 *
-                  jp = MIN(80,jp + 1)
+                  jp = MIN(100,jp + 1)
                   bpp(jp,1) = tphys
                   bpp(jp,2) = mass(j1)
                   bpp(jp,3) = mt2
@@ -1584,7 +1584,7 @@
                   CALL gntage(massc(j2),mt2,kst,zpars,mass0(j2),aj(j2))
                   epoch(j2) = tphys + dtm - aj(j2)
 *
-                  jp = MIN(80,jp + 1)
+                  jp = MIN(100,jp + 1)
                   bpp(jp,1) = tphys
                   bpp(jp,2) = mass(j1)
                   bpp(jp,3) = mt2
@@ -2025,7 +2025,7 @@
 *
          if(kw.le.1.and.tm.lt.tphys.and..not.bss)then
             bss = .true.
-            jp = MIN(80,jp + 1)
+            jp = MIN(100,jp + 1)
             bpp(jp,1) = tphys
             bpp(jp,2) = mass(1)
             bpp(jp,3) = mass(2)
@@ -2101,7 +2101,7 @@
 *
       if(change)then
          change = .false.
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          bpp(jp,3) = mass(2)
@@ -2124,7 +2124,7 @@
          iter = iter + 1
          goto 8
       else
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          bpp(jp,3) = mass(2)
@@ -2152,7 +2152,7 @@
       rrl1 = MIN(999.999d0,rad(1)/rol(1))
       rrl2 = MIN(999.999d0,rad(2)/rol(2))
 *
-      jp = MIN(80,jp + 1)
+      jp = MIN(100,jp + 1)
       bpp(jp,1) = tphys
       bpp(jp,2) = mass(1)
       bpp(jp,3) = mass(2)
@@ -2200,7 +2200,7 @@
          CALL mix(mass0,mass,aj,kstar,zpars)
       endif
       if(com)then
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
@@ -2249,7 +2249,7 @@
          if(com)then
             com = .false.
          else
-            jp = MIN(80,jp + 1)
+            jp = MIN(100,jp + 1)
             bpp(jp,1) = tphys
             bpp(jp,2) = mass(1)
             if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
@@ -2296,7 +2296,7 @@
       if(com)then
          com = .false.
       else
-         jp = MIN(80,jp + 1)
+         jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          if(kstar(1).eq.15.and.bpp(jp-1,4).lt.15.0)then
@@ -2389,7 +2389,7 @@
          tb = -1.d0
       endif
       tb = tb*yeardy
-      if(jp.ge.80)then
+      if(jp.ge.100)then
          WRITE(99,*)' EVOLV2 ARRAY ERROR ',mass1i,mass2i,tbi,ecci
          WRITE(*,*)' STOP: EVOLV2 ARRAY ERROR '
          CALL exit(0)
