@@ -42,7 +42,7 @@ def ln_prior(x, dart):
         if key == 'kick_sigma': kick_sigma = value
         if key == 'M1_alpha': M1_alpha = value
         if key == 'M1_min': M1_min = value
-        if key == 'M1_max': M1_min = value
+        if key == 'M1_max': M1_max = value
         if key == 'M2_min': M2_min = value
         if key == 'a_min': a_min = value
         if key == 'a_max': a_max = value
