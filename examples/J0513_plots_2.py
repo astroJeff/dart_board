@@ -91,10 +91,10 @@ plt_range = ([8,20], [0,15], [0,4000], [0.0,1], [0,750], [0.0,np.pi], [0.0,np.pi
 
 
 # # Load traditional population synthesis results
-trad_x_i = pickle.load(open("../data/J0513_trad_x_i.obj", "rb"))
-trad_likelihood = pickle.load(open("../data/J0513_trad_likelihood.obj", "rb"))
-trad_likelihood = np.exp(trad_likelihood)  # Since ln likelihoods are actually provided
-trad_derived = pickle.load(open("../data/J0513_trad_derived.obj", "rb"))
+# trad_x_i = pickle.load(open("../data/J0513_trad_x_i.obj", "rb"))
+# trad_likelihood = pickle.load(open("../data/J0513_trad_likelihood.obj", "rb"))
+# trad_likelihood = np.exp(trad_likelihood)  # Since ln likelihoods are actually provided
+# trad_derived = pickle.load(open("../data/J0513_trad_derived.obj", "rb"))
 
 
 
@@ -105,7 +105,7 @@ for k in range(2):
     for j in range(5):
 
         i = 5*k+j
-        ax[k,j].hist(trad_x_i.T[i], range=plt_range[i], bins=20, normed=True, weights=trad_likelihood, color='C0', label="Traditional", alpha=0.3)
+#         ax[k,j].hist(trad_x_i.T[i], range=plt_range[i], bins=20, normed=True, weights=trad_likelihood, color='C0', label="Traditional", alpha=0.3)
         ax[k,j].hist(chains.T[i], range=plt_range[i], bins=20, normed=True, histtype='step', color='C1', label='MCMC lmc sfh')
         ax[k,j].hist(chains_flat.T[i], range=plt_range[i], bins=20, normed=True, histtype='step', color='C2', label='MCMC flat sfh')
 
@@ -147,14 +147,14 @@ tmp_x = np.linspace(24.0, 30.0, 1000)
 ax[2].plot(tmp_x, stats.norm.pdf(tmp_x, loc=obs_Porb, scale=obs_Porb_err), color='k')
 ax[3].axvline(0.17, color='k')
 
-trad_Porb = posterior.A_to_P(trad_derived.T[0], trad_derived.T[1], trad_derived.T[2])
-ax[0].hist(trad_derived.T[0], range=plt_range[0], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3, label='Traditional')
-ax[1].hist(trad_derived.T[1], range=plt_range[1], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
-ax[2].hist(trad_Porb, range=plt_range[2], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
-ax[3].hist(trad_derived.T[3], range=plt_range[3], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
-sin_i = np.sin(forward_pop_synth.get_theta(len(trad_Porb)))
-m_f = (trad_derived.T[1] * sin_i)**3 / (trad_derived.T[0]+trad_derived.T[1])**2
-ax[4].hist(m_f, range=plt_range[4], bins=20, normed=True, color='C0', alpha=0.3)
+# trad_Porb = posterior.A_to_P(trad_derived.T[0], trad_derived.T[1], trad_derived.T[2])
+# ax[0].hist(trad_derived.T[0], range=plt_range[0], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3, label='Traditional')
+# ax[1].hist(trad_derived.T[1], range=plt_range[1], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
+# ax[2].hist(trad_Porb, range=plt_range[2], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
+# ax[3].hist(trad_derived.T[3], range=plt_range[3], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
+# sin_i = np.sin(forward_pop_synth.get_theta(len(trad_Porb)))
+# m_f = (trad_derived.T[1] * sin_i)**3 / (trad_derived.T[0]+trad_derived.T[1])**2
+# ax[4].hist(m_f, range=plt_range[4], bins=20, normed=True, color='C0', alpha=0.3)
 
 
 # Plot results from MCMC
@@ -183,7 +183,7 @@ ax[0].hist(MCMC_derived_nosfh.T[0], range=plt_range[0], bins=20, normed=True, hi
 ax[1].hist(MCMC_derived_nosfh.T[1], range=plt_range[1], bins=20, normed=True, histtype='step', color='C3')
 ax[2].hist(MCMC_Porb_nosfh, range=plt_range[2], bins=20, normed=True, histtype='step', color='C3')
 ax[3].hist(MCMC_derived_nosfh.T[3], range=plt_range[3], bins=10, normed=True, histtype='step', color='C3')
-sin_i = np.sin(forward_pop_synth.get_theta(len(MCMC_Porb)))
+sin_i = np.sin(forward_pop_synth.get_theta(len(MCMC_Porb_nosfh)))
 m_f = (MCMC_derived_nosfh.T[1] * sin_i)**3 / ((MCMC_derived_nosfh.T[0]+MCMC_derived_nosfh.T[1])**2)
 ax[4].hist(m_f, range=plt_range[4], bins=10, normed=True, histtype='step', color='C3')
 

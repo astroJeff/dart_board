@@ -16,9 +16,9 @@ from dart_board import sf_history
 # Output values:  1.30 7.43 112.51 0.62 31.23 3.98e-13 25.68 13 1
 
 system_kwargs = {"M2" : 7.50, "M2_err" : 0.25,
-                 "P_orb" : 15.0, "P_orb_err" : 1.0,
+                 "P_orb" : 47.0, "P_orb_err" : 1.0,
                  "ecc" : 0.60, "ecc_err" : 0.05,
-                 "L_x" : 1.90e33, "L_x_err" : 1.0e32,
+                 "L_x" : 6.5e32, "L_x_err" : 1.0e32,
                  "ra" : 81.5858 , "dec" : -70.8483}
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc, nwalkers=320,

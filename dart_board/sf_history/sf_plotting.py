@@ -494,9 +494,10 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
 
         # Transform distribution
         if (sys.version_info > (3, 0)):
-            coor_dist_polar = tr.transform(np.array([ra_dist, dec_dist]))  # Python 3 code 
+            coor_dist_polar = tr.transform(np.array([ra_dist, dec_dist]).T)  # Python 3 code 
         else:
             coor_dist_polar = tr.transform(zip(ra_dist, dec_dist))  # Python 2 code
+
 
         # Create grid for binaries
         ra_width = c.ra_max - c.ra_min
