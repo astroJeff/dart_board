@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_chains(chain, fileout=None, tracers=0, downsample=10, labels=None):
+def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, delay=0):
 
     if chain.ndim < 3:
         print("You must include a multiple chains")
@@ -34,27 +34,28 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=10, labels=None):
 
         for j in range(n_chains):
 
-            ax[ix,iy].plot(chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True)
+            xvals = (np.arange(length)*downsample - delay) / 1000 
+            ax[ix,iy].plot(xvals, chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True)
 
-        ax[ix,iy].set_xlim(0.0, length)
+
+        ax[ix,iy].set_xlim(-delay/1000, (length*downsample-delay)/1000)
         
-        # if (int(i/2) != int(n_var/2) + n_var%2) and (n_var%2!=1 or i%2!=1 or int(i/2)!=int(n_var/2)):  
-        #     ax[ix,iy].set_xticklabels([]) 
-
-        ax[ix,iy].set_xticks(np.linspace(0,length,5))
+        ax[ix,iy].set_xticks(np.linspace(0,(length*downsample-delay)/1000,5))
         ax[ix,iy].set_xticklabels([]) 
 
 
-        # ax[ix,iy].set_xticklabels(np.linspace(0,downsample*length,5).astype('i8').astype('|S6'))
-
         # Add y-axis labels if provided by use 
         if labels is not None: ax[ix,iy].set_ylabel(labels[i]) 
+    
+        ax[ix,iy].axvline(0, color='k', linestyle='dashed', linewidth=2.0)     
 
     # plt.tight_layout()
 
-    ax[-1,0].set_xticklabels(np.linspace(0,downsample*length,5).astype('i8').astype('|S6'))
-    ax[-1,1].set_xticklabels(np.linspace(0,downsample*length,5).astype('i8').astype('|S6'))
+    ax[-1,0].set_xticklabels(np.linspace(0,(downsample*length-delay)/1000,5).astype('i8').astype('U'))
+    ax[-1,1].set_xticklabels(np.linspace(0,(downsample*length-delay)/1000,5).astype('i8').astype('U'))
 
+    ax[-1,0].set_xlabel(r'Steps ($\times$1000)') 
+    ax[-1,1].set_xlabel(r'Steps ($\times$1000)') 
 
     if fileout is None:
         plt.show()
