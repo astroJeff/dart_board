@@ -61,7 +61,6 @@
 * Other inputs
       vk2 = vk*vk
       r = sep
-
 * Determine the magnitude of the new relative velocity.
 *      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
       vn2 = vk2+vr2+2.d0*vk*vr*cphi
@@ -81,6 +80,7 @@
       ecc2 = 1.d0 - hn2/(gmrkm*sep*(m1n+m2))
       ecc2 = MAX(ecc2,0.d0)
       ecc = SQRT(ecc2)
+
 * Calculate the new orbital angular momentum taking care to convert
 * hn to units of Rsun^2/yr.
       jorb = (m1n*m2/(m1n+m2))*SQRT(hn2)*(yearsc/rsunkm)
