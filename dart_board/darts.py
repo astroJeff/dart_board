@@ -799,8 +799,14 @@ class DartBoard():
 
 
             # Generate the population
-            M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
-                    phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size)
+            if self.ra_obs is None or self.dec_obs is None:   
+                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
+                        phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size)
+            else:
+                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
+                        phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size, \
+                        ra_in=self.ra_obs, dec_in=self.dec_obs)
+
 
             # Get ln of parameters
             ln_M1 = np.log(M1)

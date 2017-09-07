@@ -5,7 +5,7 @@ from . import constants as c
 #from . import darts
 from .posterior import A_to_P
 
-def generate_population(dart, N):
+def generate_population(dart, N, ra_in=None, dec_in=None):
     """
     Generate initial conditions for a set of binaries.
 
@@ -48,7 +48,7 @@ def generate_population(dart, N):
         dec = np.zeros(N)
         t_b = dart.generate_t(N)
         for i in range(N):
-            ra[i], dec[i], N_stars = dart.generate_pos(1, t_b[i])
+            ra[i], dec[i], N_stars = dart.generate_pos(1, t_b[i], ra_in=ra_in, dec_in=dec_in)
 
 
     return M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, \

@@ -111,7 +111,7 @@ ax[0].set_ylabel(r"$e$")
 
 # Panel 2: M_2 vs v_sys
 xlim = [0.0, 30.0] 
-ylim = [0.0, 60.0] 
+ylim = [0.0, 90.0] 
 hist2d(derived.T[1], derived.T[4], ax=ax[1], xlim=xlim, ylim=ylim)
 ax[1].set_xlabel(r"M$_2$ ($M_{\odot}$)") 
 ax[1].set_ylabel(r"v$_{\rm sys}$ (km/s)") 
