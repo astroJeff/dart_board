@@ -34,17 +34,19 @@ chains[:,-1] = np.exp(chains[:,-1])
 
 
 def confidence_level(data, level):
-    return np.sort(data)[level*len(data)]
+    return np.sort(data)[int(level*len(data))]
 
 print()
-print(file_name)
-print("1-sigma confidence levels.")
+print(file_name, "1-sigma confidence levels.")
 
-for i in range(nvar):
+for i in range(n_var):
 
     # 1-sigma confidence levels
     lower = confidence_level(chains[:,i], 0.1587)
     upper = confidence_level(chains[:,i], 0.8413)
-    print("Variable:", i, "mean:", np.mean(chains[:,i]), "mediam", np.median(chains[:,i]), lower, upper)
+    mean = np.mean(chains[:,i])
+    median = np.median(chains[:,i])
+    
+    print("Variable:", i, "mean:", np.mean(chains[:,i]), "median:", np.median(chains[:,i]), "Lower error:", median-lower, "Upper error:", upper-median)
 
 print()
