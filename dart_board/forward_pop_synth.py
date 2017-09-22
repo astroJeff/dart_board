@@ -42,11 +42,18 @@ def generate_population(dart, N, ra_in=None, dec_in=None):
     if dart.generate_pos is None:
         ra = np.zeros(N)
         dec = np.zeros(N)
-        t_b = dart.generate_t(N)
+        if dart.binary_type=='HMXB' or dart.binary_type=='NSHMXB' or dart.binary_type=='BHHMXB':    
+            t_b = dart.generate_t(N, max_time=70.0)
+        else:
+            t_b = dart.generate_t(N) 
     else:
         ra = np.zeros(N)
         dec = np.zeros(N)
-        t_b = dart.generate_t(N)
+        if dart.binary_type=='HMXB' or dart.binary_type=='NSHMXB' or dart.binary_type=='BHHMXB':  
+            t_b = dart.generate_t(N, max_time=70.0)
+        else:
+            t_b = dart.generate_t(N) 
+
         for i in range(N):
             ra[i], dec[i], N_stars = dart.generate_pos(1, t_b[i], ra_in=ra_in, dec_in=dec_in)
 
@@ -157,13 +164,16 @@ def get_ecc(N):
 
     return np.sqrt(uniform.rvs(size=N))
 
-def get_t(N):
+def get_t(N, min_time=None, max_time=None):
     """
     Generate N random birth times.
 
     """
 
-    return (c.max_t - c.min_t) * uniform.rvs(size=N) + c.min_t
+    if min_time is None: min_time = c.min_t 
+    if max_time is None: max_time = c.max_t
+
+    return (max_time - min_time) * uniform.rvs(size=N) + min_time
 
 
 
