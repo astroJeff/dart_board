@@ -494,7 +494,7 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
 
         # Transform distribution
         if (sys.version_info > (3, 0)):
-            coor_dist_polar = tr.transform(np.array([ra_dist, dec_dist]).T)  # Python 3 code 
+            coor_dist_polar = tr.transform(np.array([ra_dist, dec_dist]).T)  # Python 3 code
         else:
             coor_dist_polar = tr.transform(zip(ra_dist, dec_dist))  # Python 2 code
 
@@ -509,10 +509,10 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
 
         range_coor = [[np.min(xy_tmp[:,0]), np.max(xy_tmp[:,0])], [np.min(xy_tmp[:,1]), np.max(xy_tmp[:,1])]]
         if ra is None or dec is None:
-            range_coor = [[xcenter-xwidth, xcenter+xwidth], [ycenter-ywidth, ycenter+ywidth]] 
+            range_coor = [[xcenter-xwidth, xcenter+xwidth], [ycenter-ywidth, ycenter+ywidth]]
         else:
             ra_transformed, dec_transformed = tr.transform(np.array([ra, dec]))
-            range_coor = [[ra_transformed-xwidth, ra_transformed+xwidth], [dec_transformed-ywidth, dec_transformed+ywidth]] 
+            range_coor = [[ra_transformed-xwidth, ra_transformed+xwidth], [dec_transformed-ywidth, dec_transformed+ywidth]]
 
         # Create 2D histogram
         nbins_x = dist_bins
@@ -540,6 +540,238 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         zc = contour.collections
         plt.setp(zc, linewidth=1.5)
 
+
+
+    # Plot a star at the coordinate position, if supplied
+    if ra is not None and dec is not None:
+
+        # If only a single ra and dec, or a list of points
+        if isinstance(ra, np.ndarray):
+            coor_pol = tr.transform(np.array([ra, dec]).T)
+            sf_plot = plt.scatter(coor_pol[:,0], coor_pol[:,1], color='r', s=25, marker=".", zorder=10)
+        else:
+            coor_pol1, coor_pol2 = tr.transform(np.array([np.array([ra, ra]), np.array([dec, dec])]).T)
+            sf_plot = plt.scatter(coor_pol1[0], coor_pol1[1], color='r', s=50, marker="*", zorder=10)
+
+
+
+    return sf_plot, ax1
+
+
+
+
+
+
+
+def get_plot_polar_positions(dist_ra, dist_dec, fig_in=None, ax=None, gs=None,
+        dist_bins=25, levels=None, ra=None, dec=None,
+        circle_ra=None, circle_dec=None, circle_radius=None,
+        xcenter=None, ycenter=None, xwidth=None, ywidth=None, rot_angle=0.0,
+        xlabel="Right Ascension", ylabel="Declination", xgrid_density=8, ygrid_density=5,
+        color_map='Blues', color_bar=False, contour_alpha=1.0, title=None):
+    """ return a plot of the star formation history of the SMC at a particular age.
+    In this case, the plot should be curvelinear, instead of flattened.
+
+    Parameters
+    ----------
+    positions : ndarray
+        Positions of a stellar distribution
+    fig : matplotlib.figure (optional)
+        If supplied, plot the contour to this axis. Otherwise, open a new figure
+    rect : int
+        Subplot number
+    gs : gridspec object (optional)
+        If supplied, plot goes inside gridspec object provided
+    ra_dist, dec_dist : array (optional)
+        If supplied, plots contours around the distribution of these inputs
+    dist_bins : int (optional)
+        Number of bins for ra_dist-dec_dist contours
+    ra, dec : float (optional)
+        If supplied, plot a red star at these coordinates (degrees)
+    xcenter, ycenter : float (optional)
+        If supplied, center the x,y-axis on these coordinates
+    xwidth, ywidth : float (optional)
+        If supplied, determines the scale of the plot
+    rot_angle : float (optional)
+        Rotation angle for polar plot
+    xlabel, ylabel : string (optional)
+        X-axis, y-axis label
+    xgrid_density, ygrid_density : int (optional)
+        Density of RA, Dec grid axes
+    color_map : string (optional)
+        One of the color map options from plt.cmap
+    color_bar : bool (optional)
+        Add a color bar to the plot
+    title : string
+        Add a title to the plot. Default is the age.
+
+    Returns
+    -------
+    plt : matplotlib.pyplot plot
+        Contour plot of the star formation history
+    """
+
+    import mpl_toolkits.axisartist.angle_helper as angle_helper
+    from matplotlib.projections import PolarAxes
+    from matplotlib.transforms import Affine2D
+    from mpl_toolkits.axisartist import SubplotHost
+    from mpl_toolkits.axisartist import GridHelperCurveLinear
+    import matplotlib.gridspec as gridspec
+
+
+
+    if (c.ra_min is None) or (c.ra_max is None) or (c.dec_min is None) or (c.dec_max is None):
+        print("You must provide ra and dec bounds.")
+        exit(-1)
+
+
+    def curvelinear_test2(fig, gs=None, xcenter=0.0, ycenter=17.3, xwidth=1.5, ywidth=1.5,
+            rot_angle=0.0, xlabel=xlabel, ylabel=ylabel, xgrid_density=8, ygrid_density=5):
+        """
+        polar projection, but in a rectangular box.
+        """
+
+        tr = Affine2D().translate(0,90)
+        tr += Affine2D().scale(np.pi/180., 1.)
+        tr += PolarAxes.PolarTransform()
+
+        tr += Affine2D().rotate(rot_angle)  # This rotates the grid
+
+        extreme_finder = angle_helper.ExtremeFinderCycle(10, 60,
+                                                        lon_cycle = 360,
+                                                        lat_cycle = None,
+                                                        lon_minmax = None,
+                                                        lat_minmax = (-90, np.inf),
+                                                        )
+
+        grid_locator1 = angle_helper.LocatorHMS(xgrid_density) #changes theta gridline count
+        tick_formatter1 = angle_helper.FormatterHMS()
+        grid_locator2 = angle_helper.LocatorDMS(ygrid_density) #changes theta gridline count
+        tick_formatter2 = angle_helper.FormatterDMS()
+
+
+        grid_helper = GridHelperCurveLinear(tr,
+                                            extreme_finder=extreme_finder,
+                                            grid_locator1=grid_locator1,
+                                            grid_locator2=grid_locator2,
+                                            tick_formatter1=tick_formatter1,
+                                            tick_formatter2=tick_formatter2
+                                            )
+
+        # ax1 = SubplotHost(fig, rect, grid_helper=grid_helper)
+        if gs is None:
+            ax1 = SubplotHost(fig, 111, grid_helper=grid_helper)
+        else:
+            ax1 = SubplotHost(fig, gs, grid_helper=grid_helper)
+
+
+
+        # make ticklabels of right and top axis visible.
+        ax1.axis["right"].major_ticklabels.set_visible(False)
+        ax1.axis["top"].major_ticklabels.set_visible(False)
+        ax1.axis["bottom"].major_ticklabels.set_visible(True) #Turn off?
+
+        # let right and bottom axis show ticklabels for 1st coordinate (angle)
+        ax1.axis["right"].get_helper().nth_coord_ticks=0
+        ax1.axis["bottom"].get_helper().nth_coord_ticks=0
+
+
+        fig.add_subplot(ax1)
+
+        grid_helper = ax1.get_grid_helper()
+
+        # These move the grid
+        ax1.set_xlim(xcenter-xwidth, xcenter+xwidth) # moves the origin left-right in ax1
+        ax1.set_ylim(ycenter-ywidth, ycenter+ywidth) # moves the origin up-down
+
+
+        if xlabel is not None: ax1.set_xlabel(xlabel)
+        if ylabel is not None: ax1.set_ylabel(ylabel)
+        ax1.grid(True, linestyle='-')
+
+
+        return ax1,tr
+
+
+    # User supplied input
+    if fig_in is None:
+        fig = plt.figure(1, figsize=(8, 6))
+        fig.clf()
+    else:
+        fig = fig_in
+
+
+    # tr.transform_point((x, 0)) is always (0,0)
+            # => (theta, r) in but (r, theta) out...
+    ax1, tr = curvelinear_test2(fig, gs=gs, xcenter=xcenter, ycenter=ycenter,
+                    xwidth=xwidth, ywidth=ywidth, rot_angle=rot_angle,
+                    xlabel=xlabel, ylabel=ylabel,
+                    xgrid_density=xgrid_density, ygrid_density=ygrid_density)
+
+
+
+    stellar_distribution = np.array([])
+
+    # CREATING OUR OWN, LARGER GRID FOR STAR FORMATION CONTOURS
+    x_tmp = np.linspace(c.ra_min, c.ra_max, dist_bins)
+    y_tmp = np.linspace(c.dec_min, c.dec_max, dist_bins)
+
+    XX, YY = np.meshgrid(x_tmp, y_tmp)
+
+    distribution_range = [[c.ra_min, c.ra_max], [c.dec_min, c.dec_max]]
+    H, xedges, yedges = np.histogram2d(dist_ra, dist_dec,
+                                       bins=dist_bins, range=distribution_range,
+                                       normed=True)
+    H = H.T
+
+    X_bounds, Y_bounds = np.meshgrid(xedges, yedges)
+
+    stellar_distribution = H.flatten()
+
+    #
+    # # Here is where the distribution is plotted
+    # for i in np.arange(len(X_bounds.flatten())):
+    #
+    #     stellar_distribution = np.append(stellar_distribution, )
+    #     sfr = np.append(sfr, H.flatten())
+
+
+    out_test = tr.transform(np.array([XX.flatten(), YY.flatten()]).T)
+
+
+
+
+    # Plot star formation histories on adjusted coordinates
+    # Plot color contours with linear spacing
+
+    if levels is None:
+        levels = np.linspace(1.0e-2 * np.max(stellar_distribution), np.max(stellar_distribution), 10)
+        sf_plot = plt.tricontourf(out_test[:,0], out_test[:,1], stellar_distribution, cmap=color_map,
+                                  extend='max', alpha=contour_alpha, rasterized=True)
+    else:
+        sf_plot = plt.tricontourf(out_test[:,0], out_test[:,1], stellar_distribution, cmap=color_map,
+                                  levels=levels, extend='max', alpha=contour_alpha, rasterized=True)
+
+    if color_bar:
+        sf_plot = plt.colorbar()
+
+
+    if title is not None:
+        sf_plot = plt.title(title)
+
+
+
+    if circle_ra is not None and circle_dec is not None and circle_radius is not None:
+
+        # Transform distribution
+        if (sys.version_info > (3, 0)):
+            circle_pos_polar = tr.transform(np.array([circle_ra, circle_dec]).T)  # Python 3 code
+        else:
+            circle_pos_polar = tr.transform(zip(circle_ra, circle_dec))  # Python 2 code
+
+        for j in range(len(circle_pos_polar[:,0])):
+            plt.Circle((circle_pos_polar[j,0], circle_pos_polar[j,1]), 1.0, color='r', fill=False)
+            plt.scatter(circle_pos_polar[j,0], circle_pos_polar[j,1], color='r', s=20, marker="*", zorder=10)
 
 
     # Plot a star at the coordinate position, if supplied
