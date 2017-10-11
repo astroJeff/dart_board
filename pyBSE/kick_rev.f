@@ -16,15 +16,12 @@
       real*8 u1,u2,vk,v(4),s,theta,phi,theta_in,phi_in
       real*8 sphi,cphi,stheta,ctheta,salpha,calpha
       real*8 vr,vr2,vk2,vn2,hn2
-      real*8 mu,cmu,vs(3),v1,v2,mx1,mx2
+      real*8 mu,cmu,vs(6),v1,v2,mx1,mx2
       real*8 sigma
       COMMON /VALUE4/ sigma,bhflag
       real ran3,xx
       external ran3
 *
-      do k = 1,3
-         vs(k) = 0.d0
-      enddo
 *     if(kw.eq.14.and.bhflag.eq.0) goto 95
 *
       pi = ACOS(-1.d0)
@@ -94,9 +91,15 @@
 * Calculate the components of the velocity of the new centre-of-mass.
          mx1 = vk*m1n/(m1n+m2)
          mx2 = vr*(m1-m1n)*m2/((m1n+m2)*(m1+m2))
-         vs(1) = mx1*ctheta*cphi + mx2*salpha
-         vs(2) = mx1*stheta*cphi + mx2*calpha
-         vs(3) = mx1*sphi
+         if((vs(1).eq.0.d0).and.(vs(2).eq.0.d0).and.(vs(3).eq.0.d0))then
+            vs(1) = mx1*ctheta*cphi + mx2*salpha
+            vs(2) = mx1*stheta*cphi + mx2*calpha
+            vs(3) = mx1*sphi
+         else
+            vs(4) = mx1*ctheta*cphi + mx2*salpha
+            vs(5) = mx1*stheta*cphi + mx2*calpha
+            vs(6) = mx1*sphi
+         endif
       else
 * Calculate the relative hyperbolic velocity at infinity (simple method).
          sep = r/(ecc-1.d0)

@@ -48,3 +48,12 @@ docs/*.pdf
 pyBSE_old
 examples/*test*
 examples/BHBH*
+pyBSE/pybse/*.pyc
+pyBSE/pybse/__pycache__
+pyBSE_2/
+test/
+fort.99
+pyBSE/pybse.egg-info/
+pyBSE/*.ipynb
+pyBSE/dist/
+pyBSE/.ipynb_checkpoints/

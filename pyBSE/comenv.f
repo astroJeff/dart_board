@@ -2,7 +2,7 @@
       SUBROUTINE COMENV(M01,M1,MC1,AJ1,JSPIN1,KW1,
      &                  M02,M2,MC2,AJ2,JSPIN2,KW2,
      &                  ZPARS,ECC,SEP,JORB,COEL,
-     &                  v_kick,theta_kick,phi_kick)
+     &                  v_kick,theta_kick,phi_kick,vs)
 *
 * Common Envelope Evolution.
 *
@@ -21,6 +21,7 @@
       COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag
 *
       REAL*8 v_kick,theta_kick,phi_kick
+      REAL*8 vs(6)
       REAL*8 M01,M1,MC1,AJ1,JSPIN1,R1,L1,K21
       REAL*8 M02,M2,MC2,AJ2,JSPIN2,R2,L2,K22,MC22
       REAL*8 TSCLS1(20),TSCLS2(20),LUMS(10),GB(10),TM1,TM2,TN,ZPARS(20)
@@ -28,11 +29,11 @@
       REAL*8 CONST,DELY,DERI,DELMF,MC3,FAGE1,FAGE2
       REAL*8 ECC,SEP,JORB,TB,OORB,OSPIN1,OSPIN2,TWOPI
       REAL*8 RC1,RC2,Q1,Q2,RL1,RL2,LAMB1,LAMB2
-      REAL*8 MENV,RENV,MENVD,RZAMS,VS(3)
+      REAL*8 MENV,RENV,MENVD,RZAMS
       REAL*8 AURSUN,K3,ALPHA1,LAMBDA
       PARAMETER (AURSUN = 214.95D0,K3 = 0.21D0)
       COMMON /VALUE2/ ALPHA1,LAMBDA
-      LOGICAL COEL
+      LOGICAL COEL, SNFLAG
       REAL*8 CELAMF,RL,RZAMSF
       EXTERNAL CELAMF,RL,RZAMSF
 *
@@ -45,6 +46,7 @@
 *
       TWOPI = 2.D0*ACOS(-1.D0)
       COEL = .FALSE.
+      SNFLAG = .FALSE.
 *
 * Obtain the core masses and radii.
 *
@@ -134,6 +136,7 @@
      &                  R1,L1,KW1,MC1,RC1,MENV,RENV,K21)
             IF(KW1.GE.13)THEN
 * We assume a circular binary at the SN kick
+               SNFLAG = .TRUE.
                CALL kick_rev(KW1,MF,M1,M2,ECC,SEPF,JORB,VS,
      &                       v_kick,theta_kick,phi_kick)
                IF(ECC.GT.1.D0) GOTO 30
@@ -224,6 +227,7 @@
      &                  R1,L1,KW1,MC1,RC1,MENV,RENV,K21)
             IF(KW1.GE.13)THEN
 * We assume a circular binary at the SN kick
+               SNFLAG = .TRUE.
                CALL kick_rev(KW1,MF,M1,M2,ECC,SEPF,JORB,VS,
      &                       v_kick,theta_kick,phi_kick)
                IF(ECC.GT.1.D0) GOTO 30
@@ -236,6 +240,7 @@
      &                  R2,L2,KW2,MC2,RC2,MENV,RENV,K22)
             IF(KW2.GE.13.AND.KW.LT.13)THEN
 * We assume a circular binary at the SN kick
+               SNFLAG = .TRUE.
                CALL kick_rev(KW1,MF,M1,M2,ECC,SEPF,JORB,VS,
      &                       v_kick,theta_kick,phi_kick)
                IF(ECC.GT.1.D0) GOTO 30
@@ -338,10 +343,12 @@
 * energy to circularise the orbit before removing angular momentum.
 * (note this should not be done in case of CE SN ... fix).
 *
-         IF(EORBF.LT.ECIRC)THEN
-            ECC = SQRT(1.D0 - EORBF/ECIRC)
-         ELSE
-            ECC = 0.D0
+         IF(.NOT.SNFLAG)THEN
+            IF(EORBF.LT.ECIRC)THEN
+               ECC = SQRT(1.D0 - EORBF/ECIRC)
+            ELSE
+               ECC = 0.D0
+            ENDIF
          ENDIF
 *
 * Set both cores in co-rotation with the orbit on exit of CE,

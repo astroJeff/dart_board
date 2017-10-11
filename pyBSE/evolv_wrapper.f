@@ -2,10 +2,11 @@
       SUBROUTINE evolv_wrapper(num_bin, m1, m2, tb, ecc, v_kick1,
      &                         theta_kick1, phi_kick1, v_kick2,
      &                         theta_kick2, phi_kick2, tmax, z,
-     &                         out_flag,
+     &                         out_flag, idum_in,
      &                         neta_in, bwind_in, hewind_in,
      &                         alpha1_in, lambda_in, ceflag_in,
      &                         tflag_in, ifflag_in, wdflag_in,
+     &                         GRflag_in,
      &                         bhflag_in, nsflag_in, mxns_in,
      &                         pts1_in, pts2_in, pts3_in, sigma_in,
      &                         beta_in, xi_in, acc2_in, epsnov_in,
@@ -31,9 +32,11 @@
       real*8, intent(in) :: v_kick1, theta_kick1, phi_kick1
       real*8, intent(in) :: v_kick2, theta_kick2, phi_kick2
       real*8, intent(in) :: m1, m2, tmax, z
+      integer, intent(in) :: idum_in
       real*8, intent(in) :: neta_in, bwind_in, hewind_in
       real*8, intent(in) :: alpha1_in, lambda_in, mxns_in
       integer, intent(in) :: wdflag_in, nsflag_in, bhflag_in
+      integer, intent(in) :: GRflag_in
       integer, intent(in) :: ceflag_in, tflag_in, ifflag_in
       real*8, intent(in) :: pts1_in, pts2_in, pts3_in, sigma_in
       real*8, intent(in) :: beta_in, xi_in, acc2_in, epsnov_in
@@ -96,6 +99,7 @@
       tflag = tflag_in
       ifflag = ifflag_in
       wdflag = wdflag_in
+      GRflag = GRflag_in
       bhflag = bhflag_in
       nsflag = nsflag_in
       mxns = mxns_in
@@ -113,7 +117,7 @@
 *
 * Set the seed for the random number generator.
 *
-      idum = 3234
+      idum = idum_in
       if(idum.gt.0) idum = -idum
 *
 * Set the collision matrix.

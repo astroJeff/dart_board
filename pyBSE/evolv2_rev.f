@@ -162,8 +162,12 @@
       INTEGER kstar(2),kw,kst,kw1,kw2,kmin,kmax
       INTEGER ktype(0:14,0:14)
       COMMON /TYPES/ ktype
-      INTEGER ceflag,tflag,ifflag,nsflag,wdflag
-      COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag
+      INTEGER ceflag,tflag,ifflag,nsflag,wdflag,GRflag
+      COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag,GRflag
+      INTEGER idum
+      COMMON /VALUE3/ idum
+      real ran3,xx
+      external ran3
 *
       REAL*8 v_kick1,theta_kick1,phi_kick1
       REAL*8 v_kick2,theta_kick2,phi_kick2
@@ -174,7 +178,8 @@
       REAL*8 mass0(2),mass(2),massc(2),menv(2),mass00(2),mcxx(2)
       REAL*8 rad(2),rol(2),rol0(2),rdot(2),radc(2),renv(2),radx(2)
       REAL*8 lumin(2),k2str(2),q(2),dms(2),dmr(2),dmt(2)
-      REAL*8 dml,vorb2,vwind2,omv2,ivsqm,lacc,vs(3)
+      REAL*8 dml,vorb2,vwind2,omv2,ivsqm,lacc,vs(6)
+      REAL*8 vs_theta, vs_phi, vs_temp, u1, u2, vs_o(3)
       REAL*8 sep,dr,tb,dme,tdyn,taum,dm1,dm2,dmchk,qc,dt,pd,rlperi
       REAL*8 m1ce,m2ce,mch,tmsnew,dm22,mew
       PARAMETER(mch=1.44d0)
@@ -203,7 +208,7 @@
       LOGICAL isave,iplot
       REAL*8 rl,mlwind,vrotf,corerd
       EXTERNAL rl,mlwind,vrotf,corerd
-      REAL bcm(50000,35),bpp(100,10)
+      REAL bcm(50000,35),bpp(1000,10)
       COMMON /BINARY/ bcm,bpp
 *
 * Zero output arrays
@@ -230,6 +235,19 @@
       sgl = .false.
       mt2 = MIN(mass(1),mass(2))
       kst = 0
+      do k = 1,6
+         vs(k) = 0.d0
+      enddo
+      do k = 1,3
+         vs_o(k) = 0.d0
+      enddo
+* Calculate angles for systemic velocity from 2nd SN kick
+      u1 = RAN3(idum)
+      u2 = RAN3(idum)
+      vs_theta = ACOS(1.d0-2.d0*u1)
+      vs_phi = twopi*u2
+
+
 *
       if(mt2.lt.tiny.or.tb.le.0.d0)then
          sgl = .true.
@@ -449,7 +467,7 @@
 * For very close systems include angular momentum loss owing to
 * gravitational radiation.
 *
-         if(sep.le.10.d0)then
+         if(sep.le.10.d0.and.GRflag.eq.1.d0)then
             djgr = 8.315d-10*mass(1)*mass(2)*(mass(1)+mass(2))/
      &             (sep*sep*sep*sep)
             f1 = (19.d0/6.d0) + (121.d0/96.d0)*ecc2
@@ -883,6 +901,16 @@
          endif
       endif
 *
+
+* Calculate total systemic velocity from individual SN systemic velocities
+      vs_temp = SQRT(vs(4)*vs(4)+vs(5)*vs(5)+vs(6)*vs(6))
+      vs_o(1) = vs(1)
+      vs_o(2) = vs(2)
+      vs_o(3) = vs(3)
+      vs_o(1) = vs_o(1) + vs_temp*SIN(vs_theta)*cos(vs_phi)
+      vs_o(2) = vs_o(2) + vs_temp*SIN(vs_theta)*sin(vs_phi)
+      vs_o(3) = vs_o(3) + vs_temp*COS(vs_theta)
+
       if((isave.and.tphys.ge.tsave).or.iplot)then
          if(sgl.or.(rad(1).lt.rol(1).and.rad(2).lt.rol(2)).
      &      or.tphys.lt.tiny)then
@@ -923,7 +951,8 @@
             bcm(ip,30) = tb
             bcm(ip,31) = sep
             bcm(ip,32) = ecc
-            bcm(ip,33) = SQRT(vs(1)*vs(1)+vs(2)*vs(2)+vs(3)*vs(3))
+            bcm(ip,33) = SQRT(vs_o(1)*vs_o(1)+vs_o(2)*vs_o(2)
+     &                       +vs_o(3)*vs_o(3))
             if(isave) tsave = tsave + dtp
          endif
       endif
@@ -1277,7 +1306,7 @@
          CALL comenv(mass0(j1),mass(j1),massc(j1),aj(j1),jspin(j1),
      &               kstar(j1),mass0(j2),mass(j2),massc(j2),aj(j2),
      &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel,
-     &               v_kick,theta_kick,phi_kick)
+     &               v_kick,theta_kick,phi_kick,vs)
 *
          jp = MIN(100,jp + 1)
          bpp(jp,1) = tphys
@@ -2025,7 +2054,7 @@
 *
          if(kw.le.1.and.tm.lt.tphys.and..not.bss)then
             bss = .true.
-            jp = MIN(100,jp + 1)
+            jp = MIN(999,jp + 1)
             bpp(jp,1) = tphys
             bpp(jp,2) = mass(1)
             bpp(jp,3) = mass(2)
@@ -2101,7 +2130,7 @@
 *
       if(change)then
          change = .false.
-         jp = MIN(100,jp + 1)
+         jp = MIN(999,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          bpp(jp,3) = mass(2)
@@ -2124,7 +2153,7 @@
          iter = iter + 1
          goto 8
       else
-         jp = MIN(100,jp + 1)
+         jp = MIN(999,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          bpp(jp,3) = mass(2)
@@ -2152,7 +2181,7 @@
       rrl1 = MIN(999.999d0,rad(1)/rol(1))
       rrl2 = MIN(999.999d0,rad(2)/rol(2))
 *
-      jp = MIN(100,jp + 1)
+      jp = MIN(999,jp + 1)
       bpp(jp,1) = tphys
       bpp(jp,2) = mass(1)
       bpp(jp,3) = mass(2)
@@ -2178,7 +2207,7 @@
          CALL comenv(mass0(j1),mass(j1),massc(j1),aj(j1),jspin(j1),
      &               kstar(j1),mass0(j2),mass(j2),massc(j2),aj(j2),
      &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel,
-     &               v_kick,theta_kick,phi_kick)
+     &               v_kick,theta_kick,phi_kick,vs)
          com = .true.
       elseif(kstar(j2).ge.2.and.kstar(j2).le.9.and.kstar(j2).ne.7)then
 *         write(*,*) "Common envelope 2"
@@ -2194,13 +2223,13 @@
          CALL comenv(mass0(j2),mass(j2),massc(j2),aj(j2),jspin(j2),
      &               kstar(j2),mass0(j1),mass(j1),massc(j1),aj(j1),
      &               jspin(j1),kstar(j1),zpars,ecc,sep,jorb,coel,
-     &               v_kick,theta_kick,phi_kick)
+     &               v_kick,theta_kick,phi_kick,vs)
          com = .true.
       else
          CALL mix(mass0,mass,aj,kstar,zpars)
       endif
       if(com)then
-         jp = MIN(100,jp + 1)
+         jp = MIN(999,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
@@ -2249,7 +2278,7 @@
          if(com)then
             com = .false.
          else
-            jp = MIN(100,jp + 1)
+            jp = MIN(999,jp + 1)
             bpp(jp,1) = tphys
             bpp(jp,2) = mass(1)
             if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
@@ -2296,7 +2325,7 @@
       if(com)then
          com = .false.
       else
-         jp = MIN(100,jp + 1)
+         jp = MIN(999,jp + 1)
          bpp(jp,1) = tphys
          bpp(jp,2) = mass(1)
          if(kstar(1).eq.15.and.bpp(jp-1,4).lt.15.0)then
@@ -2389,7 +2418,7 @@
          tb = -1.d0
       endif
       tb = tb*yeardy
-      if(jp.ge.100)then
+      if(jp.ge.1000)then
          WRITE(99,*)' EVOLV2 ARRAY ERROR ',mass1i,mass2i,tbi,ecci
          WRITE(*,*)' STOP: EVOLV2 ARRAY ERROR '
          CALL exit(0)
