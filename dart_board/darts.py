@@ -617,7 +617,7 @@ class DartBoard():
                         dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.001*C, 1))
 
                     # Metallicity
-                    z_set[i] = np.exp(np.random.normal(np.log(0.02), 0.001*C, 1))
+                    if self.model_metallicity: z_set[i] = np.exp(np.random.normal(np.log(0.02), 0.001*C, 1))
 
                     # Birth time
                     time_set[i] = time*(1.0 + np.random.normal(0.0, C, 1))
