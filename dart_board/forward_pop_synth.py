@@ -42,17 +42,17 @@ def generate_population(dart, N, ra_in=None, dec_in=None):
     if dart.generate_pos is None:
         ra = np.zeros(N)
         dec = np.zeros(N)
-        if dart.binary_type=='HMXB' or dart.binary_type=='NSHMXB' or dart.binary_type=='BHHMXB':    
+        if dart.binary_type=='HMXB' or dart.binary_type=='NSHMXB' or dart.binary_type=='BHHMXB':
             t_b = dart.generate_t(N, max_time=70.0)
         else:
-            t_b = dart.generate_t(N) 
+            t_b = dart.generate_t(N)
     else:
         ra = np.zeros(N)
         dec = np.zeros(N)
-        if dart.binary_type=='HMXB' or dart.binary_type=='NSHMXB' or dart.binary_type=='BHHMXB':  
+        if dart.binary_type=='HMXB' or dart.binary_type=='NSHMXB' or dart.binary_type=='BHHMXB':
             t_b = dart.generate_t(N, max_time=70.0)
         else:
-            t_b = dart.generate_t(N) 
+            t_b = dart.generate_t(N)
 
         for i in range(N):
             ra[i], dec[i], N_stars = dart.generate_pos(1, t_b[i], ra_in=ra_in, dec_in=dec_in)
@@ -155,7 +155,6 @@ def get_a(N):
 
     return c.min_a * np.exp(x / C)
 
-
 def get_ecc(N):
     """
     Generate N random eccentricities.
@@ -170,13 +169,24 @@ def get_t(N, min_time=None, max_time=None):
 
     """
 
-    if min_time is None: min_time = c.min_t 
+    if min_time is None: min_time = c.min_t
     if max_time is None: max_time = c.max_t
 
     return (max_time - min_time) * uniform.rvs(size=N) + min_time
 
+def get_z(t_b, N, min_z=None, max_z=None):
+    """
+    Generate N random metallicities.
 
+    """
 
+    if min_z is None: min_z = c.min_z
+    if max_z is None: max_z = c.max_z
+
+    C = 1.0 / (np.log(max_z) - np.log(min_z))
+    x = uniform.rvs(size=N)
+
+    return min_z * np.exp(x / C)
 
 def get_new_ra_dec(ra, dec, theta_proj, pos_ang):
     """ Find the new ra, dec from an initial ra, dec and how it moved

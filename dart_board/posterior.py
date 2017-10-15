@@ -68,6 +68,7 @@ def ln_posterior(x, dart):
         if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
 
         ll, output = ln_likelihood(x, dart)
+
         return lp+ll, output
 
     else:
@@ -97,25 +98,36 @@ def ln_likelihood(x, dart):
     """
 
 
+    # Save model parameters to variables
+    ln_M1, ln_M2, ln_a, ecc = x[0:4]
+    x = x[4:]
+    if dart.first_SN:
+        v_kick1, theta_kick1, phi_kick1 = x[0:3]
+        x = x[3:]
     if dart.second_SN:
-        if dart.prior_pos is None:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ln_t_b = x
-        else:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, ln_t_b = x
+        v_kick2, theta_kick2, phi_kick2 = x[0:3]
+        x = x[3:]
+    if dart.prior_pos is not None:
+        ra_b, dec_b = x[0:2]
+        x = x[2:]
+    if dart.model_metallicity:
+        ln_z = x[0]
+        z = np.exp(ln_z)
+        x = x[1:]
     else:
-        if dart.prior_pos is None:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ln_t_b = x
-        else:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
+        z = dart.metallicity
+    ln_t_b = x[0]
 
+
+    # Move from log vars to linear
     M1 = np.exp(ln_M1)
     M2 = np.exp(ln_M2)
     a = np.exp(ln_a)
     t_b = np.exp(ln_t_b)
 
+
     # Empty array for emcee blobs
     empty_arr = np.zeros(9)
-
 
 
     # Get initial orbital period
@@ -133,7 +145,7 @@ def ln_likelihood(x, dart):
     output = dart.evolve_binary(M1, M2, orbital_period, ecc,
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
-                                t_b, dart.metallicity, False, **dart.model_kwargs)
+                                t_b, z, False, **dart.model_kwargs)
     # m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
 
 
@@ -166,21 +178,40 @@ def posterior_properties(x, output, dart):
     M1_out, M2_out, a_out, ecc_out, v_sys, mdot_out, t_SN1, k1_out, k2_out = output
     P_orb_out = A_to_P(M1_out, M2_out, a_out)
 
+
+    # Save model parameters to variables
+    ln_M1, ln_M2, ln_a, ecc = x[0:4]
+    x = x[4:]
+    if dart.first_SN:
+        v_kick1, theta_kick1, phi_kick1 = x[0:3]
+        x = x[3:]
     if dart.second_SN:
-        if dart.prior_pos is None:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ln_t_b = x
-        else:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, ln_t_b = x
-    else:
-        if dart.prior_pos is None:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ln_t_b = x
-        else:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
+        v_kick2, theta_kick2, phi_kick2 = x[0:3]
+        x = x[3:]
+    if dart.prior_pos is not None:
+        ra_b, dec_b = x[0:2]
+        x = x[2:]
+    if dart.model_metallicity:
+        ln_z = x[0]
+        x = x[1:]
+    ln_t_b = x[0]
+
+    # if dart.second_SN:
+    #     if dart.prior_pos is None:
+    #         ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ln_t_b = x
+    #     else:
+    #         ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, ln_t_b = x
+    # else:
+    #     if dart.prior_pos is None:
+    #         ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ln_t_b = x
+    #     else:
+    #         ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
 
     M1 = np.exp(ln_M1)
     M2 = np.exp(ln_M2)
     a = np.exp(ln_a)
     t_b = np.exp(ln_t_b)
+    z = np.exp(ln_z)
 
     # Calculate an X-ray luminosity
     L_x_out = calculate_L_x(M1_out, mdot_out, k1_out)

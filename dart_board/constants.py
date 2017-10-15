@@ -36,6 +36,8 @@ min_z = 0.001
 max_z = 0.03
 min_t = 0.0
 max_t = 1.0e4  # in Myr
+min_z = 1.0e-10
+max_z = 0.03
 
 ra_max = None
 ra_min = None

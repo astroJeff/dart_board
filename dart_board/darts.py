@@ -40,6 +40,7 @@ class DartBoard():
                  ln_prior_phi_kick=priors.ln_prior_phi_kick,
                  ln_prior_t=priors.ln_prior_ln_t,
                  ln_prior_pos=None,
+                 ln_prior_z=None,
                  ln_posterior_function=None,
                  generate_M1=forward_pop_synth.get_M1,
                  generate_M2=forward_pop_synth.get_M2,
@@ -49,6 +50,7 @@ class DartBoard():
                  generate_theta_kick=forward_pop_synth.get_theta,
                  generate_phi_kick=forward_pop_synth.get_phi,
                  generate_t=forward_pop_synth.get_t,
+                 generate_z=forward_pop_synth.get_z,
                  generate_pos=None,
                  ntemps=None,
                  nwalkers=80,
@@ -88,6 +90,11 @@ class DartBoard():
         else:
             self.prior_pos = ln_prior_pos
 
+        self.model_metallicity = False
+        if ln_prior_z is not None:
+            self.prior_z = ln_prior_z
+            self.model_metallicity = True
+
         # Set the functions to generate new values for each parameters
         # This is only needed for forward population synthesis
         self.generate_M1 = generate_M1
@@ -102,6 +109,7 @@ class DartBoard():
         self.generate_phi_kick2 = generate_phi_kick
 
         self.generate_pos = None
+        self.generate_z = generate_z
         self.generate_t = generate_t
         if generate_pos is not None:
             self.generate_pos = generate_pos
@@ -126,6 +134,10 @@ class DartBoard():
         self.evolve_binary = evolve_binary
 
         # The type of objects
+        self.first_SN = False
+        if "NS" in binary_type or "BH" in binary_type or "HMXB" in binary_type:
+            self.first_SN = True
+
         self.second_SN = False
         if np.any(binary_type == np.array(["BHBH", "NSNS", "BHNS"])):
             self.second_SN = True
@@ -152,16 +164,12 @@ class DartBoard():
         self.prior_kwargs = prior_kwargs
 
         # Determine the number of dimensions
-        if ln_prior_pos is None:
-            if self.second_SN:
-                self.dim = 11
-            else:
-                self.dim = 8
-        else:
-            if self.second_SN:
-                self.dim = 13
-            else:
-                self.dim = 10
+        self.dim = 4  # M1, M2, a, ecc
+        if self.first_SN: self.dim += 3  # First SN parameters
+        if self.second_SN: self.dim += 3  # Second SN parameters
+        if self.prior_pos is not None: self.dim += 2  # RA and Dec
+        if self.model_metallicity: self.dim += 1  # for modeling the metallicity
+        self.dim += 1  # Birth time
 
 
         # Saved data
@@ -186,9 +194,10 @@ class DartBoard():
         M2_set = np.zeros((self.ntemps, self.nwalkers))
         a_set = np.zeros((self.ntemps, self.nwalkers))
         ecc_set = np.zeros((self.ntemps, self.nwalkers))
-        v_kick1_set = np.zeros((self.ntemps, self.nwalkers))
-        theta_kick1_set = np.zeros((self.ntemps, self.nwalkers))
-        phi_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+        if self.first_SN:
+            v_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+            theta_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+            phi_kick1_set = np.zeros((self.ntemps, self.nwalkers))
         if self.second_SN:
             v_kick2_set = np.zeros((self.ntemps, self.nwalkers))
             theta_kick2_set = np.zeros((self.ntemps, self.nwalkers))
@@ -200,6 +209,8 @@ class DartBoard():
             tmp = self.prior_pos(0.0, 0.0, 20.0)
             ra_set = np.zeros((self.ntemps, self.nwalkers))
             dec_set = np.zeros((self.ntemps, self.nwalkers))
+
+        if self.model_metallicity: z_set = np.zeros((self.ntemps, self.nwalkers))
 
 
         # Check if any of these have posteriors with -infinity
@@ -217,9 +228,10 @@ class DartBoard():
                     a = 5000.0 * np.random.uniform(size=1) + 20.0
                     ecc = np.random.uniform(size=1)
 
-                    v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
-                    theta_kick1 = np.pi * np.random.uniform(size=1)
-                    phi_kick1 = np.pi * np.random.uniform(size=1)
+                    if self.first_SN:
+                        v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
+                        theta_kick1 = np.pi * np.random.uniform(size=1)
+                        phi_kick1 = np.pi * np.random.uniform(size=1)
                     if self.second_SN:
                         v_kick2 = 300.0 * np.random.uniform(size=1) + 20.0
                         theta_kick2 = np.pi * np.random.uniform(size=1)
@@ -233,21 +245,21 @@ class DartBoard():
                             ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.01, 1))
                             dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.01, 1))
 
+                    if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
+
                     if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
                         time = 1.4e4 * np.random.uniform(size=1)
                     else:
                         time = 40.0 * np.random.uniform(size=1)
 
-                    if self.second_SN:
-                        if self.prior_pos is None:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, np.log(time)
-                        else:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra, dec, np.log(time)
-                    else:
-                        if self.prior_pos is None:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, np.log(time)
-                        else:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, ra, dec, np.log(time)
+
+                    # Create tuple of model parameters
+                    x = np.log(M1), np.log(M2), np.log(a), ecc
+                    if self.first_SN: x += v_kick1, theta_kick1, phi_kick1
+                    if self.second_SN: x += v_kick2, theta_kick2, phi_kick2
+                    if self.prior_pos is not None: x += ra, dec
+                    if self.model_metallicity: x += (np.log(z),)
+                    x += (np.log(time),)
 
 
                     # If the system has a viable posterior probability
@@ -257,9 +269,10 @@ class DartBoard():
                         M2_set[i,j] = M2
                         a_set[i,j] = a
                         ecc_set[i,j] = ecc
-                        v_kick1_set[i,j] = v_kick1
-                        theta_kick1_set[i,j] = theta_kick1
-                        phi_kick1_set[i,j] = phi_kick1
+                        if self.first_SN:
+                            v_kick1_set[i,j] = v_kick1
+                            theta_kick1_set[i,j] = theta_kick1
+                            phi_kick1_set[i,j] = phi_kick1
                         if self.second_SN:
                             v_kick2_set[i,j] = v_kick2
                             theta_kick2_set[i,j] = theta_kick2
@@ -267,6 +280,7 @@ class DartBoard():
                         if self.prior_pos is not None:
                             ra_set[i,j] = ra
                             dec_set[i,j] = dec
+                        if self.model_metallicity: z_set[i,j] = z
                         time_set[i,j] = time
 
                         print("Temp", i, "and Walker", j, "is set. Posterior probability:", self.posterior_function(x, self))
@@ -275,22 +289,29 @@ class DartBoard():
                         break
 
         # Save and return the walker positions
-        if self.second_SN:
-            if self.prior_pos is None:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    np.log(time_set)])
-            else:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    ra_set, dec_set, np.log(time_set)])
-        else:
-            if self.prior_pos is None:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, np.log(time_set)])
-            else:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, ra_set, dec_set, np.log(time_set)])
+        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
+        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
+        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
+        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
+        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
+        self.p0 = np.vstack((self.p0, np.log(time_set)))
+
+        # if self.second_SN:
+        #     if self.prior_pos is None:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+        #                             np.log(time_set)])
+        #     else:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+        #                             ra_set, dec_set, np.log(time_set)])
+        # else:
+        #     if self.prior_pos is None:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, np.log(time_set)])
+        #     else:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, ra_set, dec_set, np.log(time_set)])
 
         # Swap axes for parallel tempered sampler
         self.p0 = np.swapaxes(self.p0, 0, 1)
@@ -317,13 +338,15 @@ class DartBoard():
         M2_set = np.zeros(self.nwalkers)
         a_set = np.zeros(self.nwalkers)
         ecc_set = np.zeros(self.nwalkers)
-        v_kick1_set = np.zeros(self.nwalkers)
-        theta_kick1_set = np.zeros(self.nwalkers)
-        phi_kick1_set = np.zeros(self.nwalkers)
+        if self.first_SN:
+            v_kick1_set = np.zeros(self.nwalkers)
+            theta_kick1_set = np.zeros(self.nwalkers)
+            phi_kick1_set = np.zeros(self.nwalkers)
         if self.second_SN:
             v_kick2_set = np.zeros(self.nwalkers)
             theta_kick2_set = np.zeros(self.nwalkers)
             phi_kick2_set = np.zeros(self.nwalkers)
+        if self.model_metallicity: z_set = np.zeros(self.nwalkers)
         time_set = np.zeros(self.nwalkers)
 
         if self.prior_pos is not None:
@@ -350,9 +373,10 @@ class DartBoard():
                     a = 5000.0 * np.random.uniform(size=1) + 20.0
                     ecc = np.random.uniform(size=1)
 
-                    v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
-                    theta_kick1 = np.pi * np.random.uniform(size=1)
-                    phi_kick1 = np.pi * np.random.uniform(size=1)
+                    if self.first_SN:
+                        v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
+                        theta_kick1 = np.pi * np.random.uniform(size=1)
+                        phi_kick1 = np.pi * np.random.uniform(size=1)
                     if self.second_SN:
                         v_kick2 = 300.0 * np.random.uniform(size=1) + 20.0
                         theta_kick2 = np.pi * np.random.uniform(size=1)
@@ -366,21 +390,22 @@ class DartBoard():
                             ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
                             dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
 
+                    if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
+
                     if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
                         time = 1.4e4 * np.random.uniform(size=1)
                     else:
                         time = 40.0 * np.random.uniform(size=1)
 
-                    if self.second_SN:
-                        if self.prior_pos is None:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, np.log(time)
-                        else:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra, dec, np.log(time)
-                    else:
-                        if self.prior_pos is None:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, np.log(time)
-                        else:
-                            x = np.log(M1), np.log(M2), np.log(a), ecc, v_kick1, theta_kick1, phi_kick1, ra, dec, np.log(time)
+
+                    # Create tuple of model parameters
+                    x = np.log(M1), np.log(M2), np.log(a), ecc
+                    if self.first_SN: x += v_kick1, theta_kick1, phi_kick1
+                    if self.second_SN: x += v_kick2, theta_kick2, phi_kick2
+                    if self.prior_pos is not None: x += ra, dec
+                    if self.model_metallicity: x+= (np.log(z),)
+                    x += (np.log(time),)
+
 
 
                     # If the system has a viable posterior probability
@@ -390,9 +415,10 @@ class DartBoard():
                         M2_set[j] = M2
                         a_set[j] = a
                         ecc_set[j] = ecc
-                        v_kick1_set[j] = v_kick1
-                        theta_kick1_set[j] = theta_kick1
-                        phi_kick1_set[j] = phi_kick1
+                        if self.first_SN:
+                            v_kick1_set[j] = v_kick1
+                            theta_kick1_set[j] = theta_kick1
+                            phi_kick1_set[j] = phi_kick1
                         if self.second_SN:
                             v_kick2_set[j] = v_kick2
                             theta_kick2_set[j] = theta_kick2
@@ -400,6 +426,7 @@ class DartBoard():
                         if self.prior_pos is not None:
                             ra_set[j] = ra
                             dec_set[j] = dec
+                        if self.model_metallicity: z_set[j] = z
                         time_set[j] = time
 
                         print("Walker", j, "is set. Posterior probability:", self.posterior_function(x, self))
@@ -408,22 +435,30 @@ class DartBoard():
                         break
 
         # Save and return the walker positions
-        if self.second_SN:
-            if self.prior_pos is None:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    np.log(time_set)]).T
-            else:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    ra_set, dec_set, np.log(time_set)]).T
-        else:
-            if self.prior_pos is None:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, np.log(time_set)]).T
-            else:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, ra_set, dec_set, np.log(time_set)]).T
+        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
+        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
+        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
+        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
+        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
+        self.p0 = np.vstack((self.p0, np.log(time_set))).T
+
+
+        # if self.second_SN:
+        #     if self.prior_pos is None:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+        #                             np.log(time_set)]).T
+        #     else:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
+        #                             ra_set, dec_set, np.log(time_set)]).T
+        # else:
+        #     if self.prior_pos is None:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, np.log(time_set)]).T
+        #     else:
+        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
+        #                             phi_kick1_set, ra_set, dec_set, np.log(time_set)]).T
 
 
         if dart is not None:
@@ -434,26 +469,25 @@ class DartBoard():
             M2_set[0] = np.exp(self.p0[0,1])
             a_set[0] = np.exp(self.p0[0,2])
             ecc_set[0] = self.p0[0,3]
-            v_kick1_set[0] = self.p0[0,4]
-            theta_kick1_set[0] = self.p0[0,5]
-            phi_kick1_set[0] = self.p0[0,6]
+            i = 4
+            if self.first_SN:
+                v_kick1_set[0] = self.p0[0,i]
+                theta_kick1_set[0] = self.p0[0,i+1]
+                phi_kick1_set[0] = self.p0[0,i+2]
+                i += 3
             if self.second_SN:
-                v_kick2_set[0] = self.p0[0,7]
-                theta_kick2_set[0] = self.p0[0,8]
-                phi_kick2_set[0] = self.p0[0,9]
-                if self.prior_pos is None:
-                    time_set[0] = np.exp(self.p0[0,10])
-                else:
-                    ra_set[0] = self.p0[0,9]
-                    dec_set[0] = self.p0[0,10]
-                    time_set[0] = np.exp(self.p0[0,11])
-            else:
-                if self.prior_pos is None:
-                    time_set[0] = np.exp(self.p0[0,7])
-                else:
-                    ra_set[0] = self.p0[0,7]
-                    dec_set[0] = self.p0[0,8]
-                    time_set[0] = np.exp(self.p0[0,9])
+                v_kick2_set[0] = self.p0[0,i]
+                theta_kick2_set[0] = self.p0[0,i+1]
+                phi_kick2_set[0] = self.p0[0,i+2]
+                i += 3
+            if self.prior_pos is not None:
+                ra_set[0] = self.p0[0,i]
+                dec_set[0] = self.p0[0,i+1]
+                i += 2
+            if self.model_metallicity:
+                z_set[0] = self.p0[0,i]
+                i += 1
+            time_set[0] = np.exp(self.p0[0,i])
 
 
 
@@ -477,9 +511,10 @@ class DartBoard():
         M2 = M2_set[idx]
         a = a_set[idx]
         ecc = ecc_set[idx]
-        v_kick1 = v_kick1_set[idx]
-        theta_kick1 = theta_kick1_set[idx]
-        phi_kick1 = phi_kick1_set[idx]
+        if self.first_SN:
+            v_kick1 = v_kick1_set[idx]
+            theta_kick1 = theta_kick1_set[idx]
+            phi_kick1 = phi_kick1_set[idx]
         if self.second_SN:
             v_kick2 = v_kick2_set[idx]
             theta_kick2 = theta_kick2_set[idx]
@@ -487,6 +522,7 @@ class DartBoard():
         if self.prior_pos is not None:
             ra = ra_set[idx]
             dec = dec_set[idx]
+        if self.model_metallicity: z = z_set[idx]
         time = time_set[idx]
 
 
@@ -518,9 +554,10 @@ class DartBoard():
             M2 = M2_set[idx]
             a = a_set[idx]
             ecc = ecc_set[idx]
-            v_kick1 = v_kick1_set[idx]
-            theta_kick1 = theta_kick1_set[idx]
-            phi_kick1 = phi_kick1_set[idx]
+            if self.first_SN:
+                v_kick1 = v_kick1_set[idx]
+                theta_kick1 = theta_kick1_set[idx]
+                phi_kick1 = phi_kick1_set[idx]
             if self.second_SN:
                 v_kick2 = v_kick2_set[idx]
                 theta_kick2 = theta_kick2_set[idx]
@@ -528,6 +565,7 @@ class DartBoard():
             if self.prior_pos is not None:
                 ra = ra_set[idx]
                 dec = dec_set[idx]
+            if self.model_metallicity: z = z_set[idx]
             time = time_set[idx]
 
 
@@ -538,27 +576,15 @@ class DartBoard():
 
                 if i == idx: continue
 
-                if self.second_SN:
-                    if self.prior_pos is None:
-                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                np.log(time_set[i])
-                    else:
-                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                ra_set[i], dec_set[i], np.log(time_set[i])
 
-                else:
-                    if self.prior_pos is None:
-                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                np.log(time_set[i])
-                    else:
-                        p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                ra_set[i], dec_set[i], np.log(time_set[i])
+                # Create tuple of model parameters
+                p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i]
+                if self.first_SN: p += v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i]
+                if self.second_SN: p += v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i]
+                if self.prior_pos is not None: p += ra_set[i], dec_set[i]
+                if self.model_metallicity: p += (np.log(z_set[i]),)
+                p += (np.log(time_set[i]),)
+
 
 
                 ln_posterior = self.posterior_function(p, self)[0]
@@ -576,9 +602,10 @@ class DartBoard():
                     a_set[i] = a*(1.0 + np.random.normal(0.0, C, 1))
 
                     # SN kick perameters
-                    v_kick1_set[i] = v_kick1*(1.0 + np.random.normal(0.0, C, 1))
-                    theta_kick1_set[i] = theta_kick1*(1.0 + np.random.normal(0.0, C, 1))
-                    phi_kick1_set[i] = phi_kick1*(1.0 + np.random.normal(0.0, C, 1))
+                    if self.first_SN:
+                        v_kick1_set[i] = v_kick1*(1.0 + np.random.normal(0.0, C, 1))
+                        theta_kick1_set[i] = theta_kick1*(1.0 + np.random.normal(0.0, C, 1))
+                        phi_kick1_set[i] = phi_kick1*(1.0 + np.random.normal(0.0, C, 1))
                     if self.second_SN:
                         v_kick2_set[i] = v_kick2*(1.0 + np.random.normal(0.0, C, 1))
                         theta_kick2_set[i] = theta_kick2*(1.0 + np.random.normal(0.0, C, 1))
@@ -589,34 +616,23 @@ class DartBoard():
                         ra_set[i] = ra*(1.0 + np.random.normal(0.0, 0.001*C, 1))
                         dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.001*C, 1))
 
+                    # Metallicity
+                    z_set[i] = np.exp(np.random.normal(np.log(0.02), 0.001*C, 1))
 
                     # Birth time
                     time_set[i] = time*(1.0 + np.random.normal(0.0, C, 1))
 
 
-                    if self.second_SN:
-                        if self.prior_pos is None:
-                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                    v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                    v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                    np.log(time_set[i])
-                        else:
-                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                    v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                    v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i], \
-                                    ra_set[i], dec_set[i], np.log(time_set[i])
-
-                    else:
-                        if self.prior_pos is None:
-                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                    v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                    np.log(time_set[i])
-                        else:
-                            p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i], \
-                                    v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i], \
-                                    ra_set[i], dec_set[i], np.log(time_set[i])
+                    # Create tuple of model parameters
+                    p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i]
+                    if self.first_SN: p += v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i]
+                    if self.second_SN: p += v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i]
+                    if self.prior_pos is not None: p += ra_set[i], dec_set[i]
+                    if self.model_metallicity: p += (np.log(z_set[i]),)
+                    p += (np.log(time_set[i]),)
 
 
+                    # Calculate posterior probability of tested data point
                     ln_posterior = self.posterior_function(p, self)[0]
 
 
@@ -625,22 +641,12 @@ class DartBoard():
 
 
         # Save and return the walker positions
-        if self.second_SN:
-            if self.prior_pos is None:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    np.log(time_set)]).T
-            else:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-                                    ra_set, dec_set, np.log(time_set)]).T
-        else:
-            if self.prior_pos is None:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, np.log(time_set)]).T
-            else:
-                self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-                                    phi_kick1_set, ra_set, dec_set, np.log(time_set)]).T
+        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
+        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
+        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
+        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
+        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
+        self.p0 = np.vstack((self.p0, np.log(time_set))).T
 
 
         print("...walkers are set")
@@ -776,7 +782,7 @@ class DartBoard():
 
         """
 
-        if num_darts == -1 and seconds  == -1:
+        if num_darts == -1 and seconds == -1:
             print("You must provide either the number of systems you would like to run")
             print("or the number of seconds you would like to run dart_board for.")
             sys.exit(-1)
@@ -799,7 +805,7 @@ class DartBoard():
 
 
             # Generate the population
-            if self.ra_obs is None or self.dec_obs is None:   
+            if self.ra_obs is None or self.dec_obs is None:
                 M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size)
             else:
@@ -807,6 +813,7 @@ class DartBoard():
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size, \
                         ra_in=self.ra_obs, dec_in=self.dec_obs)
 
+            if self.model_metallicity: ln_z = np.log(self.generate_z(t_b, batch_size))
 
             # Get ln of parameters
             ln_M1 = np.log(M1)
@@ -814,18 +821,23 @@ class DartBoard():
             ln_a = np.log(posterior.P_to_A(M1, M2, orbital_period))
             ln_t_b = np.log(t_b)
 
+
             # Now, we want to zero the outputs
-            chains = np.zeros((batch_size, 13))
+            chains = np.zeros((batch_size, 14))
             derived = np.zeros((batch_size, 9))
             likelihood = np.zeros(batch_size, dtype=float)
             success = np.zeros(batch_size, dtype=bool)
 
             # Run binary evolution - must run one at a time
+            z = self.metallicity
             for i in range(batch_size):
+
+                if self.model_metallicity: z = np.exp(ln_z[i])
+
                 output = self.evolve_binary(M1[i], M2[i], orbital_period[i], ecc[i],
                                             v_kick1[i], theta_kick1[i], phi_kick1[i],
                                             v_kick2[i], theta_kick2[i], phi_kick2[i],
-                                            t_b[i], self.metallicity, False, **self.model_kwargs)
+                                            t_b[i], z, False, **self.model_kwargs)
 
                 # Increment counter to keep track of the number of binaries run
                 num_ran += 1
@@ -836,18 +848,17 @@ class DartBoard():
 
                 if posterior.check_output(output, self.binary_type):
 
-                    # For likelihood function, we need to input specific number of parameters
-                    if self.second_SN:
-                        if self.prior_pos is None:
-                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ln_t_b[i]
-                        else:
-                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], ln_t_b[i]
-                    else:
-                        if self.prior_pos is None:
-                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ln_t_b[i]
-                        else:
-                            x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i], v_kick1[i], theta_kick1[i], phi_kick1[i], ra[i], dec[i], ln_t_b[i]
 
+
+                    # Create tuple of model parameters
+                    x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i]
+                    if self.first_SN: x_i += v_kick1[i], theta_kick1[i], phi_kick1[i]
+                    if self.second_SN: x_i += v_kick2[i], theta_kick2[i], phi_kick2[i]
+                    if self.prior_pos is not None: x_i += ra[i], dec[i]
+                    if self.model_metallicity: x_i += (ln_z[i],)
+                    x_i += (ln_t_b[i],)
+
+                    # Calculate the likelihood function
                     likelihood[i] = posterior.posterior_properties(x_i, output, self)
 
                     # Only store if it likelihood is finite
@@ -856,7 +867,8 @@ class DartBoard():
 
 
                     x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
-                            phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], t_b[i]
+                            phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], \
+                            t_b[i], z
 
                     # Save chains and derived
                     chains[i] = np.array([x_i])

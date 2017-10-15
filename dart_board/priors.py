@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.stats import maxwell
+from scipy.stats import maxwell, norm, truncnorm
 
 from . import constants as c
-
+from .cosmo import metallicity
 
 def ln_prior(x, dart):
     """
@@ -13,16 +13,23 @@ def ln_prior(x, dart):
     """
 
 
+    # Save model parameters to variables
+    ln_M1, ln_M2, ln_a, ecc = x[0:4]
+    x = x[4:]
+    if dart.first_SN:
+        v_kick1, theta_kick1, phi_kick1 = x[0:3]
+        x = x[3:]
     if dart.second_SN:
-        if dart.prior_pos is None:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ln_t_b = x
-        else:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, phi_kick2, ra_b, dec_b, ln_t_b = x
-    else:
-        if dart.prior_pos is None:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ln_t_b = x
-        else:
-            ln_M1, ln_M2, ln_a, ecc, v_kick1, theta_kick1, phi_kick1, ra_b, dec_b, ln_t_b = x
+        v_kick2, theta_kick2, phi_kick2 = x[0:3]
+        x = x[3:]
+    if dart.prior_pos is not None:
+        ra_b, dec_b = x[0:2]
+        x = x[2:]
+    if dart.model_metallicity:
+        ln_z = x[0]
+        x = x[1:]
+    ln_t_b = x[0]
+
 
     # Set defaults
     kick_sigma = c.v_kick_sigma
@@ -35,6 +42,8 @@ def ln_prior(x, dart):
     a_max = c.max_a
     t_min = c.min_t
     t_max = c.max_t
+    z_min = c.min_z
+    z_max = c.max_z
     # End defaults
 
     # Set values according to inputs
@@ -48,6 +57,8 @@ def ln_prior(x, dart):
         if key == 'a_max': a_max = value
         if key == 't_min': t_min = value
         if key == 't_max': t_max = value
+        if key == 'z_min': z_min = value
+        if key == 'z_max': z_max = value
         if key == 'mass_function': mass_function = value
 
 
@@ -57,10 +68,11 @@ def ln_prior(x, dart):
     lp += dart.prior_M2(ln_M2, ln_M1, M2_min=M2_min)
     lp += dart.prior_ecc(ecc)
     lp += dart.prior_a(ln_a, ecc, a_min=a_min, a_max=a_max)
-    lp += dart.prior_v_kick1(v_kick1, sigma=kick_sigma)
-    lp += dart.prior_theta_kick1(theta_kick1)
-    lp += dart.prior_phi_kick1(phi_kick1)
 
+    if dart.first_SN:
+        lp += dart.prior_v_kick1(v_kick1, sigma=kick_sigma)
+        lp += dart.prior_theta_kick1(theta_kick1)
+        lp += dart.prior_phi_kick1(phi_kick1)
 
     if dart.second_SN:
         lp += dart.prior_v_kick2(v_kick2, sigma=kick_sigma)
@@ -71,6 +83,8 @@ def ln_prior(x, dart):
         lp += dart.prior_t(ln_t_b, t_min=t_min, t_max=t_max)
     else:
         lp += dart.prior_pos(ra_b, dec_b, ln_t_b)
+
+    if dart.model_metallicity: lp += dart.prior_z(ln_z, ln_t_b)
 
     return lp
 
@@ -204,4 +218,20 @@ def ln_prior_ln_t(ln_t_b, t_min=c.min_t, t_max=c.max_t):
 
     if t_b < t_min or t_b > t_max: return -np.inf
     norm_const = 1.0 / (t_max - t_min)
+
     return np.log(norm_const * t_b)
+
+
+def ln_prior_z(ln_z_b, ln_t_b, z_min=c.min_z, z_max=c.max_z):
+    """
+    Return the prior probability on the log of the metallicity.
+
+    """
+
+    Z = np.exp(ln_z_b)
+
+    if Z < z_min or Z > z_max: return -np.inf
+
+    norm_const = 1.0 / (np.log(z_max) - np.log(z_min))
+
+    return np.log(norm_const)

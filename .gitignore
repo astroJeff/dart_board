@@ -57,3 +57,4 @@ pyBSE/pybse.egg-info/
 pyBSE/*.ipynb
 pyBSE/dist/
 pyBSE/.ipynb_checkpoints/
+dart_board/cosmo/__pycache__/
