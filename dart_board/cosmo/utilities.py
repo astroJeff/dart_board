@@ -72,14 +72,14 @@ def initialize():
     global z_from_t_interp
 
     # Logarithmic spacing
-    log_z_set = np.linspace(0.0, 2.0, 200)
+    log_z_set = np.linspace(0.0, 3.0, 300)
     z_set = 10**(log_z_set) - 1.0
 
     t_set = np.zeros(len(z_set))
     for i, z in enumerate(z_set):
         t_set[i] = calc_lookback_time(z) / 1.0e6  # in Myr
 
-    z_from_t_interp = interp1d(t_set, z_set)
+    z_from_t_interp = interp1d(t_set, z_set, bounds_error=False, fill_value=100.0)
 
 
 
