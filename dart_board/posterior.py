@@ -195,7 +195,10 @@ def posterior_properties(x, output, dart):
         x = x[2:]
     if dart.model_metallicity:
         ln_z = x[0]
+        z = np.exp(ln_z)
         x = x[1:]
+    else:
+        z = dart.metallicity
     ln_t_b = x[0]
 
     # if dart.second_SN:
