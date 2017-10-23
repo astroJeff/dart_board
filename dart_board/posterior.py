@@ -97,6 +97,8 @@ def ln_likelihood(x, dart):
 
     """
 
+    # For use later in posterior properties
+    x_in = x
 
     # Save model parameters to variables
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
@@ -159,7 +161,7 @@ def ln_likelihood(x, dart):
 
     # Check for kwargs arguments
     ll = 0
-    if not dart.system_kwargs == {}: ll = posterior_properties(x, output, dart)
+    if not dart.system_kwargs == {}: ll = posterior_properties(x_in, output, dart)
 
     if dart.ntemps is None:
         return ll, np.array([output])
