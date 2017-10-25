@@ -290,11 +290,12 @@ class DartBoard():
 
         # Save and return the walker positions
         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
-        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
-        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
-        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
-        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
-        self.p0 = np.vstack((self.p0, np.log(time_set)))
+        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set[np.newaxis,:,:], theta_kick1_set[np.newaxis,:,:], phi_kick1_set[np.newaxis,:,:]))
+        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set[np.newaxis,:,:], theta_kick2_set[np.newaxis,:,:], phi_kick2_set[np.newaxis,:,:]))
+        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set[np.newaxis,:,:], dec_set[np.newaxis,:,:]))
+        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set[np.newaxis,:,:])))
+        self.p0 = np.vstack((self.p0, np.log(time_set[np.newaxis,:,:])))
+
 
         # if self.second_SN:
         #     if self.prior_pos is None:
@@ -441,7 +442,6 @@ class DartBoard():
         if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
         if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
         self.p0 = np.vstack((self.p0, np.log(time_set))).T
-
 
         # if self.second_SN:
         #     if self.prior_pos is None:
