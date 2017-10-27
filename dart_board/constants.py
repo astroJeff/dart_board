@@ -27,9 +27,9 @@ alpha = -2.35  # IMF index
 
 ##################### PARAMETER RANGES #####################
 min_mass_M1 = 8.0
-max_mass_M1 = 39.0
+max_mass_M1 = 150.0
 min_mass_M2 = 2.0
-max_mass_M2 = 39.0
+max_mass_M2 = 150.0
 min_a = 1.0e1
 max_a = 1.0e4
 min_z = 0.001

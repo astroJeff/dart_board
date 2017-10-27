@@ -525,9 +525,9 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         pdf = (H*(x_bin_sizes*y_bin_sizes))
 
         # Find intervals
-        one_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.25))
-        two_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.50))
-        three_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.75))
+        one_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.68))
+        two_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.95))
+        three_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.995))
         levels = [one_quad, two_quad, three_quad]
         X, Y = 0.5*(xedges[1:]+xedges[:-1]), 0.5*(yedges[1:]+yedges[:-1])
         Z = pdf.T

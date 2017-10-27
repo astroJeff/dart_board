@@ -794,6 +794,9 @@ class DartBoard():
         start_time = tm.time()
         num_ran = 0
 
+        # Set the metallicity
+        z = self.metallicity
+
         # Run for as long as constraints allow
         while(num_ran < num_darts or (tm.time()-start_time) < seconds):
 
@@ -813,6 +816,7 @@ class DartBoard():
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size, \
                         ra_in=self.ra_obs, dec_in=self.dec_obs)
 
+            # Override the previously set metallicity if we are including metallicity models
             if self.model_metallicity: ln_z = np.log(self.generate_z(t_b, batch_size))
 
             # Get ln of parameters
@@ -829,7 +833,6 @@ class DartBoard():
             success = np.zeros(batch_size, dtype=bool)
 
             # Run binary evolution - must run one at a time
-            z = self.metallicity
             for i in range(batch_size):
 
                 if self.model_metallicity: z = np.exp(ln_z[i])
@@ -882,6 +885,11 @@ class DartBoard():
             likelihood_good = np.copy(likelihood[success])
 
             # Only save successful values in binary_x_i, binary_data
-            self.chains = np.append(self.chains, chains_good)
-            self.derived = np.append(self.derived, derived_good)
-            self.likelihood = np.append(self.likelihood, likelihood_good)
+            if len(self.chains) == 0:
+                self.chains = chains_good
+                self.derived = derived_good
+                self.likelihood = likelihood_good
+            else:
+                self.chains = np.concatenate((self.chains, chains_good))
+                self.derived = np.concatenate((self.derived, derived_good))
+                self.likelihood = np.concatenate((self.likelihood, likelihood_good))

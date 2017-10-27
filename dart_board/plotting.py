@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, delay=0):
+def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, delay=0, ymax=200000):
 
     if chain.ndim < 3:
         print("You must include a multiple chains")
@@ -29,33 +29,33 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
         alpha[idx] = 0.5
 
     for i in range(n_var):
-        ix = int(i/2)  
+        ix = int(i/2)
         iy = i%2
 
         for j in range(n_chains):
 
-            xvals = (np.arange(length)*downsample - delay) / 1000 
+            xvals = (np.arange(length)*downsample - delay) / 1000
             ax[ix,iy].plot(xvals, chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True)
 
+        if ymax is None: ymax = (length*downsample-delay)
 
-        ax[ix,iy].set_xlim(-delay/1000, (length*downsample-delay)/1000)
-        
-        ax[ix,iy].set_xticks(np.linspace(0,(length*downsample-delay)/1000,5))
-        ax[ix,iy].set_xticklabels([]) 
+        ax[ix,iy].set_xlim(-delay/1000, ymax/1000)
+        ax[ix,iy].set_xticks(np.linspace(0,ymax/1000,5))
+        ax[ix,iy].set_xticklabels([])
 
 
-        # Add y-axis labels if provided by use 
-        if labels is not None: ax[ix,iy].set_ylabel(labels[i]) 
-    
-        ax[ix,iy].axvline(0, color='k', linestyle='dashed', linewidth=2.0)     
+        # Add y-axis labels if provided by use
+        if labels is not None: ax[ix,iy].set_ylabel(labels[i])
+
+        if delay != 0: ax[ix,iy].axvline(0, color='k', linestyle='dashed', linewidth=2.0)     
 
     # plt.tight_layout()
 
-    ax[-1,0].set_xticklabels(np.linspace(0,(downsample*length-delay)/1000,5).astype('i8').astype('U'))
-    ax[-1,1].set_xticklabels(np.linspace(0,(downsample*length-delay)/1000,5).astype('i8').astype('U'))
+    ax[-1,0].set_xticklabels(np.linspace(0,ymax/1000,5).astype('i8').astype('U'))
+    ax[-1,1].set_xticklabels(np.linspace(0,ymax/1000,5).astype('i8').astype('U'))
 
-    ax[-1,0].set_xlabel(r'Steps ($\times$1000)') 
-    ax[-1,1].set_xlabel(r'Steps ($\times$1000)') 
+    ax[-1,0].set_xlabel(r'Steps ($\times$1000)')
+    ax[-1,1].set_xlabel(r'Steps ($\times$1000)')
 
     if fileout is None:
         plt.show()

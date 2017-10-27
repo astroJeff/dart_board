@@ -12,7 +12,6 @@ def ln_prior(x, dart):
 
     """
 
-
     # Save model parameters to variables
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
     x = x[4:]
@@ -29,7 +28,6 @@ def ln_prior(x, dart):
         ln_z = x[0]
         x = x[1:]
     ln_t_b = x[0]
-
 
     # Set defaults
     kick_sigma = c.v_kick_sigma
