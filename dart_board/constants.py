@@ -26,12 +26,12 @@ alpha = -2.35  # IMF index
 
 
 ##################### PARAMETER RANGES #####################
-min_mass_M1 = 8.0
-max_mass_M1 = 150.0
-min_mass_M2 = 2.0
-max_mass_M2 = 150.0
-min_a = 1.0e1
-max_a = 1.0e4
+min_mass_M1 = 8.0   # in Msun
+max_mass_M1 = 150.0   # in Msun
+min_mass_M2 = 2.0   # in Msun
+max_mass_M2 = 150.0   # in Msun
+min_a = 1.0e1   # In Rsun
+max_a = 1.0e5   # In Rsun
 min_z = 0.001
 max_z = 0.03
 min_t = 0.0
