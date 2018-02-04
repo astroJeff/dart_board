@@ -373,7 +373,7 @@ def get_random_positions(N, t_b, ra_in=None, dec_in=None):
     ra_out = ra_out + tmp_delta_ra
     dec_out = dec_out + tmp_delta_dec
 
-    return ra_out, dec_out, N_stars 
+    return ra_out, dec_out, N_stars
 
 # def prior_lmc_position(x, dart):
 #
@@ -439,24 +439,26 @@ def plot_lmc_map(t_b, fig_in=None, ax=None, gs=None,
 
     rot_angle = 0.2
 
-    sfh_levels = np.linspace(1.0e7, 2.0e8, 10)
+    # We want sfh_levels in Msun/yr/deg.^2
+    sfh_levels = np.linspace(1.0e7, 2.0e8, 10) / 1.0e6 * (np.pi/180.0)**2
     sfh_bins = 30
 
-    get_plot_polar(t_b,
-                   sfh_function=get_SFH,
-                   fig_in=fig_in,
-                   ax=ax,
-                   gs=gs,
-                   xcenter=xcenter,
-                   ycenter=ycenter,
-                   xwidth=xwidth,
-                   ywidth=ywidth,
-                   rot_angle=rot_angle,
-                   sfh_bins=sfh_bins,
-                   sfh_levels=sfh_levels,
-                   ra=ra,
-                   dec=dec)
+    sf_plot, ax1 = get_plot_polar(t_b,
+                                  sfh_function=get_SFH,
+                                  fig_in=fig_in,
+                                  ax=ax,
+                                  gs=gs,
+                                  xcenter=xcenter,
+                                  ycenter=ycenter,
+                                  xwidth=xwidth,
+                                  ywidth=ywidth,
+                                  rot_angle=rot_angle,
+                                  sfh_bins=sfh_bins,
+                                  sfh_levels=sfh_levels,
+                                  ra=ra,
+                                  dec=dec)
 
+    return sf_plot
 
 
 

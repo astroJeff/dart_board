@@ -468,11 +468,14 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
     # Plot star formation histories on adjusted coordinates
     # Plot color contours with linear spacing
 
+    # To convert from Msun/Myr/rad^2 to Msun/yr/deg.^2
+    unit_factor = 1.0/1.0e6 * (np.pi/180.0)**2
+
     if sfh_levels is None:
-        sf_plot = plt.tricontourf(out_test[:,0], out_test[:,1], sfr, cmap=color_map,
+        sf_plot = plt.tricontourf(out_test[:,0], out_test[:,1], sfr*unit_factor, cmap=color_map,
                                   extend='max', alpha=contour_alpha, rasterized=True)
     else:
-        sf_plot = plt.tricontourf(out_test[:,0], out_test[:,1], sfr, cmap=color_map, levels=sfh_levels,
+        sf_plot = plt.tricontourf(out_test[:,0], out_test[:,1], sfr*unit_factor, cmap=color_map, levels=sfh_levels,
                                   extend='max', alpha=contour_alpha, rasterized=True)
 
     if color_bar:
@@ -480,9 +483,9 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
 
 
     if title is None:
-        sf_plot = plt.title(str(int(age)) + ' Myr')
+        plt.title(str(int(age)) + ' Myr')
     else:
-        sf_plot = plt.title(title)
+        plt.title(title)
 
 
     # Plot the contours defining the distributions of ra_dist and dec_dist
