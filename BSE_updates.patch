@@ -1,0 +1,1325 @@
+Only in pyBSE_updated: .ipynb_checkpoints
+diff -ur pyBSE/Makefile pyBSE_updated/Makefile
+--- pyBSE/Makefile	2006-08-10 16:59:21.000000000 +0300
++++ pyBSE_updated/Makefile	2018-02-04 17:17:12.000000000 +0200
+@@ -1,7 +1,8 @@
+ IGNORE:
+-CMPLR = f77
+-FFLAGS = 
+-LFLAGS = const_bse.h zdata.h 
++PY_CMPLR = f2py
++CMPLR = gfortran
++FFLAGS =
++LFLAGS = const_bse.h zdata.h
+ 
+ .f.o:
+ 	$(CMPLR) -c $(FFLAGS) $<
+@@ -13,25 +14,46 @@
+ OBJT1 = $(SRCE1:.f=.o)
+ 
+ sse:    $(OBJT1) $(LFLAGS)
+-	$(CMPLR) $(FFLAGS) $(OBJT1) -o sse 
++	$(CMPLR) $(FFLAGS) $(OBJT1) -o sse
+ 
+ SRCE2 = \
+ bse.f comenv.f corerd.f deltat.f dgcore.f evolv2.f gntage.f \
+ hrdiag.f instar.f kick.f mix.f mlwind.f mrenv.f ran3.f rl.f \
+ star.f zcnsts.f zfuncs.f
+- 
++
+ OBJT2 = $(SRCE2:.f=.o)
+ 
+ bse:    $(OBJT2) $(LFLAGS)
+-	$(CMPLR) $(FFLAGS) $(OBJT2) -o bse 
++	$(CMPLR) $(FFLAGS) $(OBJT2) -o bse
+ 
+ SRCE3 = \
+ popbin.f comenv.f corerd.f deltat.f dgcore.f evolv2.f gntage.f \
+ hrdiag.f instar.f kick.f mix.f mlwind.f mrenv.f ran3.f rl.f \
+ star.f zcnsts.f zfuncs.f
+- 
++
+ OBJT3 = $(SRCE3:.f=.o)
+ 
+ popbin: $(OBJT3) $(LFLAGS)
+ 	$(CMPLR) $(FFLAGS) $(OBJT3) -o popbin
+ 
++
++SRCE4 = \
++bse.f comenv.f corerd.f deltat.f dgcore.f evolv2.f gntage.f \
++hrdiag.f instar.f kick.f mix.f mlwind.f mrenv.f ran3.f rl.f \
++star.f zcnsts.f zfuncs.f
++
++OBJT4 = $(SRCE4:.f=.o)
++
++evolv_wrapper: $(OBJT4) $(LFLAGS)
++	$(CMPLR) $(FFLAGS) $(OBJT4) -o pyBSE
++
++
++SRCE5 = \
++evolv_wrapper.f comenv.f corerd.f deltat.f dgcore.f evolv2.f \
++gntage.f hrdiag.f instar.f kick.f mix.f mlwind.f mrenv.f \
++ran3.f rl.f star.f zcnsts.f zfuncs.f
++
++OBJT5 = $(SRCE5:.f=.o)
++
++pybse: $(OBJT5) $(LFLAGS)
++	$(PY_CMPLR) -c --fcompiler=$(CMPLR) -m bse $(SRCE5)
+Only in pyBSE_updated: Testing_pyBSE.ipynb
+Only in pyBSE_updated: binaries.out
+Only in pyBSE_updated: bse.cpython-35m-darwin.so
+Only in pyBSE_updated: bse.cpython-35m-x86_64-linux-gnu.so
+Only in pyBSE_updated: bse.tar
+Only in pyBSE_updated: build
+diff -ur pyBSE/comenv.f pyBSE_updated/comenv.f
+--- pyBSE/comenv.f	2006-07-28 06:31:12.000000000 +0300
++++ pyBSE_updated/comenv.f	2018-02-04 17:17:05.000000000 +0200
+@@ -1,7 +1,8 @@
+ ***
+       SUBROUTINE COMENV(M01,M1,MC1,AJ1,JSPIN1,KW1,
+      &                  M02,M2,MC2,AJ2,JSPIN2,KW2,
+-     &                  ZPARS,ECC,SEP,JORB,COEL)
++     &                  ZPARS,ECC,SEP,JORB,COEL,
++     &                  v_kick,theta_kick,phi_kick,vs)
+ *
+ * Common Envelope Evolution.
+ *
+@@ -19,6 +20,8 @@
+       INTEGER ceflag,tflag,ifflag,nsflag,wdflag
+       COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag
+ *
++      REAL*8 v_kick,theta_kick,phi_kick
++      REAL*8 vs(6)
+       REAL*8 M01,M1,MC1,AJ1,JSPIN1,R1,L1,K21
+       REAL*8 M02,M2,MC2,AJ2,JSPIN2,R2,L2,K22,MC22
+       REAL*8 TSCLS1(20),TSCLS2(20),LUMS(10),GB(10),TM1,TM2,TN,ZPARS(20)
+@@ -26,20 +29,24 @@
+       REAL*8 CONST,DELY,DERI,DELMF,MC3,FAGE1,FAGE2
+       REAL*8 ECC,SEP,JORB,TB,OORB,OSPIN1,OSPIN2,TWOPI
+       REAL*8 RC1,RC2,Q1,Q2,RL1,RL2,LAMB1,LAMB2
+-      REAL*8 MENV,RENV,MENVD,RZAMS,VS(3)
++      REAL*8 MENV,RENV,MENVD,RZAMS
+       REAL*8 AURSUN,K3,ALPHA1,LAMBDA
+-      PARAMETER (AURSUN = 214.95D0,K3 = 0.21D0) 
++      PARAMETER (AURSUN = 214.95D0,K3 = 0.21D0)
+       COMMON /VALUE2/ ALPHA1,LAMBDA
+-      LOGICAL COEL
++      LOGICAL COEL, SNFLAG
+       REAL*8 CELAMF,RL,RZAMSF
+       EXTERNAL CELAMF,RL,RZAMSF
+ *
+ * Common envelope evolution - entered only when KW1 = 2, 3, 4, 5, 6, 8 or 9.
+ *
++
++*      write(*,*) "Entered a common envelope"
++
+ * For simplicity energies are divided by -G.
+ *
+       TWOPI = 2.D0*ACOS(-1.D0)
+       COEL = .FALSE.
++      SNFLAG = .FALSE.
+ *
+ * Obtain the core masses and radii.
+ *
+@@ -128,7 +135,10 @@
+             CALL hrdiag(M01,AJ1,M1,TM1,TN,TSCLS1,LUMS,GB,ZPARS,
+      &                  R1,L1,KW1,MC1,RC1,MENV,RENV,K21)
+             IF(KW1.GE.13)THEN
+-               CALL kick(KW1,MF,M1,M2,ECC,SEPF,JORB,VS)
++* We assume a circular binary at the SN kick
++               SNFLAG = .TRUE.
++               CALL kick(KW1,MF,M1,M2,ECC,SEPF,JORB,VS,
++     &                   v_kick,theta_kick,phi_kick)
+                IF(ECC.GT.1.D0) GOTO 30
+             ENDIF
+          ENDIF
+@@ -216,7 +226,10 @@
+             CALL hrdiag(M01,AJ1,M1,TM1,TN,TSCLS1,LUMS,GB,ZPARS,
+      &                  R1,L1,KW1,MC1,RC1,MENV,RENV,K21)
+             IF(KW1.GE.13)THEN
+-               CALL kick(KW1,MF,M1,M2,ECC,SEPF,JORB,VS)
++* We assume a circular binary at the SN kick
++               SNFLAG = .TRUE.
++               CALL kick(KW1,MF,M1,M2,ECC,SEPF,JORB,VS,
++     &                   v_kick,theta_kick,phi_kick)
+                IF(ECC.GT.1.D0) GOTO 30
+             ENDIF
+             MF = M2
+@@ -226,7 +239,10 @@
+             CALL hrdiag(M02,AJ2,M2,TM2,TN,TSCLS2,LUMS,GB,ZPARS,
+      &                  R2,L2,KW2,MC2,RC2,MENV,RENV,K22)
+             IF(KW2.GE.13.AND.KW.LT.13)THEN
+-               CALL kick(KW2,MF,M2,M1,ECC,SEPF,JORB,VS)
++* We assume a circular binary at the SN kick
++               SNFLAG = .TRUE.
++               CALL kick(KW1,MF,M1,M2,ECC,SEPF,JORB,VS,
++     &                   v_kick,theta_kick,phi_kick)
+                IF(ECC.GT.1.D0) GOTO 30
+             ENDIF
+          ENDIF
+@@ -235,7 +251,7 @@
+       IF(COEL)THEN
+          MC22 = MC2
+          IF(KW.EQ.4.OR.KW.EQ.7)THEN
+-* If making a helium burning star calculate the fractional age 
++* If making a helium burning star calculate the fractional age
+ * depending on the amount of helium that has burnt.
+             IF(KW1.LE.3)THEN
+                FAGE1 = 0.D0
+@@ -262,7 +278,7 @@
+ *
+       IF(COEL)THEN
+ *
+-* Calculate the orbital spin just before coalescence. 
++* Calculate the orbital spin just before coalescence.
+ *
+          TB = (SEPL/AURSUN)*SQRT(SEPL/(AURSUN*(MC1+MC2)))
+          OORB = TWOPI/TB
+@@ -323,17 +339,19 @@
+          ECC = 0.D0
+       ELSE
+ *
+-* Check if any eccentricity remains in the orbit by first using 
+-* energy to circularise the orbit before removing angular momentum. 
+-* (note this should not be done in case of CE SN ... fix).  
+-*
+-         IF(EORBF.LT.ECIRC)THEN
+-            ECC = SQRT(1.D0 - EORBF/ECIRC)
+-         ELSE
+-            ECC = 0.D0
++* Check if any eccentricity remains in the orbit by first using
++* energy to circularise the orbit before removing angular momentum.
++* (note this should not be done in case of CE SN ... fix).
++*
++         IF(.NOT.SNFLAG)THEN
++            IF(EORBF.LT.ECIRC)THEN
++               ECC = SQRT(1.D0 - EORBF/ECIRC)
++            ELSE
++               ECC = 0.D0
++            ENDIF
+          ENDIF
+ *
+-* Set both cores in co-rotation with the orbit on exit of CE, 
++* Set both cores in co-rotation with the orbit on exit of CE,
+ *
+          TB = (SEPF/AURSUN)*SQRT(SEPF/(AURSUN*(M1+M2)))
+          OORB = TWOPI/TB
+diff -ur pyBSE/const_bse.h pyBSE_updated/const_bse.h
+--- pyBSE/const_bse.h	2006-07-28 06:36:08.000000000 +0300
++++ pyBSE_updated/const_bse.h	2017-10-14 17:42:22.000000000 +0300
+@@ -7,8 +7,8 @@
+       COMMON /RAND3/ idum2,iy,ir
+       INTEGER ktype(0:14,0:14)
+       COMMON /TYPES/ ktype
+-      INTEGER ceflag,tflag,ifflag,nsflag,wdflag
+-      COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag
++      INTEGER ceflag,tflag,ifflag,nsflag,wdflag,GRflag
++      COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag,GRflag
+       INTEGER bhflag
+ *
+       REAL*8 neta,bwind,hewind,mxns,alpha1,lambda
+@@ -23,6 +23,6 @@
+       COMMON /TSTEPC/ dmmax,drmax
+       REAL scm(50000,14),spp(20,3)
+       COMMON /SINGLE/ scm,spp
+-      REAL bcm(50000,34),bpp(80,10)
++      REAL bcm(50000,35),bpp(1000,10)
+       COMMON /BINARY/ bcm,bpp
+ *
+Only in pyBSE_updated: dist
+diff -ur pyBSE/evolv2.f pyBSE_updated/evolv2.f
+--- pyBSE/evolv2.f	2013-08-08 05:41:48.000000000 +0300
++++ pyBSE_updated/evolv2.f	2018-02-04 17:24:07.000000000 +0200
+@@ -1,7 +1,9 @@
+ ***
+       SUBROUTINE evolv2(kstar,mass0,mass,rad,lumin,massc,radc,
+      &                  menv,renv,ospin,epoch,tms,
+-     &                  tphys,tphysf,dtp,z,zpars,tb,ecc)
++     &                  tphys,tphysf,dtp,z,zpars,tb,ecc,
++     &                  v_kick1,theta_kick1,phi_kick1,
++     &                  v_kick2,theta_kick2,phi_kick2)
+       implicit none
+ ***
+ *
+@@ -22,89 +24,89 @@
+ * incorporate corrections.
+ * Fully revised on 1st April 1998 to include new stellar evolution formulae
+ * and associated binary evolution changes.
+-* Fully revised on 4th July 1998 to include eccentricity, tidal 
++* Fully revised on 4th July 1998 to include eccentricity, tidal
+ * circularization, wind accretion, velocity kicks for supernovae and all
+ * associated orbital momentum changes.
+-* Revised on 31st October 2000 to upgrade restrictions imposed on the 
+-* timestep owing to magnetic braking and orbital angular momentum changes. 
++* Revised on 31st October 2000 to upgrade restrictions imposed on the
++* timestep owing to magnetic braking and orbital angular momentum changes.
+ *
+ ***
+ *
+ * See Tout et al., 1997, MNRAS, 291, 732 for a description of many of the
+ * processes in this code as well as the relevant references mentioned
+-* within the code. 
++* within the code.
+ *
+-* Reference for the stellar evolution formulae is Hurley, Pols & Tout, 
+-* 2000, MNRAS, 315, 543 (SSE paper).  
+-* Reference for the binary evolution algorithm is Hurley, Tout & Pols, 
+-* 2002, MNRAS, 329, 897 (BSE paper). 
++* Reference for the stellar evolution formulae is Hurley, Pols & Tout,
++* 2000, MNRAS, 315, 543 (SSE paper).
++* Reference for the binary evolution algorithm is Hurley, Tout & Pols,
++* 2002, MNRAS, 329, 897 (BSE paper).
+ *
+ ***
+ *
+ * March 2001 *
+-* Changes since version 3, i.e. since production of Paper3:  
++* Changes since version 3, i.e. since production of Paper3:
+ *
+-* 1) The Eddington limit flag (on/off) has been replaced by an 
+-*    Eddington limit multiplicative factor (eddfac). So if you 
+-*    want to neglect the Eddington limit you would set eddfac 
+-*    to a large value. 
+-*
+-* 2) To determine whether material transferred during RLOF forms 
+-*    an accretion disk around the secondary or hits the secondary 
+-*    in a direct stream we calculate a minimum radial distance, rmin, 
+-*    of the mass stream from the secondary. This is taken from eq.(1) 
+-*    of Ulrich & Burger (1976, ApJ, 206, 509) which they fitted to 
++* 1) The Eddington limit flag (on/off) has been replaced by an
++*    Eddington limit multiplicative factor (eddfac). So if you
++*    want to neglect the Eddington limit you would set eddfac
++*    to a large value.
++*
++* 2) To determine whether material transferred during RLOF forms
++*    an accretion disk around the secondary or hits the secondary
++*    in a direct stream we calculate a minimum radial distance, rmin,
++*    of the mass stream from the secondary. This is taken from eq.(1)
++*    of Ulrich & Burger (1976, ApJ, 206, 509) which they fitted to
+ *    the calculations of Lubow & Shu (1974, ApJ, 198, 383).
+-*    If rmin is less than the radius of the secondary then an 
+-*    accretion disk is not formed. 
+-*    Note that the formula for rmin given by Ulrich & Burger is valid 
+-*    for all q whereas that given by Nelemans et al. (2001, A&A, 
+-*    submitted) in their eq.(6) is only valid for q < 1 where 
+-*    they define q = Mdonor/Maccretor, i.e. DD systems. 
+-*
+-* 3) The changes to orbital and spin angular momentum owing to 
+-*    RLOF mass transfer have been improved, and an new input option 
+-*    now exists. 
+-*    When mass is lost from the system during RLOF there are now 
+-*    three choices as to how the orbital angular momentum is 
+-*    affected: a) the lost material carries with it a fraction 
+-*    gamma of the orbital angular momentum, i.e. 
+-*    dJorb = gamma*dm*a^2*omega_orb; b) the material carries with it 
++*    If rmin is less than the radius of the secondary then an
++*    accretion disk is not formed.
++*    Note that the formula for rmin given by Ulrich & Burger is valid
++*    for all q whereas that given by Nelemans et al. (2001, A&A,
++*    submitted) in their eq.(6) is only valid for q < 1 where
++*    they define q = Mdonor/Maccretor, i.e. DD systems.
++*
++* 3) The changes to orbital and spin angular momentum owing to
++*    RLOF mass transfer have been improved, and an new input option
++*    now exists.
++*    When mass is lost from the system during RLOF there are now
++*    three choices as to how the orbital angular momentum is
++*    affected: a) the lost material carries with it a fraction
++*    gamma of the orbital angular momentum, i.e.
++*    dJorb = gamma*dm*a^2*omega_orb; b) the material carries with it
+ *    the specific angular momentum of the primary, i.e.
+-*    dJorb = dm*a_1^2*omega_orb; or c) assume the material is lost 
++*    dJorb = dm*a_1^2*omega_orb; or c) assume the material is lost
+ *    from the system as if a wind from the secondary, i.e.
+-*    dJorb = dm*a_2^2*omega_orb. 
+-*    The parameter gamma is an input option. 
+-*    Choice c) is used if the mass transfer is super-Eddington 
+-*    or the system is experiencing novae eruptions. 
+-*    In all other cases choice a) is used if gamma > 0.0, b) if 
+-*    gamma = -1.0 and c) is used if gamma = -2.0. 
+-*    The primary spin angular momentum is reduced by an amount 
+-*    dm1*r_1^2*omega_1 when an amount of mass dm1 is transferred 
+-*    from the primary. 
+-*    If the secondary accretes through a disk then its spin 
+-*    angular momentum is altered by assuming that the material 
+-*    falls onto the star from the inner edge of a Keplerian 
+-*    disk and that the system is in a steady state, i.e. 
+-*    an amount dm2*SQRT(G*m_2*r_2). 
+-*    If there is no accretion disk then we calculate the angular 
+-*    momentum of the transferred material by using the radius at 
+-*    at which the disk would have formed (rdisk = 1.7*rmin, see 
+-*    Ulrich & Burger 1976) if allowed, i.e. the angular momentum 
+-*    of the inner Lagrangian point, and add this directly to 
+-*    the secondary, i.e. an amount dm2*SQRT(G*m_2*rdisk). 
+-*    Total angular momentum is conserved in this model. 
+-*
+-* 4) Now using q_crit = 3.0 for MS-MS Roche systems (previously we 
+-*    had nothing). This corresponds roughly to R proportional to M^5 
+-*    which should be true for the majority of the MS (varies from 
+-*    (M^17 -> M^2). If q > q_crit then contact occurs. 
+-*    For CHeB primaries we also take q_crit = 3.0 and allow 
+-*    common-envelope to occur if this is exceeded. 
+-*
+-* 5) The value of lambda used in calculations of the envelope binding 
+-*    energy for giants in common-envelope is now variable (see function 
+-*    in zfuncs). The lambda function has been fitted by Onno to detailed 
++*    dJorb = dm*a_2^2*omega_orb.
++*    The parameter gamma is an input option.
++*    Choice c) is used if the mass transfer is super-Eddington
++*    or the system is experiencing novae eruptions.
++*    In all other cases choice a) is used if gamma > 0.0, b) if
++*    gamma = -1.0 and c) is used if gamma = -2.0.
++*    The primary spin angular momentum is reduced by an amount
++*    dm1*r_1^2*omega_1 when an amount of mass dm1 is transferred
++*    from the primary.
++*    If the secondary accretes through a disk then its spin
++*    angular momentum is altered by assuming that the material
++*    falls onto the star from the inner edge of a Keplerian
++*    disk and that the system is in a steady state, i.e.
++*    an amount dm2*SQRT(G*m_2*r_2).
++*    If there is no accretion disk then we calculate the angular
++*    momentum of the transferred material by using the radius at
++*    at which the disk would have formed (rdisk = 1.7*rmin, see
++*    Ulrich & Burger 1976) if allowed, i.e. the angular momentum
++*    of the inner Lagrangian point, and add this directly to
++*    the secondary, i.e. an amount dm2*SQRT(G*m_2*rdisk).
++*    Total angular momentum is conserved in this model.
++*
++* 4) Now using q_crit = 3.0 for MS-MS Roche systems (previously we
++*    had nothing). This corresponds roughly to R proportional to M^5
++*    which should be true for the majority of the MS (varies from
++*    (M^17 -> M^2). If q > q_crit then contact occurs.
++*    For CHeB primaries we also take q_crit = 3.0 and allow
++*    common-envelope to occur if this is exceeded.
++*
++* 5) The value of lambda used in calculations of the envelope binding
++*    energy for giants in common-envelope is now variable (see function
++*    in zfuncs). The lambda function has been fitted by Onno to detailed
+ *    models ... he will write about this soon!
+ *
+ * 6) Note that eq.42 in the paper is missing a SQRT around the
+@@ -113,42 +115,42 @@
+ *    It is ok in the code.
+ *
+ * March 2003 *
+-* New input options added:  
++* New input options added:
+ *
+-*    ifflag - for the mass of a WD you can choose to use the mass that 
++*    ifflag - for the mass of a WD you can choose to use the mass that
+ *             results from the evolution algorithm (basically a competition
+-*             between core-mass growth and envelope mass-loss) or use the IFMR 
++*             between core-mass growth and envelope mass-loss) or use the IFMR
+ *             proposed by Han, Podsiadlowski & Eggleton, 1995, MNRAS, 272, 800
+-*             [>0 activates HPE IFMR]. 
++*             [>0 activates HPE IFMR].
+ *
+-*    wdflag - for the cooling of WDs you can choose to use either the standard 
+-*             Mestel cooling law (see SSE paper) or a modified-Mestel law that 
+-*             is better matched to detailed models (provided by Brad Hansen 
+-*             ... see Hurley & Shara, 2003, ApJ, May 20, in press) 
+-*             [>0 activates modified-Mestel]. 
+-*
+-*    bhflag - choose whether or not black holes should get velocity kicks 
+-*             at formation 
+-*             [0= no kick; >0 kick]. 
+-*
+-*    nsflag - for the mass of neutron stars and black holes you can use either 
+-*             the SSE prescription or the prescription presented by 
+-*             Belczynski et al. 2002, ApJ, 572, 407 who found that SSE was 
+-*             underestimating the masses of these stars. In either case you also 
+-*             need to set the maximum NS mass (mxns) for the prescription  
++*    wdflag - for the cooling of WDs you can choose to use either the standard
++*             Mestel cooling law (see SSE paper) or a modified-Mestel law that
++*             is better matched to detailed models (provided by Brad Hansen
++*             ... see Hurley & Shara, 2003, ApJ, May 20, in press)
++*             [>0 activates modified-Mestel].
++*
++*    bhflag - choose whether or not black holes should get velocity kicks
++*             at formation
++*             [0= no kick; >0 kick].
++*
++*    nsflag - for the mass of neutron stars and black holes you can use either
++*             the SSE prescription or the prescription presented by
++*             Belczynski et al. 2002, ApJ, 572, 407 who found that SSE was
++*             underestimating the masses of these stars. In either case you also
++*             need to set the maximum NS mass (mxns) for the prescription
+ *             [0= SSE, mxns=1.8; >0 Belczynski, mxns=3.0].
+ *
+ * Sept 2004 *
+ * Input options added/changed:
+ *
+-*    ceflag - set to 3 this uses de Kool (or Podsiadlowski) CE prescription, 
+-*             other options, such as Yungelson, could be added as well. 
++*    ceflag - set to 3 this uses de Kool (or Podsiadlowski) CE prescription,
++*             other options, such as Yungelson, could be added as well.
+ *
+ *    hewind - factor to control the amount of He star mass-loss, i.e.
+ *             1.0e-13*hewind*L^(2/3) gives He star mass-loss.
+ *
+-* NOTE: some versions may have contained a bug in the calculation of the 
+-*       f factor for convective tides. The incorrect line was: 
++* NOTE: some versions may have contained a bug in the calculation of the
++*       f factor for convective tides. The incorrect line was:
+ *             f = MIN(1.d0,(ttid/(2.d0*tc)**2))
+ *
+ *
+@@ -160,16 +162,24 @@
+       INTEGER kstar(2),kw,kst,kw1,kw2,kmin,kmax
+       INTEGER ktype(0:14,0:14)
+       COMMON /TYPES/ ktype
+-      INTEGER ceflag,tflag,ifflag,nsflag,wdflag
+-      COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag
+-*
++      INTEGER ceflag,tflag,ifflag,nsflag,wdflag,GRflag
++      COMMON /FLAGS/ ceflag,tflag,ifflag,nsflag,wdflag,GRflag
++      INTEGER idum
++      COMMON /VALUE3/ idum
++      real ran3,xx
++      external ran3
++*
++      REAL*8 v_kick1,theta_kick1,phi_kick1
++      REAL*8 v_kick2,theta_kick2,phi_kick2
++      REAL*8 v_kick,theta_kick,phi_kick
+       REAL*8 km,km0,tphys,tphys0,dtm0,tphys00
+       REAL*8 tphysf,dtp,tsave
+       REAL*8 aj(2),aj0(2),epoch(2),tms(2),tbgb(2),tkh(2),dtmi(2)
+       REAL*8 mass0(2),mass(2),massc(2),menv(2),mass00(2),mcxx(2)
+       REAL*8 rad(2),rol(2),rol0(2),rdot(2),radc(2),renv(2),radx(2)
+       REAL*8 lumin(2),k2str(2),q(2),dms(2),dmr(2),dmt(2)
+-      REAL*8 dml,vorb2,vwind2,omv2,ivsqm,lacc,vs(3)
++      REAL*8 dml,vorb2,vwind2,omv2,ivsqm,lacc,vs(6)
++      REAL*8 vs_theta, vs_phi, vs_temp, u1, u2, vs_o(3)
+       REAL*8 sep,dr,tb,dme,tdyn,taum,dm1,dm2,dmchk,qc,dt,pd,rlperi
+       REAL*8 m1ce,m2ce,mch,tmsnew,dm22,mew
+       PARAMETER(mch=1.44d0)
+@@ -198,9 +208,14 @@
+       LOGICAL isave,iplot
+       REAL*8 rl,mlwind,vrotf,corerd
+       EXTERNAL rl,mlwind,vrotf,corerd
+-      REAL bcm(50000,34),bpp(80,10)
++      REAL bcm(50000,35),bpp(1000,10)
+       COMMON /BINARY/ bcm,bpp
+ *
++* Zero output arrays
++*
++      bcm = 0.0d0
++      bpp = 0.0d0
++*
+ * Save the initial state.
+ *
+       mass1i = mass0(1)
+@@ -220,6 +235,19 @@
+       sgl = .false.
+       mt2 = MIN(mass(1),mass(2))
+       kst = 0
++      do k = 1,6
++         vs(k) = 0.d0
++      enddo
++      do k = 1,3
++         vs_o(k) = 0.d0
++      enddo
++* Calculate angles for systemic velocity from 2nd SN kick
++      u1 = RAN3(idum)
++      u2 = RAN3(idum)
++      vs_theta = ACOS(1.d0-2.d0*u1)
++      vs_phi = twopi*u2
++
++
+ *
+       if(mt2.lt.tiny.or.tb.le.0.d0)then
+          sgl = .true.
+@@ -404,7 +432,7 @@
+             lacc = lacc/lumin(j1)
+             if((lacc.gt.0.01d0.and..not.bsymb).or.
+      &         (lacc.lt.0.01d0.and.bsymb))then
+-               jp = MIN(80,jp + 1)
++               jp = MIN(100,jp + 1)
+                bpp(jp,1) = tphys
+                bpp(jp,2) = mass(1)
+                bpp(jp,3) = mass(2)
+@@ -430,16 +458,16 @@
+          omecc2 = 1.d0 - ecc2
+          sqome2 = SQRT(omecc2)
+ *
+-         djorb = ((dmr(1)+q(1)*dmt(1))*mass(2)*mass(2) + 
++         djorb = ((dmr(1)+q(1)*dmt(1))*mass(2)*mass(2) +
+      &            (dmr(2)+q(2)*dmt(2))*mass(1)*mass(1))*
+      &           sep*sep*sqome2*oorb/(mass(1)+mass(2))**2
+          delet = ecc*(dmt(1)*(0.5d0/mass(1) + 1.d0/(mass(1)+mass(2))) +
+      &                dmt(2)*(0.5d0/mass(2) + 1.d0/(mass(1)+mass(2))))
+ *
+-* For very close systems include angular momentum loss owing to 
+-* gravitational radiation. 
++* For very close systems include angular momentum loss owing to
++* gravitational radiation.
+ *
+-         if(sep.le.10.d0)then
++         if(sep.le.10.d0.and.GRflag.eq.1.d0)then
+             djgr = 8.315d-10*mass(1)*mass(2)*(mass(1)+mass(2))/
+      &             (sep*sep*sep*sep)
+             f1 = (19.d0/6.d0) + (121.d0/96.d0)*ecc2
+@@ -458,18 +486,18 @@
+             djspint(k) = (2.d0/3.d0)*(dmr(k)*rad(k)*rad(k)*ospin(k)) -
+      &                   djtx(k)
+ *
+-* Include magnetic braking for stars that have appreciable convective 
+-* envelopes. This includes MS stars with M < 1.25, HG stars near the GB 
+-* and giants. MB is not allowed for fully convective MS stars. 
++* Include magnetic braking for stars that have appreciable convective
++* envelopes. This includes MS stars with M < 1.25, HG stars near the GB
++* and giants. MB is not allowed for fully convective MS stars.
+ *
+             if(mass(k).gt.0.35d0.and.kstar(k).lt.10)then
+                djmb = 5.83d-16*menv(k)*(rad(k)*ospin(k))**3/mass(k)
+                djspint(k) = djspint(k) + djmb
+ *
+-* Limit to a 3% angular momentum change for the star owing to MB. 
+-* This is found to work best with the maximum iteration of 20000, 
+-* i.e. does not create an excessive number of iterations, while not 
+-* affecting the evolution outcome when compared with a 2% restriction.  
++* Limit to a 3% angular momentum change for the star owing to MB.
++* This is found to work best with the maximum iteration of 20000,
++* i.e. does not create an excessive number of iterations, while not
++* affecting the evolution outcome when compared with a 2% restriction.
+ *
+                if(djmb.gt.tiny)then
+                   dtj = 0.03d0*jspin(k)/ABS(djmb)
+@@ -538,12 +566,12 @@
+                dspint(k) = (3.d0*q(3-k)*tcqr/(rg2*omecc2**6))*
+      &                     (f2*oorb - sqome3*f5*ospin(k))
+ *
+-* Calculate the equilibrium spin at which no angular momentum 
++* Calculate the equilibrium spin at which no angular momentum
+ * can be transferred.
+ *
+                eqspin = oorb*f2/(sqome3*f5)
+ *
+-* Calculate angular momentum change for the star owing to tides. 
++* Calculate angular momentum change for the star owing to tides.
+ *
+                djt = (k2str(k)*(mass(k)-massc(k))*rad(k)*rad(k) +
+      &                k3*massc(k)*radc(k)*radc(k))*dspint(k)
+@@ -555,7 +583,7 @@
+ *
+ * Limit to 2% orbital angular momentum change.
+ *
+-         djtt = djtt + djorb 
++         djtt = djtt + djorb
+          if(ABS(djtt).gt.tiny)then
+             dtj = 0.02d0*jorb/ABS(djtt)
+             dt = MIN(dt,dtj)
+@@ -610,8 +638,8 @@
+ *
+  504  continue
+ *
+-* Update mass and intrinsic spin (checking that the star is not spun 
+-* past the equilibrium) and reset epoch for a MS (and possibly a HG) star. 
++* Update mass and intrinsic spin (checking that the star is not spun
++* past the equilibrium) and reset epoch for a MS (and possibly a HG) star.
+ *
+       do 505 , k = kmin,kmax
+ *
+@@ -727,9 +755,22 @@
+          if(kw.ne.kstar(k).and.kstar(k).le.12.and.
+      &      (kw.eq.13.or.kw.eq.14))then
+             if(sgl)then
+-               CALL kick(kw,mass(k),mt,0.d0,0.d0,-1.d0,0.d0,vs)
++               if(k.eq.1)then
++                  CALL kick(kw,mass(k),mt,0.0,0.d0,0.d0,-1.d0,
++     &                      vs,v_kick1,theta_kick1,phi_kick1)
++               else
++                  CALL kick(kw,mass(k),mt,0.0,0.d0,0.d0,-1.d0,
++     &                      vs,v_kick2,theta_kick2,phi_kick2)
++               endif
+             else
+-               CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,vs)
++* We need to assume a zero eccentricity binary at the SN kick
++               if(k.eq.1)then
++                  CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
++     &                      vs,v_kick1,theta_kick1,phi_kick1)
++               else
++                  CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
++     &                      vs,v_kick2,theta_kick2,phi_kick2)
++               endif
+                if(ecc.gt.1.d0)then
+                   kstar(k) = kw
+                   mass(k) = mt
+@@ -798,11 +839,11 @@
+          tms(k) = tm
+          tbgb(k) = tscls(1)
+ *
+-* Check for blue straggler formation. 
++* Check for blue straggler formation.
+ *
+          if(kw.le.1.and.tm.lt.tphys.and..not.bss)then
+             bss = .true.
+-            jp = MIN(80,jp + 1)
++            jp = MIN(100,jp + 1)
+             bpp(jp,1) = tphys
+             bpp(jp,2) = mass(1)
+             bpp(jp,3) = mass(2)
+@@ -842,7 +883,7 @@
+ *
+       if((tphys.lt.tiny.and.ABS(dtm).lt.tiny.and.
+      &    (mass2i.lt.0.1d0.or..not.sgl)).or.snova)then
+-         jp = MIN(80,jp + 1)
++         jp = MIN(100,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          bpp(jp,3) = mass(2)
+@@ -860,6 +901,16 @@
+          endif
+       endif
+ *
++
++* Calculate total systemic velocity from individual SN systemic velocities
++      vs_temp = SQRT(vs(4)*vs(4)+vs(5)*vs(5)+vs(6)*vs(6))
++      vs_o(1) = vs(1)
++      vs_o(2) = vs(2)
++      vs_o(3) = vs(3)
++      vs_o(1) = vs_o(1) + vs_temp*SIN(vs_theta)*cos(vs_phi)
++      vs_o(2) = vs_o(2) + vs_temp*SIN(vs_theta)*sin(vs_phi)
++      vs_o(3) = vs_o(3) + vs_temp*COS(vs_theta)
++
+       if((isave.and.tphys.ge.tsave).or.iplot)then
+          if(sgl.or.(rad(1).lt.rol(1).and.rad(2).lt.rol(2)).
+      &      or.tphys.lt.tiny)then
+@@ -900,6 +951,8 @@
+             bcm(ip,30) = tb
+             bcm(ip,31) = sep
+             bcm(ip,32) = ecc
++            bcm(ip,33) = SQRT(vs_o(1)*vs_o(1)+vs_o(2)*vs_o(2)
++     &                       +vs_o(3)*vs_o(3))
+             if(isave) tsave = tsave + dtp
+          endif
+       endif
+@@ -939,7 +992,7 @@
+             if(inttry) goto 7
+             if(intpol.ge.100)then
+                WRITE(99,*)' INTPOL EXCEEDED ',mass1i,mass2i,tbi,ecci
+-               goto 140 
++               goto 140
+             endif
+             dr = rad(j1) - 1.001d0*rol(j1)
+             if(ABS(rdot(j1)).lt.tiny.or.prec)then
+@@ -984,7 +1037,7 @@
+             if((tphys+dtm).ge.tphys00)then
+ *
+ * If this occurs then most likely the star is a high mass type 4
+-* where the radius can change very sharply or possibly there is a 
++* where the radius can change very sharply or possibly there is a
+ * discontinuity in the radius as a function of time and HRDIAG
+ * needs to be checked!
+ *
+@@ -1007,7 +1060,7 @@
+       if(tphys.ge.tphysf.and.intpol.eq.0) goto 140
+       if(change)then
+          change = .false.
+-         jp = MIN(80,jp + 1)
++         jp = MIN(100,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          bpp(jp,3) = mass(2)
+@@ -1048,7 +1101,7 @@
+       radx(j1) = MAX(radc(j1),rol(j1))
+       radx(j2) = rad(j2)
+ *
+-      jp = MIN(80,jp + 1)
++      jp = MIN(100,jp + 1)
+       bpp(jp,1) = tphys
+       bpp(jp,2) = mass(1)
+       bpp(jp,3) = mass(2)
+@@ -1107,10 +1160,10 @@
+       novae = .false.
+       disk = .false.
+ *
+-* Determine whether the transferred material forms an accretion 
+-* disk around the secondary or hits the secondary in a direct 
+-* stream, by using eq.(1) of Ulrich & Burger (1976, ApJ, 206, 509) 
+-* fitted to the calculations of Lubow & Shu (1974, ApJ, 198, 383). 
++* Determine whether the transferred material forms an accretion
++* disk around the secondary or hits the secondary in a direct
++* stream, by using eq.(1) of Ulrich & Burger (1976, ApJ, 206, 509)
++* fitted to the calculations of Lubow & Shu (1974, ApJ, 198, 383).
+ *
+ *     if(kstar(j2).ge.10) disk = .true.
+       rmin = 0.0425d0*sep*(q(j2)*(1.d0+q(j2)))**(1.d0/4.d0)
+@@ -1137,9 +1190,9 @@
+          qc = 4.d0
+       elseif(kstar(j1).eq.3.or.kstar(j1).eq.5.or.kstar(j1).eq.6)then
+ *        qc = (1.67d0-zpars(7)+2.d0*(massc(j1)/mass(j1))**5)/2.13d0
+-* Alternatively use condition of Hjellming & Webbink, 1987, ApJ, 318, 794. 
++* Alternatively use condition of Hjellming & Webbink, 1987, ApJ, 318, 794.
+          qc = 0.362 + 1.0/(3.0*(1.0 - massc(j1)/mass(j1)))
+-* Or allow all cases to avoid common-envelope.  
++* Or allow all cases to avoid common-envelope.
+ *        qc = 100.d0
+       elseif(kstar(j1).eq.8.or.kstar(j1).eq.9)then
+          qc = 0.784d0
+@@ -1219,7 +1272,7 @@
+ * The neutron star or black hole simply accretes at the Eddington rate.
+ *
+             dm2 = MIN(dme*taum/tb,dm1)
+-            if(dm2.lt.dm1) supedd = .true. 
++            if(dm2.lt.dm1) supedd = .true.
+             mass(j2) = mass(j2) + dm2
+          endif
+          coel = .true.
+@@ -1240,11 +1293,22 @@
+ *
+          m1ce = mass(j1)
+          m2ce = mass(j2)
++*         write(*,*) "Common envelope 3"
++         if(j1.eq.1)then
++            v_kick = v_kick1
++            theta_kick = theta_kick1
++            phi_kick = phi_kick1
++         else
++            v_kick = v_kick2
++            theta_kick = theta_kick2
++            phi_kick = phi_kick2
++         endif
+          CALL comenv(mass0(j1),mass(j1),massc(j1),aj(j1),jspin(j1),
+      &               kstar(j1),mass0(j2),mass(j2),massc(j2),aj(j2),
+-     &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel)
++     &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel,
++     &               v_kick,theta_kick,phi_kick,vs)
+ *
+-         jp = MIN(80,jp + 1)
++         jp = MIN(100,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
+@@ -1296,7 +1360,7 @@
+          dm1 = mass(j1)
+          if(eddfac.lt.10.d0)then
+             dm2 = MIN(dme*taum/tb,dm1)
+-            if(dm2.lt.dm1) supedd = .true. 
++            if(dm2.lt.dm1) supedd = .true.
+          else
+             dm2 = dm1
+          endif
+@@ -1304,16 +1368,16 @@
+ *
+          if(kstar(j1).eq.10.and.kstar(j2).eq.10)then
+ *
+-* Assume the energy released by ignition of the triple-alpha reaction 
+-* is enough to destroy the star. 
++* Assume the energy released by ignition of the triple-alpha reaction
++* is enough to destroy the star.
+ *
+             kstar(j2) = 15
+             mass(j2) = 0.d0
+          elseif(kstar(j1).eq.10.or.kstar(j2).eq.10)then
+ *
+-* Should be helium overflowing onto a CO or ONe core in which case the 
+-* helium swells up to form a giant envelope so a HeGB star is formed. 
+-* Allowance for the rare case of CO or ONe flowing onto He is made. 
++* Should be helium overflowing onto a CO or ONe core in which case the
++* helium swells up to form a giant envelope so a HeGB star is formed.
++* Allowance for the rare case of CO or ONe flowing onto He is made.
+ *
+             kst = 9
+             if(kstar(j2).eq.10) massc(j2) = dm2
+@@ -1324,7 +1388,7 @@
+             mass0(j2) = mass(j2)
+             if(kstar(j1).eq.12.and.kstar(j2).eq.11)then
+ *
+-* Mixture of ONe and CO will result in an ONe product. 
++* Mixture of ONe and CO will result in an ONe product.
+ *
+                kstar(j2) = 12
+             endif
+@@ -1378,8 +1442,8 @@
+          endif
+          kst = kstar(j2)
+ *
+-* Possibly mass transfer needs to be reduced if primary is rotating 
+-* faster than the orbit (not currently implemented). 
++* Possibly mass transfer needs to be reduced if primary is rotating
++* faster than the orbit (not currently implemented).
+ *
+ *        spnfac = MIN(3.d0,MAX(ospin(j1)/oorb,1.d0))
+ *        dm1 = dm1/spnfac**2
+@@ -1454,10 +1518,10 @@
+          dt = km*tb
+          dtm = dt/1.0d+06
+ *
+-* Take the stellar evolution timestep into account but don't let it 
+-* be overly restrictive for long lived phases. 
++* Take the stellar evolution timestep into account but don't let it
++* be overly restrictive for long lived phases.
+ *
+-         if(iter.le.1000) dtm = MIN(dtm,dtmi(1),dtmi(2)) 
++         if(iter.le.1000) dtm = MIN(dtm,dtmi(1),dtmi(2))
+          dtm = MIN(dtm,tsave-tphys)
+          dt = dtm*1.0d+06
+          km = dt/tb
+@@ -1465,7 +1529,7 @@
+ * Decide between accreted mass by secondary and/or system mass loss.
+ *
+          taum = mass(j2)/dm1*tb
+-         if(kstar(j2).le.2.or.kstar(j2).eq.4)then 
++         if(kstar(j2).le.2.or.kstar(j2).eq.4)then
+ *
+ * Limit according to the thermal timescale of the secondary.
+ *
+@@ -1492,7 +1556,7 @@
+                   CALL gntage(mcx,mt2,kst,zpars,mass0(j2),aj(j2))
+                   epoch(j2) = tphys + dtm - aj(j2)
+ *
+-                  jp = MIN(80,jp + 1)
++                  jp = MIN(100,jp + 1)
+                   bpp(jp,1) = tphys
+                   bpp(jp,2) = mass(j1)
+                   bpp(jp,3) = mt2
+@@ -1511,8 +1575,8 @@
+                   endif
+ *
+                endif
+-            endif            
+-         elseif(kstar(j1).le.6.and. 
++            endif
++         elseif(kstar(j1).le.6.and.
+      &           (kstar(j2).ge.10.and.kstar(j2).le.12))then
+ *
+ * White dwarf secondary.
+@@ -1522,9 +1586,9 @@
+ *
+ * Accrete until a nova explosion blows away most of the accreted material.
+ *
+-                  novae = .true. 
++                  novae = .true.
+                   dm2 = MIN(dm1,dme)
+-                  if(dm2.lt.dm1) supedd = .true. 
++                  if(dm2.lt.dm1) supedd = .true.
+                   dm22 = epsnov*dm2
+                else
+ *
+@@ -1549,7 +1613,7 @@
+                   CALL gntage(massc(j2),mt2,kst,zpars,mass0(j2),aj(j2))
+                   epoch(j2) = tphys + dtm - aj(j2)
+ *
+-                  jp = MIN(80,jp + 1)
++                  jp = MIN(100,jp + 1)
+                   bpp(jp,1) = tphys
+                   bpp(jp,2) = mass(j1)
+                   bpp(jp,3) = mt2
+@@ -1575,7 +1639,7 @@
+ * Impose the Eddington limit.
+ *
+             dm2 = MIN(dm1,dme)
+-            if(dm2.lt.dm1) supedd = .true. 
++            if(dm2.lt.dm1) supedd = .true.
+ *
+          else
+ *
+@@ -1598,13 +1662,13 @@
+                goto 135
+             elseif(kstar(j1).le.10.and.kst.ge.11)then
+ *
+-* CO and ONeWDs accrete helium-rich material until the accumulated 
+-* material exceeds a mass of 0.15 when it ignites. For a COWD with 
+-* mass less than 0.95 the system will be destroyed as an ELD in a 
+-* possible Type 1a SN. COWDs with mass greater than 0.95 and ONeWDs 
+-* will survive with all the material converted to ONe (JH 30/09/99). 
++* CO and ONeWDs accrete helium-rich material until the accumulated
++* material exceeds a mass of 0.15 when it ignites. For a COWD with
++* mass less than 0.95 the system will be destroyed as an ELD in a
++* possible Type 1a SN. COWDs with mass greater than 0.95 and ONeWDs
++* will survive with all the material converted to ONe (JH 30/09/99).
+ *
+-** Now changed to an ELD for all COWDs when 0.15 accreted (JH 11/01/00).  
++** Now changed to an ELD for all COWDs when 0.15 accreted (JH 11/01/00).
+ *
+                if((mt2-mass0(j2)).ge.0.15d0)then
+                   if(kst.eq.11)then
+@@ -1649,13 +1713,13 @@
+      &           (mass(1)+mass(2))**2
+          djorb = djorb*dt
+ *
+-* For super-Eddington mass transfer rates, for gamma = -2.0, 
+-* and for novae systems, assume that material is lost from  
+-* the system as if a wind from the secondary. 
+-* If gamma = -1.0 then assume the lost material carries with it 
+-* the specific angular momentum of the primary and for all 
+-* gamma > 0.0 assume that it takes away a fraction gamma of 
+-* the orbital angular momentum. 
++* For super-Eddington mass transfer rates, for gamma = -2.0,
++* and for novae systems, assume that material is lost from
++* the system as if a wind from the secondary.
++* If gamma = -1.0 then assume the lost material carries with it
++* the specific angular momentum of the primary and for all
++* gamma > 0.0 assume that it takes away a fraction gamma of
++* the orbital angular momentum.
+ *
+          if(supedd.or.novae.or.gamma.lt.-1.5d0)then
+             djorb = djorb + (dm1 - dm22)*mass(j1)*mass(j1)/
+@@ -1705,8 +1769,8 @@
+ *
+  602     continue
+ *
+-* Adjust the spin angular momentum of each star owing to mass transfer 
+-* and conserve total angular momentum. 
++* Adjust the spin angular momentum of each star owing to mass transfer
++* and conserve total angular momentum.
+ *
+          djt = dm1*radx(j1)*radx(j1)*ospin(j1)
+          djspint(j1) = djspint(j1) + djt
+@@ -1717,30 +1781,30 @@
+ * falls onto the star from the inner edge of a Keplerian accretion
+ * disk and that the system is in a steady state.
+ *
+-            djt = dm2*twopi*aursun*SQRT(aursun*mass(j2)*radx(j2)) 
+-            djspint(j2) = djspint(j2) - djt 
++            djt = dm2*twopi*aursun*SQRT(aursun*mass(j2)*radx(j2))
++            djspint(j2) = djspint(j2) - djt
+             djorb = djorb + djt
+ *
+          else
+ *
+-* No accretion disk. 
+-* Calculate the angular momentum of the transferred material by 
+-* using the radius of the disk (see Ulrich & Burger) that would 
+-* have formed if allowed. 
++* No accretion disk.
++* Calculate the angular momentum of the transferred material by
++* using the radius of the disk (see Ulrich & Burger) that would
++* have formed if allowed.
+ *
+             rdisk = 1.7d0*rmin
+-            djt = dm2*twopi*aursun*SQRT(aursun*mass(j2)*rdisk) 
++            djt = dm2*twopi*aursun*SQRT(aursun*mass(j2)*rdisk)
+             djspint(j2) = djspint(j2) - djt
+             djorb = djorb + djt
+ *
+          endif
+          djtx(2) = djt
+ *
+-* Adjust the secondary spin if a nova eruption has occurred. 
++* Adjust the secondary spin if a nova eruption has occurred.
+ *
+          if(novae)then
+-            djt = (dm2 - dm22)*radx(j2)*radx(j2)*ospin(j2) 
+-            djspint(j2) = djspint(j2) + djt 
++            djt = (dm2 - dm22)*radx(j2)*radx(j2)*ospin(j2)
++            djspint(j2) = djspint(j2) + djt
+             djtx(2) = djtx(2) - djt
+          endif
+ *
+@@ -1834,7 +1898,7 @@
+          mass(j2) = mass(j2) + dm22 - dms(j2)
+          if(kstar(j2).le.1.or.kstar(j2).eq.7) mass0(j2) = mass(j2)
+ *
+-* For a HG star check if the initial mass can be reduced. 
++* For a HG star check if the initial mass can be reduced.
+ *
+          if(kstar(j1).eq.2.and.mass0(j1).le.zpars(3))then
+             m0 = mass0(j1)
+@@ -1861,8 +1925,8 @@
+ *
+          if(ecc.ge.1.d0) goto 135
+ *
+-* Ensure that Jorb does not become negative which could happen if the 
+-* primary overfills its Roche lobe initially. In this case we simply 
++* Ensure that Jorb does not become negative which could happen if the
++* primary overfills its Roche lobe initially. In this case we simply
+ * allow contact to occur.
+ *
+          jorb = MAX(1.d0,jorb - djorb)
+@@ -1929,7 +1993,13 @@
+          if(kw.ne.kstar(k).and.kstar(k).le.12.and.
+      &      (kw.eq.13.or.kw.eq.14))then
+             dms(k) = mass(k) - mt
+-            CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,vs)
++            if(k.eq.1)then
++               CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
++     &                   vs,v_kick1,theta_kick1,phi_kick1)
++            else
++               CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
++     &                   vs,v_kick2,theta_kick2,phi_kick2)
++            endif
+             if(ecc.gt.1.d0)then
+                kstar(k) = kw
+                mass(k) = mt
+@@ -1980,11 +2050,11 @@
+          tms(k) = tm
+          tbgb(k) = tscls(1)
+ *
+-* Check for blue straggler formation. 
++* Check for blue straggler formation.
+ *
+          if(kw.le.1.and.tm.lt.tphys.and..not.bss)then
+             bss = .true.
+-            jp = MIN(80,jp + 1)
++            jp = MIN(999,jp + 1)
+             bpp(jp,1) = tphys
+             bpp(jp,2) = mass(1)
+             bpp(jp,3) = mass(2)
+@@ -2060,7 +2130,7 @@
+ *
+       if(change)then
+          change = .false.
+-         jp = MIN(80,jp + 1)
++         jp = MIN(999,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          bpp(jp,3) = mass(2)
+@@ -2083,7 +2153,7 @@
+          iter = iter + 1
+          goto 8
+       else
+-         jp = MIN(80,jp + 1)
++         jp = MIN(999,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          bpp(jp,3) = mass(2)
+@@ -2111,7 +2181,7 @@
+       rrl1 = MIN(999.999d0,rad(1)/rol(1))
+       rrl2 = MIN(999.999d0,rad(2)/rol(2))
+ *
+-      jp = MIN(80,jp + 1)
++      jp = MIN(999,jp + 1)
+       bpp(jp,1) = tphys
+       bpp(jp,2) = mass(1)
+       bpp(jp,3) = mass(2)
+@@ -2124,20 +2194,42 @@
+       bpp(jp,10) = 5.0
+ *
+       if(kstar(j1).ge.2.and.kstar(j1).le.9.and.kstar(j1).ne.7)then
++*         write(*,*) "Common envelope 1:", rad(1), rol(1), rad(2), sep
++         if(j1.eq.1)then
++            v_kick = v_kick1
++            theta_kick = theta_kick1
++            phi_kick = phi_kick1
++         else
++            v_kick = v_kick2
++            theta_kick = theta_kick2
++            phi_kick = phi_kick2
++         endif
+          CALL comenv(mass0(j1),mass(j1),massc(j1),aj(j1),jspin(j1),
+      &               kstar(j1),mass0(j2),mass(j2),massc(j2),aj(j2),
+-     &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel)
++     &               jspin(j2),kstar(j2),zpars,ecc,sep,jorb,coel,
++     &               v_kick,theta_kick,phi_kick,vs)
+          com = .true.
+       elseif(kstar(j2).ge.2.and.kstar(j2).le.9.and.kstar(j2).ne.7)then
++*         write(*,*) "Common envelope 2"
++         if(j2.eq.1)then
++            v_kick = v_kick1
++            theta_kick = theta_kick1
++            phi_kick = phi_kick1
++         else
++            v_kick = v_kick2
++            theta_kick = theta_kick2
++            phi_kick = phi_kick2
++         endif
+          CALL comenv(mass0(j2),mass(j2),massc(j2),aj(j2),jspin(j2),
+      &               kstar(j2),mass0(j1),mass(j1),massc(j1),aj(j1),
+-     &               jspin(j1),kstar(j1),zpars,ecc,sep,jorb,coel)
++     &               jspin(j1),kstar(j1),zpars,ecc,sep,jorb,coel,
++     &               v_kick,theta_kick,phi_kick,vs)
+          com = .true.
+       else
+          CALL mix(mass0,mass,aj,kstar,zpars)
+       endif
+       if(com)then
+-         jp = MIN(80,jp + 1)
++         jp = MIN(999,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
+@@ -2186,7 +2278,7 @@
+          if(com)then
+             com = .false.
+          else
+-            jp = MIN(80,jp + 1)
++            jp = MIN(999,jp + 1)
+             bpp(jp,1) = tphys
+             bpp(jp,2) = mass(1)
+             if(kstar(1).eq.15) bpp(jp,2) = mass0(1)
+@@ -2233,7 +2325,7 @@
+       if(com)then
+          com = .false.
+       else
+-         jp = MIN(80,jp + 1)
++         jp = MIN(999,jp + 1)
+          bpp(jp,1) = tphys
+          bpp(jp,2) = mass(1)
+          if(kstar(1).eq.15.and.bpp(jp-1,4).lt.15.0)then
+@@ -2326,7 +2418,7 @@
+          tb = -1.d0
+       endif
+       tb = tb*yeardy
+-      if(jp.ge.80)then
++      if(jp.ge.1000)then
+          WRITE(99,*)' EVOLV2 ARRAY ERROR ',mass1i,mass2i,tbi,ecci
+          WRITE(*,*)' STOP: EVOLV2 ARRAY ERROR '
+          CALL exit(0)
+Only in pyBSE_updated: evolv_wrapper.f
+Only in pyBSE_updated: fort.99
+diff -ur pyBSE/kick.f pyBSE_updated/kick.f
+--- pyBSE/kick.f	2006-07-28 06:31:53.000000000 +0300
++++ pyBSE_updated/kick.f	2018-02-04 17:04:40.000000000 +0200
+@@ -1,5 +1,6 @@
+ ***
+-      SUBROUTINE kick(kw,m1,m1n,m2,ecc,sep,jorb,vs)
++      SUBROUTINE kick(kw,m1,m1n,m2,ecc,sep,jorb,vs,vk,
++     &                        theta_in,phi_in)
+       implicit none
+ *
+       integer kw,k
+@@ -12,18 +13,15 @@
+       real*8 pi,twopi,gmrkm,yearsc,rsunkm
+       parameter(yearsc=3.1557d+07,rsunkm=6.96d+05)
+       real*8 mm,em,dif,der,del,r
+-      real*8 u1,u2,vk,v(4),s,theta,phi
++      real*8 u1,u2,vk,v(4),s,theta,phi,theta_in,phi_in
+       real*8 sphi,cphi,stheta,ctheta,salpha,calpha
+       real*8 vr,vr2,vk2,vn2,hn2
+-      real*8 mu,cmu,vs(3),v1,v2,mx1,mx2
++      real*8 mu,cmu,vs(6),v1,v2,mx1,mx2
+       real*8 sigma
+       COMMON /VALUE4/ sigma,bhflag
+       real ran3,xx
+       external ran3
+ *
+-      do k = 1,3
+-         vs(k) = 0.d0
+-      enddo
+ *     if(kw.eq.14.and.bhflag.eq.0) goto 95
+ *
+       pi = ACOS(-1.d0)
+@@ -31,77 +29,58 @@
+ * Conversion factor to ensure velocities are in km/s using mass and
+ * radius in solar units.
+       gmrkm = 1.906125d+05
++* Assume a circular orbit
++* Find the initial relative velocity vector.
++      salpha = 1.0
++      calpha = 0.0
+ *
+-* Find the initial separation by randomly choosing a mean anomaly.
+-      if(sep.gt.0.d0.and.ecc.ge.0.d0)then
+-         xx = RAN3(idum)
+-         mm = xx*twopi
+-         em = mm
+- 2       dif = em - ecc*SIN(em) - mm
+-         if(ABS(dif/mm).le.1.0d-04) goto 3
+-         der = 1.d0 - ecc*COS(em)
+-         del = dif/der
+-         em = em - del
+-         goto 2
+- 3       continue
+-         r = sep*(1.d0 - ecc*COS(em))
++      vr2 = gmrkm*(m1+m2)*(1.d0/sep)
++      vr = SQRT(vr2)
++*      vr = 0.d0
++*      vr2 = 0.d0
++*      salpha = 0.d0
++*      calpha = 0.d0
++*
++* Use the input vick speed and angles
++* BSE uses phi as the polar angle, and theta as the azimuthal
++* How annoying.
+ *
+-* Find the initial relative velocity vector.
+-         salpha = SQRT((sep*sep*(1.d0-ecc*ecc))/(r*(2.d0*sep-r)))
+-         calpha = (-1.d0*ecc*SIN(em))/SQRT(1.d0-ecc*ecc*COS(em)*COS(em))
+-         vr2 = gmrkm*(m1+m2)*(2.d0/r - 1.d0/sep)
+-         vr = SQRT(vr2)
+-      else
+-         vr = 0.d0
+-         vr2 = 0.d0
+-         salpha = 0.d0
+-         calpha = 0.d0
+-      endif
++      phi = theta_in
++      theta = phi_in
+ *
+-* Generate Kick Velocity using Maxwellian Distribution (Phinney 1992).
+-* Use Henon's method for pairwise components (Douglas Heggie 22/5/97).
+-      do 20 k = 1,2
+-         u1 = RAN3(idum)
+-         u2 = RAN3(idum)
+-* Generate two velocities from polar coordinates S & THETA.
+-         s = sigma*SQRT(-2.d0*LOG(1.d0 - u1))
+-         theta = twopi*u2
+-         v(2*k-1) = s*COS(theta)
+-         v(2*k) = s*SIN(theta)
+- 20   continue
+-      vk2 = v(1)**2 + v(2)**2 + v(3)**2
+-      vk = SQRT(vk2)
+-      if((kw.eq.14.and.bhflag.eq.0).or.kw.lt.0)then
+-         vk2 = 0.d0
+-         vk = 0.d0
+-         if(kw.lt.0) kw = 13
+-      endif
+-      sphi = -1.d0 + 2.d0*u1
+-      phi = ASIN(sphi)
++      sphi = SIN(phi)
+       cphi = COS(phi)
+       stheta = SIN(theta)
+       ctheta = COS(theta)
+ *     WRITE(66,*)' KICK VK PHI THETA ',vk,phi,theta
+-      if(sep.le.0.d0.or.ecc.lt.0.d0) goto 90
++*      if(sep.le.0.d0.or.ecc.lt.0.d0) goto 90
++      if(sep.le.0.d0.or.ecc.lt.0.d0) return
+ *
++* Other inputs
++      vk2 = vk*vk
++      r = sep
+ * Determine the magnitude of the new relative velocity.
+-      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
++*      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
++      vn2 = vk2+vr2+2.d0*vk*vr*cphi
++*
+ * Calculate the new semi-major axis.
+       sep = 2.d0/r - vn2/(gmrkm*(m1n+m2))
+       sep = 1.d0/sep
++*
+ *     if(sep.le.0.d0)then
+ *        ecc = 1.1d0
+ *        goto 90
+ *     endif
+ * Determine the magnitude of the cross product of the separation vector
+ * and the new relative velocity.
+-      v1 = vk2*sphi*sphi
+-      v2 = (vk*ctheta*cphi-vr*salpha)**2
++      v1 = vk2 * sphi*sphi * stheta*stheta
++      v2 = (vk*cphi + vr)**2
+       hn2 = r*r*(v1 + v2)
+ * Calculate the new eccentricity.
+       ecc2 = 1.d0 - hn2/(gmrkm*sep*(m1n+m2))
+       ecc2 = MAX(ecc2,0.d0)
+       ecc = SQRT(ecc2)
++*
+ * Calculate the new orbital angular momentum taking care to convert
+ * hn to units of Rsun^2/yr.
+       jorb = (m1n*m2/(m1n+m2))*SQRT(hn2)*(yearsc/rsunkm)
+@@ -115,9 +94,15 @@
+ * Calculate the components of the velocity of the new centre-of-mass.
+          mx1 = vk*m1n/(m1n+m2)
+          mx2 = vr*(m1-m1n)*m2/((m1n+m2)*(m1+m2))
+-         vs(1) = mx1*ctheta*cphi + mx2*salpha
+-         vs(2) = mx1*stheta*cphi + mx2*calpha
+-         vs(3) = mx1*sphi
++         if((vs(1).eq.0.d0).and.(vs(2).eq.0.d0).and.(vs(3).eq.0.d0))then
++            vs(1) = mx1 * sphi * ctheta
++            vs(2) = mx1 * cphi - mx2
++            vs(3) = mx1 * sphi * stheta
++         else
++            vs(4) = mx1 * sphi * ctheta
++            vs(5) = mx1 * cphi - mx2
++            vs(6) = mx1 * sphi * stheta
++         endif
+       else
+ * Calculate the relative hyperbolic velocity at infinity (simple method).
+          sep = r/(ecc-1.d0)
+Only in pyBSE_updated: pyBSE_install.txt
+Only in pyBSE_updated: pybse
+Only in pyBSE_updated: pybse.egg-info
+Only in pyBSE_updated: search.out
+Only in pyBSE_updated: setup.py
+Only in pyBSE_updated: test_pybse.py
