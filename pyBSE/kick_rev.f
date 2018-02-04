@@ -33,6 +33,7 @@
 * Find the initial relative velocity vector.
       salpha = 1.0
       calpha = 0.0
+*
       vr2 = gmrkm*(m1+m2)*(1.d0/sep)
       vr = SQRT(vr2)
 *      vr = 0.d0
@@ -61,9 +62,11 @@
 * Determine the magnitude of the new relative velocity.
 *      vn2 = vk2+vr2-2.d0*vk*vr*(ctheta*cphi*salpha-stheta*cphi*calpha)
       vn2 = vk2+vr2+2.d0*vk*vr*cphi
+*
 * Calculate the new semi-major axis.
       sep = 2.d0/r - vn2/(gmrkm*(m1n+m2))
       sep = 1.d0/sep
+*
 *     if(sep.le.0.d0)then
 *        ecc = 1.1d0
 *        goto 90
@@ -77,7 +80,7 @@
       ecc2 = 1.d0 - hn2/(gmrkm*sep*(m1n+m2))
       ecc2 = MAX(ecc2,0.d0)
       ecc = SQRT(ecc2)
-
+*
 * Calculate the new orbital angular momentum taking care to convert
 * hn to units of Rsun^2/yr.
       jorb = (m1n*m2/(m1n+m2))*SQRT(hn2)*(yearsc/rsunkm)
@@ -92,13 +95,13 @@
          mx1 = vk*m1n/(m1n+m2)
          mx2 = vr*(m1-m1n)*m2/((m1n+m2)*(m1+m2))
          if((vs(1).eq.0.d0).and.(vs(2).eq.0.d0).and.(vs(3).eq.0.d0))then
-            vs(1) = mx1*ctheta*cphi + mx2*salpha
-            vs(2) = mx1*stheta*cphi + mx2*calpha
-            vs(3) = mx1*sphi
+            vs(1) = mx1 * sphi * ctheta
+            vs(2) = mx1 * cphi - mx2
+            vs(3) = mx1 * sphi * stheta
          else
-            vs(4) = mx1*ctheta*cphi + mx2*salpha
-            vs(5) = mx1*stheta*cphi + mx2*calpha
-            vs(6) = mx1*sphi
+            vs(4) = mx1 * sphi * ctheta
+            vs(5) = mx1 * cphi - mx2
+            vs(6) = mx1 * sphi * stheta
          endif
       else
 * Calculate the relative hyperbolic velocity at infinity (simple method).
