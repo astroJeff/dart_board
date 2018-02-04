@@ -56,3 +56,7 @@ pyBSE/dist/
 pyBSE/.ipynb_checkpoints/
 dart_board/cosmo/__pycache__/
 dart_board/cosmo/*.pyc
+pyBSE/kick.f
+pyBSE/comenv.f
+pyBSE/evolv2.f
+Makefile
