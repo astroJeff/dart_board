@@ -2,12 +2,10 @@ Setting up the python API for BSE for use in dart_board
 
 1. Download BSE from Jarrod Hurley’s site into dart_board/pyBSE/
 
-2. untar the tarball with “tar -xvf bse.tar”
+2. Change directories to dart_board/pyBSE/ with "cd pyBSE". Untar the tarball with “tar -xvf bse.tar”. You should now see a bunch of new files that contains the rapid binary evolution files from SSE/BSE.
 
-3. pyBSE already contains the .f files kick.f, evolv2.f, and evolv_wrapper.f, as well as the update make file, Makefile_pyBSE.
+3. Move to the parent dart_board directory with "cd ..". Now apply the included BSE patch file using "patch -s -p0 < BSE_updates.patch". This will update all the BSE files.
 
-4. Replace comenv.f with comenv_pyBSE.f: “cp comenv_pyBSE.f comenv.f”
+4. Change directories back to pyBSE with "cd pyBSE". Make the pyBSE executable with “make pybse”.
 
-5. Overwrite the old “Makefile” with “Makefile_pyBSE” using “cp Makefile_pyBSE Makefile”
-
-6. Make pyBSE with “make pybse”
+5. Now, we need to create the pyBSE python library so that it is accessible to any directory. We have included a setup.py script for use with pip. We suggest installing with the command "pip install -e ."
