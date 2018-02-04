@@ -756,20 +756,20 @@
      &      (kw.eq.13.or.kw.eq.14))then
             if(sgl)then
                if(k.eq.1)then
-                  CALL kick_rev(kw,mass(k),mt,0.0,0.d0,0.d0,-1.d0,
-     &                          vs,v_kick1,theta_kick1,phi_kick1)
+                  CALL kick(kw,mass(k),mt,0.0,0.d0,0.d0,-1.d0,
+     &                      vs,v_kick1,theta_kick1,phi_kick1)
                else
-                  CALL kick_rev(kw,mass(k),mt,0.0,0.d0,0.d0,-1.d0,
-     &                          vs,v_kick2,theta_kick2,phi_kick2)
+                  CALL kick(kw,mass(k),mt,0.0,0.d0,0.d0,-1.d0,
+     &                      vs,v_kick2,theta_kick2,phi_kick2)
                endif
             else
 * We need to assume a zero eccentricity binary at the SN kick
                if(k.eq.1)then
-                  CALL kick_rev(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
-     &                          vs,v_kick1,theta_kick1,phi_kick1)
+                  CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
+     &                      vs,v_kick1,theta_kick1,phi_kick1)
                else
-                  CALL kick_rev(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
-     &                          vs,v_kick2,theta_kick2,phi_kick2)
+                  CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
+     &                      vs,v_kick2,theta_kick2,phi_kick2)
                endif
                if(ecc.gt.1.d0)then
                   kstar(k) = kw
@@ -1994,11 +1994,11 @@
      &      (kw.eq.13.or.kw.eq.14))then
             dms(k) = mass(k) - mt
             if(k.eq.1)then
-               CALL kick_rev(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
-     &                       vs,v_kick1,theta_kick1,phi_kick1)
+               CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
+     &                   vs,v_kick1,theta_kick1,phi_kick1)
             else
-               CALL kick_rev(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
-     &                       vs,v_kick2,theta_kick2,phi_kick2)
+               CALL kick(kw,mass(k),mt,mass(3-k),ecc,sep,jorb,
+     &                   vs,v_kick2,theta_kick2,phi_kick2)
             endif
             if(ecc.gt.1.d0)then
                kstar(k) = kw
