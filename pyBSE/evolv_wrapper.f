@@ -187,7 +187,7 @@
 *
 * Evolve the binary.
 *
-         CALL evolv2_rev(kstar,mass0,mass,rad,lum,massc,radc,
+         CALL evolv2(kstar,mass0,mass,rad,lum,massc,radc,
      &               menv,renv,ospin,epoch,tms,
      &               tphys,tphysf,dtp,z,zpars,tb,ecc,
      &               v_kick1,theta_kick1,phi_kick1,

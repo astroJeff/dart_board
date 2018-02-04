@@ -1,6 +1,6 @@
 IGNORE:
 PY_CMPLR = f2py
-CMPLR = gfortran
+CMPLR = gfortran   
 FFLAGS =
 LFLAGS = const_bse.h zdata.h
 
@@ -49,11 +49,11 @@ evolv_wrapper: $(OBJT4) $(LFLAGS)
 
 
 SRCE5 = \
-evolv_wrapper.f comenv.f corerd.f deltat.f dgcore.f evolv2_rev.f \
+evolv_wrapper.f comenv.f corerd.f deltat.f dgcore.f evolv2.f \
 gntage.f hrdiag.f instar.f kick_rev.f mix.f mlwind.f mrenv.f \
 ran3.f rl.f star.f zcnsts.f zfuncs.f
 
 OBJT5 = $(SRCE5:.f=.o)
 
 pybse: $(OBJT5) $(LFLAGS)
-	$(PY_CMPLR) -c --fcompiler=$(CMPLR) -m pybse $(SRCE5)
+	$(PY_CMPLR) -c --fcompiler=$(CMPLR) -m bse $(SRCE5)

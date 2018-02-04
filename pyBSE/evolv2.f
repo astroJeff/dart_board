@@ -1,5 +1,5 @@
 ***
-      SUBROUTINE evolv2_rev(kstar,mass0,mass,rad,lumin,massc,radc,
+      SUBROUTINE evolv2(kstar,mass0,mass,rad,lumin,massc,radc,
      &                  menv,renv,ospin,epoch,tms,
      &                  tphys,tphysf,dtp,z,zpars,tb,ecc,
      &                  v_kick1,theta_kick1,phi_kick1,

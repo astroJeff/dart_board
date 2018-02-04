@@ -1,5 +1,5 @@
 ***
-      SUBROUTINE kick_rev(kw,m1,m1n,m2,ecc,sep,jorb,vs,vk,
+      SUBROUTINE kick(kw,m1,m1n,m2,ecc,sep,jorb,vs,vk,
      &                        theta_in,phi_in)
       implicit none
 *
