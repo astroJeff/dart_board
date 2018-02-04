@@ -60,3 +60,5 @@ pyBSE/kick.f
 pyBSE/comenv.f
 pyBSE/evolv2.f
 Makefile
+pyBSE/build/
+literature/
