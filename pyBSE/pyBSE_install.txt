@@ -1,6 +1,6 @@
 Setting up the python API for BSE for use in dart_board
 
-1. Download BSE from Jarrod Hurley’s site into dart_board/pyBSE/
+1. Download BSE (not SSE) from Jarrod Hurley’s site (http://astronomy.swin.edu.au/~jhurley/bsedload.html) into dart_board/pyBSE/
 
 2. Change directories to dart_board/pyBSE/ with "cd pyBSE". Untar the tarball with “tar -xvf bse.tar”. You should now see a bunch of new files that contains the rapid binary evolution files from SSE/BSE.
 
