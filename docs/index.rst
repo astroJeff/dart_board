@@ -70,13 +70,3 @@ changelog
 --------------------------------------
 
 Version 1.0.0 - Feb. 2018
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
