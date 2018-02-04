@@ -771,7 +771,7 @@ class DartBoard():
 
 
 
-    def scatter_darts(self, num_darts=-1, seconds=-1, output_frequency=100000):
+    def scatter_darts(self, num_darts=-1, seconds=-1, batch_size=1000, output_frequency=100000):
         """
         Rather than use the MCMC sampler, run a forward population synthesis analysis.
 
@@ -800,11 +800,11 @@ class DartBoard():
         # Run for as long as constraints allow
         while(num_ran < num_darts or (tm.time()-start_time) < seconds):
 
-            # Run in batches of 10000, or whatever is left over
+            # Run in batches, or whatever is left over
             if num_darts == -1:
-                batch_size = 1000
+                batch_size = batch_size
             else:
-                batch_size = np.min([1000, num_darts - num_ran])
+                batch_size = np.min([batch_size, num_darts - num_ran])
 
 
             # Generate the population
@@ -818,6 +818,7 @@ class DartBoard():
 
             # Override the previously set metallicity if we are including metallicity models
             if self.model_metallicity: ln_z = np.log(self.generate_z(t_b, batch_size))
+
 
             # Get ln of parameters
             ln_M1 = np.log(M1)
@@ -863,6 +864,7 @@ class DartBoard():
 
                     # Calculate the likelihood function
                     likelihood[i] = posterior.posterior_properties(x_i, output, self)
+
 
                     # Only store if it likelihood is finite
                     if(np.isinf(likelihood[i])): continue
