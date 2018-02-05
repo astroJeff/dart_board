@@ -227,11 +227,12 @@ def get_dist_closest(ra, dec, coor):
 
 
 def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
-        ra_dist=None, dec_dist=None,
+        ra_dist=None, dec_dist=None, contour_CL='gaussian',
         dist_bins=25, sfh_bins=30, sfh_levels=None, ra=None, dec=None,
         xcenter=None, ycenter=None, xwidth=None, ywidth=None, rot_angle=0.0,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=8, ygrid_density=5,
-        color_map='Blues', color_bar=False, contour_alpha=1.0, title=None):
+        color_map='Blues', color_bar=False, colorbar_pad=-20, colorbar_label_y=1.1,
+        contour_alpha=1.0, title=None):
     """ return a plot of the star formation history of the SMC at a particular age.
     In this case, the plot should be curvelinear, instead of flattened.
 
@@ -485,7 +486,7 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         ticks = np.round(ticks, decimals=3)
         sf_plot.set_ticklabels(ticks.astype(str))
         # sf_plot.set_label(r'$M_{\odot}$ yr$^{-1}$ deg.$^{-2}$', labelpad=-20, y=0.65)
-        sf_plot.set_label(r'$\frac{M_{\odot}}{{\rm yr\ deg.}^2}$', rotation=0, labelpad=-20, y=1.1, fontsize=14)
+        sf_plot.set_label(r'$\frac{M_{\odot}}{{\rm yr\ deg.}^2}$', rotation=0, labelpad=colorbar_pad, y=colorbar_label_y, fontsize=14)
 
 
     if title is None:
@@ -534,9 +535,18 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         pdf = (H*(x_bin_sizes*y_bin_sizes))
 
         # Find intervals
-        one_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.68))
-        two_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.95))
-        three_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.995))
+        if contour_CL == 'gaussian':
+            one_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.68))
+            two_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.95))
+            three_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.995))
+        elif contour_CL == 'quad':
+            one_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.25))
+            two_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.50))
+            three_quad = so.brentq(find_confidence_interval, 0., 1., args=(pdf, 0.75))
+        else:
+            print("ERROR: You must provide an available option for position contour levels.")
+            print("\t Options include `gaussian`: 68%, 95%, and 99.5% confidence levels.")
+            print("\t Options include `quad`: 25%, 50%, and 75% confidence levels.")
         levels = [one_quad, two_quad, three_quad]
         X, Y = 0.5*(xedges[1:]+xedges[:-1]), 0.5*(yedges[1:]+yedges[:-1])
         Z = pdf.T

@@ -115,7 +115,7 @@ ra_new, dec_new = get_new_ra_dec(ra_birth, dec_birth, theta, phi)
 
 
 
-fig = plt.figure(figsize=(4.5,9))
+fig = plt.figure(figsize=(5.5,9))
 ax0 = plt.gca()
 ax0.get_xaxis().set_ticks([])
 ax0.get_yaxis().set_ticks([])
@@ -129,25 +129,45 @@ sf_history.lmc.load_sf_history()
 
 
 # Define the levels for star formation rate contours
-levels = np.linspace(1.0e7, 1.5e8, 10)
+levels = np.linspace(1.0e7, 1.5e8, 10) / 1.0e6 * (np.pi/180.0)**2
 
 # Plot star formation rates at two different times
-get_plot_polar(10.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[0],
-    # ra_dist=None, dec_dist=None,
-    ra_dist=ra_new, dec_dist=dec_new,
-    dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
-    xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=5.0, rot_angle=0.2,
-    xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
-    color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 10 Myr")
+sf_plot, ax1 = get_plot_polar(10.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[0],
+                              # ra_dist=None, dec_dist=None,
+                              ra_dist=ra_new, dec_dist=dec_new, contour_CL='quad',
+                              dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
+                              xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=5.0, rot_angle=0.2,
+                              xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
+                              color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 10 Myr")
 
-get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[1],
-    # ra_dist=None, dec_dist=None,
-    ra_dist=ra_new, dec_dist=dec_new,
-    dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
-    xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=5.0, rot_angle=0.2,
-    xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
-    color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
+sf_plot, ax1 = get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[1],
+                              # ra_dist=None, dec_dist=None,
+                              ra_dist=ra_new, dec_dist=dec_new, contour_CL='quad',
+                              dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
+                              xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=5.0, rot_angle=0.2,
+                              xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
+                              color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
 
-plt.tight_layout()
+
+
+fig.subplots_adjust(right=0.8)
+cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
+cb = fig.colorbar(sf_plot, cax=cbar_ax, extend='max')
+cb.set_label(r'$\frac{M_{\odot}}{{\rm yr\ deg.}^2}$', rotation=0, labelpad=-20, y=1.1, fontsize=14)
+# cb.set_label(r'$M_{\odot}$ yr$^{-1}$ deg.$^{-2}$', rotation=270, labelpad=17)
+
+# Convert from Msun/Myr/rad^2 to Msun/yr/deg^2
+ticks = np.linspace(1.0e7, 2.0e8, 10) / 1.0e6 * (np.pi/180.0)**2
+cb.set_ticks(ticks)
+ticks = np.round(ticks, decimals=3)
+cb.set_ticklabels(ticks.astype(str))
+
+
+plt.subplots_adjust(left=0.15, bottom=0.07, right=0.83, top=0.95,
+                    wspace=0.25, hspace=0.25)
+
+
+
+# plt.tight_layout()
 file_out = "../figures/" + file_name + "_positions.pdf"
 plt.savefig(file_out)

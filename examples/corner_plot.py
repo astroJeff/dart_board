@@ -156,7 +156,7 @@ if file_name == 'mock_1':
 if file_name == 'mock_2':
     gs = gridspec.GridSpec(3, 2,
                            width_ratios=[2,2],
-                           height_ratios=[1,30,40]
+                           height_ratios=[1,28,40]
                            )
 
     # Observable 1 - Position
@@ -166,7 +166,7 @@ if file_name == 'mock_2':
     levels = np.linspace(1.0e7, 2.0e8, 10) / 1.0e6 * (np.pi/180.0)**2
 
     sf_plot, ax = get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
-                                 ra_dist=ra_birth, dec_dist=dec_birth,
+                                 ra_dist=ra_birth, dec_dist=dec_birth, contour_CL='gaussian',
                                  dist_bins=35, sfh_bins=30, sfh_levels=levels, ra=83.4989, dec=-70.0366,
                                  xcenter=0.0, ycenter=20.0, xwidth=2.5, ywidth=2.0, rot_angle=0.1,
                                  xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
@@ -175,22 +175,22 @@ if file_name == 'mock_2':
 
 
 if file_name == 'LMC_HMXB':
-    gs = gridspec.GridSpec(3, 2,
-                           width_ratios=[3,2],
-                           height_ratios=[1,30,40]
+    gs = gridspec.GridSpec(3, 3,
+                           width_ratios=[25,20,1],
+                           height_ratios=[2,25,40]
                            )
 
     # Observable 1 - Position
     sf_history.lmc.load_sf_history()
     ra_birth = chains.T[7]
     dec_birth = chains.T[8]
-    levels = np.linspace(1.0e7, 1.5e8, 10)
-    get_plot_polar(20.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
-        ra_dist=ra_birth, dec_dist=dec_birth,
-        dist_bins=35, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
-        xcenter=0.0, ycenter=21.0, xwidth=6.0, ywidth=5.0, rot_angle=0.2,
-        xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
-        color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 20 Myr")
+    levels = np.linspace(1.0e7, 1.5e8, 10) / 1.0e6 * (np.pi/180.0)**2
+    get_plot_polar(20.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[4],
+                   ra_dist=ra_birth, dec_dist=dec_birth, contour_CL='quad',
+                   dist_bins=35, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
+                   xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=4.5, rot_angle=0.17,
+                   xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
+                   color_map='Blues', color_bar=True, colorbar_label_y=1.11, contour_alpha=1.0, title="Star Formation Rate at 20 Myr")
 
 
 
@@ -254,39 +254,43 @@ if file_name == 'mock_3':
 
 
     gs2 = gridspec.GridSpec(3, 3,
-                            width_ratios=[60,20,1],
-                            height_ratios=[45, 35, 50]
+                            width_ratios=[48, 25, 1],
+                            height_ratios=[35, 30, 48]
                             )
 
     # Observable 5 - Position
     sf_history.lmc.load_sf_history()
     ra_birth = chains.T[7]
     dec_birth = chains.T[8]
+    levels = np.linspace(1.0e7, 2.0e8, 10) / 1.0e6 * (np.pi/180.0)**2
+
     get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs2[4],
         ra_dist=ra_birth, dec_dist=dec_birth,
-        dist_bins=40, sfh_bins=30, sfh_levels=None, ra=82.8858, dec=-70.1483,
+        dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=82.8858, dec=-70.1483,
         xcenter=0.0, ycenter=20.0, xwidth=2.0, ywidth=2.0, rot_angle=0.135,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
-        color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
+        color_map='Blues', color_bar=True, colorbar_label_y=1.17,
+        contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
 
 
 if file_name == 'J0513' or file_name == 'J0513_flatsfh':
+
     gs = gridspec.GridSpec(3, 2,
-                           width_ratios=[3,2],
-                           height_ratios=[1,30,40]
+                           width_ratios=[20,18],
+                           height_ratios=[1,25,40]
                            )
 
     # Observable 1 - Position
     sf_history.lmc.load_sf_history()
     ra_birth = chains.T[7]
     dec_birth = chains.T[8]
-    levels = np.linspace(1.0e7, 1.5e8, 10)
+    levels = np.linspace(1.0e7, 1.5e8, 10) / 1.0e6 * (np.pi/180.0)**2
     get_plot_polar(25.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
         ra_dist=ra_birth, dec_dist=dec_birth,
         dist_bins=50, sfh_bins=30, sfh_levels=levels, ra=78.36775, dec=-65.7885278,
         xcenter=0.0, ycenter=24.2, xwidth=0.9, ywidth=0.9, rot_angle=0.205,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
-        color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 25 Myr")
+        color_map='Blues', color_bar=True, contour_alpha=1.0, title="Star Formation Rate at 25 Myr")
 
 
 
