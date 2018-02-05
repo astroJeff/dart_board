@@ -62,3 +62,4 @@ pyBSE/evolv2.f
 Makefile
 pyBSE/build/
 literature/
+docs/_*
