@@ -18,13 +18,14 @@ from dart_board import sf_history
 system_kwargs = {"M2" : 8.3, "M2_err" : 0.5, "ecc" : 0.70, "ecc_err" : 0.05}
 pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve,
                            nwalkers=320, threads=20,
+                           metallicity=0.008,
                            system_kwargs=system_kwargs)
 
 pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=20000, nsteps=100000)
+pub.throw_darts(nburn=2, nsteps=220000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 

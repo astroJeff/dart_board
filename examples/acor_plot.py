@@ -55,7 +55,12 @@ plt.axhline(0.0, color='k', linewidth=2, linestyle='dashed', alpha=0.5)
 
 N = 50
 
-xmin, xmax = 0, 80000 / factor
+if file_root == 'HMXB':
+    xmax = 10000/factor
+else:
+    xmax = 80000/factor
+
+xmin = 0
 
 for k in np.arange(n_var):
     

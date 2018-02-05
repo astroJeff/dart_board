@@ -96,6 +96,7 @@ file_name = sys.argv[1]
 in_file = "../data/" + file_name + "_derived.obj"
 
 derived = pickle.load(open(in_file, "rb"))
+derived = derived[:,delay:,:]
 n_chains, length, n_var = derived.shape
 derived = derived.reshape((n_chains*length, n_var))
 print(derived.shape)
@@ -114,7 +115,7 @@ ra_new, dec_new = get_new_ra_dec(ra_birth, dec_birth, theta, phi)
 
 
 
-fig = plt.figure(figsize=(5,8))
+fig = plt.figure(figsize=(4.5,9))
 ax0 = plt.gca()
 ax0.get_xaxis().set_ticks([])
 ax0.get_yaxis().set_ticks([])
@@ -134,17 +135,17 @@ levels = np.linspace(1.0e7, 1.5e8, 10)
 get_plot_polar(10.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[0],
     # ra_dist=None, dec_dist=None,
     ra_dist=ra_new, dec_dist=dec_new,
-    dist_bins=30, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
+    dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
     xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=5.0, rot_angle=0.2,
-    xlabel="Right Ascension", ylabel="Declination", xgrid_density=8, ygrid_density=5,
+    xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
     color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 10 Myr")
 
 get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[1],
     # ra_dist=None, dec_dist=None,
     ra_dist=ra_new, dec_dist=dec_new,
-    dist_bins=30, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
+    dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=None, dec=None,
     xcenter=0.0, ycenter=21.0, xwidth=5.0, ywidth=5.0, rot_angle=0.2,
-    xlabel="Right Ascension", ylabel="Declination", xgrid_density=8, ygrid_density=5,
+    xlabel="Right Ascension", ylabel="Declination", xgrid_density=6, ygrid_density=5,
     color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
 
 plt.tight_layout()
