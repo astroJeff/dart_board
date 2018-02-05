@@ -480,6 +480,12 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
 
     if color_bar:
         sf_plot = plt.colorbar()
+        ticks = np.linspace(1.0e7, 2.0e8, 10) * unit_factor
+        sf_plot.set_ticks(ticks)
+        ticks = np.round(ticks, decimals=3)
+        sf_plot.set_ticklabels(ticks.astype(str))
+        # sf_plot.set_label(r'$M_{\odot}$ yr$^{-1}$ deg.$^{-2}$', labelpad=-20, y=0.65)
+        sf_plot.set_label(r'$\frac{M_{\odot}}{{\rm yr\ deg.}^2}$', rotation=0, labelpad=-20, y=1.1, fontsize=14)
 
 
     if title is None:

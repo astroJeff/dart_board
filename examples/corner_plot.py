@@ -144,7 +144,7 @@ if file_name == 'mock_1':
 
 if file_name == 'mock_2':
     gs = gridspec.GridSpec(3, 2,
-                           width_ratios=[3,2],
+                           width_ratios=[2,2],
                            height_ratios=[1,30,40]
                            )
 
@@ -152,13 +152,14 @@ if file_name == 'mock_2':
     sf_history.lmc.load_sf_history()
     ra_birth = chains.T[7]
     dec_birth = chains.T[8]
-    levels = np.linspace(1.0e7, 1.5e8, 10)
-    get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
-        ra_dist=ra_birth, dec_dist=dec_birth,
-        dist_bins=35, sfh_bins=30, sfh_levels=levels, ra=83.4989, dec=-70.0366,
-        xcenter=0.0, ycenter=20.0, xwidth=1.0, ywidth=1.0, rot_angle=0.1,
-        xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
-        color_map='Blues', color_bar=False, contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
+    levels = np.linspace(1.0e7, 2.0e8, 10) / 1.0e6 * (np.pi/180.0)**2
+
+    sf_plot, ax = get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
+                                 ra_dist=ra_birth, dec_dist=dec_birth,
+                                 dist_bins=35, sfh_bins=30, sfh_levels=levels, ra=83.4989, dec=-70.0366,
+                                 xcenter=0.0, ycenter=20.0, xwidth=2.5, ywidth=2.0, rot_angle=0.1,
+                                 xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
+                                 color_map='Blues', color_bar=True, contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
 
 
 
