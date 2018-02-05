@@ -13,9 +13,17 @@ dart_board makes it easy to model the formation and evolution of binary stars. I
 This documentation will provide a guide to using our code, but for details on the statistical approach, some tests, and various applications, check out `our paper <http://cdsads.u-strasbg.fr/abs/2017arXiv171011030A>`_.
 
 
+.. image:: https://img.shields.io/badge/GitHub-astroJeff%2Fdart_board-blue.svg?style=flat
+    :target: https://github.com/astroJeff/dart_board
+.. image:: https://readthedocs.org/projects/dart-board/badge/?version=latest
+  :target: http://dart-board.readthedocs.io/en/latest/?badge=latest
+.. image:: http://img.shields.io/badge/license-MIT-blue.svg?style=flat
+  :target: https://github.com/astroJeff/dart_board/blob/master/LICENSE
+.. image:: http://img.shields.io/badge/arXiv-1710.11030-orange.svg?style=flat
+      :target: http://arxiv.org/abs/1710.11030
 
 
-a first example
+a basic example
 --------------------------------------
 
 To generate a population of high mass X-ray binaries (HMXB), use the following example ::
@@ -50,8 +58,8 @@ You will want to start with the installation guide to get dart_board running. Un
    :caption: User Guide
 
    guide/install
-   guide/dart_board
    guide/usage
+   guide/dart_board
    guide/sf_history
    guide/import
 
