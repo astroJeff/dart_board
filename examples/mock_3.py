@@ -34,7 +34,7 @@ pub.aim_darts_PT()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=2, nsteps=220000, method='emcee_PT')
+pub.throw_darts(nburn=2, nsteps=2200, method='emcee_PT')
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
