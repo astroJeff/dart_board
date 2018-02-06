@@ -2,15 +2,14 @@ import sys
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
-import pickle
 import dart_board
 
 
 file_root = sys.argv[1]
-file_in = "../data/" + file_root + "_chain.obj"
+file_in = "../data/" + file_root + "_chain.npy"
 file_out = "../figures/" + file_root + "_chains.pdf"
 
-chains = pickle.load(open(file_in, "rb"))
+chains = np.load(file_in)
 
 if chains.ndim == 4:
     chains = chains[0,:,:,:]

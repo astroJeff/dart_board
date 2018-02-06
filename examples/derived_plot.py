@@ -3,7 +3,6 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 import sys
 import corner
 import matplotlib.gridspec as gridspec
@@ -71,9 +70,9 @@ def hist2d(x, y, xlim=None, ylim=None, color='k', bins=100, ax=None, alpha=0.2):
 
 # Load chains
 file_name = sys.argv[1]
-in_file = "../data/" + file_name + "_chain.obj"
+in_file = "../data/" + file_name + "_chain.npy"
 
-chains = pickle.load(open(in_file, "rb"))
+chains = np.load(in_file)
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)
@@ -86,9 +85,9 @@ chains[:,7] = np.exp(chains[:,7])
 
 # Load derived data
 file_name = sys.argv[1]
-in_file = "../data/" + file_name + "_derived.obj"
+in_file = "../data/" + file_name + "_derived.npy"
 
-derived = pickle.load(open(in_file, "rb"))
+derived = np.load(in_file)
 n_chains, length, n_var = derived.shape
 derived = derived.reshape((n_chains*length, n_var))
 print(derived.shape)
@@ -142,17 +141,17 @@ theta = (t_flight*1.0e6*c.yr_to_sec) * derived.T[4]/c.dist_LMC * np.sin(get_thet
 factor = 875./60.
 #ax_twin.set_ylim(ylimits[0]*factor, ylimits[1]*factor)
 #ax_twin.set_ylabel('Separation (pc)')
-xlim = (0,50) 
-ax2.hist(t_flight, range=xlim, histtype='step', bins=30, normed=True, color='k', log=True) 
-ax2.set_xlabel('Travel Time (Myr)') 
+xlim = (0,50)
+ax2.hist(t_flight, range=xlim, histtype='step', bins=30, normed=True, color='k', log=True)
+ax2.set_xlabel('Travel Time (Myr)')
 ax2.set_yticklabels([])
-ax2.set_ylabel('log N') 
+ax2.set_ylabel('log N')
 
 xlim = (0,60)
-ax3.hist(theta, range=xlim, histtype='step', bins=30, normed=True, color='k', log=True) 
-ax3.set_xlabel(r'$\theta$ (amin)') 
-ax3.set_yticklabels([]) 
-ax3.set_ylabel('log N') 
+ax3.hist(theta, range=xlim, histtype='step', bins=30, normed=True, color='k', log=True)
+ax3.set_xlabel(r'$\theta$ (amin)')
+ax3.set_yticklabels([])
+ax3.set_ylabel('log N')
 ax_twin = ax3.twiny()
 xlimits = ax3.get_xlim()
 factor = 875./60.

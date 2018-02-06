@@ -1,5 +1,4 @@
 import numpy as np
-import pickle
 
 
 import matplotlib
@@ -10,7 +9,7 @@ from matplotlib import font_manager
 
 
 # Load chains
-chains = pickle.load(open("../data/HMXB_chain.obj", "rb"))
+chains = np.load("../data/HMXB_chain.npy")
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)

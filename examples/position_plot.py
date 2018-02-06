@@ -3,7 +3,6 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 import sys
 import matplotlib.gridspec as gridspec
 from scipy import stats
@@ -71,7 +70,7 @@ def hist2d(x, y, xlim=None, ylim=None, color='k', bins=100, ax=None, alpha=0.2):
 
 # Load chains
 file_name = sys.argv[1]
-in_file = "../data/" + file_name + "_chain.obj"
+in_file = "../data/" + file_name + "_chain.npy"
 
 if len(sys.argv) == 2:
     delay = 200
@@ -79,7 +78,7 @@ else:
     delay = int(int(sys.argv[2]) / 100)
 
 
-chains = pickle.load(open(in_file, "rb"))
+chains = np.load(in_file)
 chains = chains[:,delay:,:]
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
@@ -93,9 +92,9 @@ chains[:,9] = np.exp(chains[:,9])
 
 # Load derived data
 file_name = sys.argv[1]
-in_file = "../data/" + file_name + "_derived.obj"
+in_file = "../data/" + file_name + "_derived.npy"
 
-derived = pickle.load(open(in_file, "rb"))
+derived = np.load(in_file)
 derived = derived[:,delay:,:]
 n_chains, length, n_var = derived.shape
 derived = derived.reshape((n_chains*length, n_var))

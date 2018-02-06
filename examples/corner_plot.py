@@ -3,7 +3,6 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 import sys
 import corner
 import matplotlib.gridspec as gridspec
@@ -13,7 +12,7 @@ from dart_board.sf_history.sf_plotting import get_plot_polar
 from dart_board.posterior import A_to_P, calculate_L_x
 
 file_name = sys.argv[1]
-in_file = "../data/" + file_name + "_chain.obj"
+in_file = "../data/" + file_name + "_chain.npy"
 
 
 if len(sys.argv) == 2:
@@ -22,7 +21,7 @@ else:
     delay = int(int(sys.argv[2]) / 100)
 
 
-chains = pickle.load(open(in_file, "rb"))
+chains = np.load(in_file)
 if chains.ndim == 3:
     chains = chains[:,delay:,:]
 elif chains.ndim == 4:
@@ -126,8 +125,8 @@ if file_name == 'mock_1':
                            height_ratios=[2,5]
                            )
 
-    in_file = "../data/" + file_name + "_derived.obj"
-    derived = pickle.load(open(in_file, "rb"))
+    in_file = "../data/" + file_name + "_derived.npy"
+    derived = np.load(in_file)
     n_chains, length, n_var = derived.shape
     derived = derived.reshape((n_chains*length, n_var))
     print(derived.shape)
@@ -200,8 +199,8 @@ if file_name == 'mock_3':
                            height_ratios=[17,1,20,40]
                            )
 
-    in_file = "../data/" + file_name + "_derived.obj"
-    derived = pickle.load(open(in_file, "rb"))
+    in_file = "../data/" + file_name + "_derived.npy"
+    derived = np.load(in_file)
     n_chains, length, n_var = derived.shape
     derived = derived.reshape((n_chains*length, n_var))
     print(derived.shape)
