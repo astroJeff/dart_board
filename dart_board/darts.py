@@ -23,8 +23,8 @@ from . import constants as c
 
 class DartBoard():
     """
-    The ensemble sampler that searches the initial condition parameter space
-    for binaries that fit the input conditions.
+    A collection of prior probabilities and likelihoods that
+    define either a class of binaries or a specific binary.
 
     """
 
@@ -60,6 +60,80 @@ class DartBoard():
                  prior_kwargs={},
                  system_kwargs={},
                  model_kwargs={}):
+
+        """
+
+        Args:
+            binary_type : string, type of binary selected for. Available options
+                can be found in dart_board/posterior.py.
+            metallicity : float (default: 0.02), metallicity for binaries.
+            ln_prior_M1 : function (default: priors.ln_prior_ln_M1), prior
+                probability on primary mass.
+            ln_prior_M2 : function (default: priors.ln_prior_ln_M2), prior
+                probability on secondary mass.
+            ln_prior_a : function (default: priors.ln_prior_ln_a), prior
+                probability on orbital separation.
+            ln_prior_ecc : function (default: priors.ln_prior_ecc), prior
+                probability on eccentricity.
+            ln_prior_v_kick : function (default: priors.ln_prior_v_kick), prior
+                probability on the supernova kick magnitude.
+            ln_prior_theta_kick : function (default: priors.ln_prior_theta_kick),
+                prior probability on the kick polar angle.
+            ln_prior_phi_kick : function (default: priors.ln_prior_phi_kick),
+                prior probability on the kick azimuthal angle.
+            ln_prior_t : function (default: priors.ln_prior_ln_t), prior
+                probability on the birth time.
+            ln_prior_pos : function (default: None), when provided, birth
+                coordinates are model parameters. This function is the prior
+                probability on the birth location. Typically this can be
+                provided in the form of a star formation history map.
+            ln_prior_z : function (default: None), when provided, metallicity
+                is a model parameter. This function is the prior probability on
+                the metallicity.
+            ln_posterior_function : function (default: None), the posterior
+                function evaluated by the sampler.
+            generate_M1 : function (default: forward_pop_synth.get_M1), the
+                function providing randomly drawn values of the primary mass.
+            generate_M2 : function (default: forward_pop_synth.get_M2), the
+                function providing randomly drawn values of the secondary mass.
+            generate_a : function (default: forward_pop_synth.get_a), the
+                function providing randomly drawn values of the orbital separation.
+            generate_ecc : function (default: forward_pop_synth.get_ecc), the
+                function providing randomly drawn values of the eccentricity.
+            generate_v_kick : function (default: forward_pop_synth.get_v_kick),
+                the function providing randomly drawn values of the supernova
+                kick magnitude.
+            generate_theta_kick : function (default: forward_pop_synth.get_theta),
+                the function providing randomly drawn values of the kick polar angle.
+            generate_phi_kick : function (default: forward_pop_synth.get_phi),
+                the function providing randomly drawn values of the kick
+                azimuthal angle.
+            generate_t : function (default: forward_pop_synth.get_t), the
+                function providing randomly drawn values of the birth time.
+            generate_z : function (default: forward_pop_synth.get_z), the
+                function providing randomly drawn values of the birth metallicity.
+            generate_pos: function (default: None), the function providing
+                randomly drawn birth position coordinates.
+            ntemps : int (default: None), when provided, the number of temperatures
+                for emcee's parallel tempering algorithm.
+            nwalkers : int (default: 80), the number of walkers for emcee's
+                ensemble sampler algorithm.
+            threads : int (default: 1), the number of threads to use for
+                parallel processing using multi-threading.
+            mpi : bool (default: False), when true, use mpi for parallel processing.
+            evolve_binary : function (default: None), the binary evolution
+                function. THIS INPUT IS REQUIRED FOR DART_BOARD TO RUN.
+            prior_kwargs : kwargs (default: {}), arguments for altering the
+                prior probabilities (e.g., maximum orbital separation, IMF
+                index, etc.). See constants.py for options.
+            system_kwargs : kwargs (default: {}), arguments for defining
+                observational constraints for the system (e.g., P_orb and
+                P_orb_err, ecc_max, etc.).
+            model_kwargs : kwargs (default: {}), arguments for altering the
+                binary evolution physics (e.g., common envelope efficiency).
+                See pyBSE/pybse/bse_wrapper.py for available options.
+
+        """
 
         # First, check that a binary evolution scheme was provided
         if evolve_binary is None:
@@ -181,7 +255,7 @@ class DartBoard():
 
     def aim_darts_PT(self):
         """
-        Place darts at different temperatures in a viable region of parameter space
+        Place darts at different temperatures in a viable region of parameter space.
 
         """
 
@@ -660,15 +734,9 @@ class DartBoard():
         """
         Run the sampler.
 
-        Parameters
-        ----------
-
-        nburn : int
-            Number of burn-in steps
-
-        nsteps : int
-            Number of steps to be saved
-
+        Args:
+            nburn : int (default: 1000), number of burn-in steps.
+            nsteps : int (default: 1000), number of steps to be saved.
         """
 
 
@@ -758,11 +826,7 @@ class DartBoard():
 
         elif method == 'nestle':
 
-            print("nestle nested sampling is not yet implemented.")
-
-
-
-
+            print("Nested sampling is not yet implemented.")
 
 
 
@@ -773,13 +837,20 @@ class DartBoard():
 
     def scatter_darts(self, num_darts=-1, seconds=-1, batch_size=1000, output_frequency=100000):
         """
-        Rather than use the MCMC sampler, run a forward population synthesis analysis.
+        Rather than use the MCMC sampler, run a forward population synthesis analysis. results
+        are saved as objects `chains`, `derived`, and `likelihood`, as objects
+        within the DartBoard class.
 
-        Parameters
-        ----------
-        num_darts : int
-            Number of darts to throw
-
+        Args:
+            num_darts : int (default: -1), number of darts to throw. Either this
+                or `seconds` options must be positive for run.
+            seconds : int (default: -1), number of seconds to run.
+            batch_size : int (default: 1000), run simulation in batches of
+                batch_size. This is to save memory. Larger values will reduce
+                overhead while smaller values will not overshoot limitations
+                imposed by `num_darts` or `seconds`.
+            output_frequency : int (default: 100000), frequency of command line
+                output for progress updates.
         """
 
         if num_darts == -1 and seconds == -1:
