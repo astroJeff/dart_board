@@ -9,7 +9,7 @@ sys.path.append("../pyBSE/")
 import pybse
 import dart_board
 
-pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper, nwalkers=320)
+pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve, nwalkers=320)
 # pub.aim_darts()
 
 

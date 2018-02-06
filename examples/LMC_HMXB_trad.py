@@ -13,7 +13,7 @@ from dart_board import sf_history
 
 LMC_metallicity = 0.008
 
-pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolv_wrapper, metallicity=LMC_metallicity,
+pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve, metallicity=LMC_metallicity,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
                            generate_pos=sf_history.lmc.get_random_positions,
                            nwalkers=320)
