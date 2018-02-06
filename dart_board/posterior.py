@@ -14,8 +14,14 @@ from . import priors
 
 def P_to_A(M1, M2, P):
     """
-    Orbital period (days) to separation (Rsun).
+    Calculate the orbital separation from the stellar masses and orbital period.
 
+    Args:
+        M1, M2 : floats, masses of the two stars (Msun)
+        P : float, orbital period (days)
+
+    Returns:
+        a : float, orbital separation (Rsun)
     """
 
     mu = c.G * (M1 + M2) * c.Msun_to_g
@@ -27,8 +33,14 @@ def P_to_A(M1, M2, P):
 
 def A_to_P(M1, M2, a):
     """
-    Orbital separation (Rsun) to period (days).
+    Calculate the orbital period from the stellar masses and orbital separation.
 
+    Args:
+        M1, M2 : floats, masses of the two stars (Msun)
+        a : float, orbital separation (Rsun)
+
+    Returns:
+        P : float, orbital period (days)
     """
 
     mu = c.G * (M1 + M2) * c.Msun_to_g
@@ -39,21 +51,17 @@ def A_to_P(M1, M2, a):
 
 
 def ln_posterior(x, dart):
-    """ Calculate the natural log of the posterior probability
+    """
+    Calculate the natural log of the posterior probability. This function
+    calls `ln_prior` to calculate the prior probability of model parameters and
+    then `ln_likelihood` to evaluate the likelihood.
 
-    Parameters
-    ----------
-    x : floats
-        Model parameters
+    Args:
+        x : tuple, set of model parameters
+        dart : DartBoard instance, positions of the dart
 
-    dart : DartBoard
-        Positions of the dart
-
-    Returns
-    -------
-    lp : float
-        Natural log of the posterior probability
-
+    Returns:
+        lp : float, natural log of the posterior probability
     """
 
     # Empty array for emcee blobs
@@ -80,21 +88,18 @@ def ln_posterior(x, dart):
 
 
 def ln_likelihood(x, dart):
-    """ Calculate the natural log of the likelihood
+    """
+    Calculate the natural log of the likelihood. This function first calls the
+    binary evolution code given the set of model parameters, then checks to make
+    sure the resulting binary is of the type specified by the user. Then, it
+    calls the `posterior_properties` function to account for observations.
 
-    Parameters
-    ----------
-    x : floats
-        Model parameters
+    Args:
+        x : tuple, set of model parameters
+        dart : DartBoard instance
 
-    dart : DartBoard
-        Positions of the dart
-
-    Returns
-    -------
-    lp : float
-        Natural log of the posterior probability
-
+    Returns:
+        lp : float, natural log of the likelihood
     """
 
     # For use later in posterior properties
@@ -173,7 +178,18 @@ def ln_likelihood(x, dart):
 
 def posterior_properties(x, output, dart):
     """
-    Calculate the (log of the) posterior probability given specific observables.
+    Calculate the (log of the) likelihood given specific observables.
+    This function evaluates the likelihood of the model parameters. This function
+    calculates the likelihood for the model parameters to account for the
+    observational constraints provided.
+
+    Args:
+        x : tuple, set of model parameters
+        output : list, binary evolution output
+        dart : DartBoard class, provides the necessary functions
+
+    Returns:
+        likelihood : Likelihood of the set of model parameters.
 
     """
 
@@ -297,6 +313,13 @@ def calculate_L_x(M1, mdot, k1):
     """
     Calculate the X-ray luminosity of an accreting binary.
 
+    Args:
+        M1 : float, primary mass (Msun)
+        mdot : float, accretion rate onto the primary (Msun/yr)
+        k1 : int, stellar type of primary (13=NS, 14=BH)
+
+    Returns:
+        L_x : float, X-ray luminosity (erg/s)
     """
 
     if k1 == 13:
@@ -318,7 +341,19 @@ def calculate_L_x(M1, mdot, k1):
 
 
 def calc_prob_from_mass_function(M1, M2, f_obs, f_err):
-    """ Calculate the contribution to the posterior probability for an observation of the mass function """
+    """
+    Calculate the contribution to the posterior probability for an observation
+    of the mass function.
+
+    Args:
+        M1 : float, primary mass (Msun)
+        M2 : float, secondary mass (Msun)
+        f_obs : float, mass function (Msun)
+        f_err : float, uncertainty on mass function (Msun)
+
+    Returns:
+        P_ln_f : float, likelihood of mass function observation.
+    """
 
     # Function to calculate h from Equation 15 from Andrews et al. 2014, ApJ, 797, 32
     def model_h(M1, M2, f):
@@ -386,31 +421,20 @@ def calc_prob_from_mass_function(M1, M2, f_obs, f_err):
 
 
 def check_output(output, binary_type):
-    """ Determine if the resulting binary from binary population synthesis
-    is of the type desired.
+    """
+    Determine if the resulting binary from binary population synthesis is of
+    the type desired.
 
-    Parameters
-    ----------
-    M1_out, M2_out : float
-        Masses of each object returned
+    Args:
+        M1_out, M2_out : float, masses of each object returned (Msun)
+        a_out, ecc_out : float, orbital separation (arbitrary - scaled but not
+            translated - units) and eccentricity
+        v_sys : float, systemic velocity of the system (km/s)
+        L_x : float, X-ray luminosity of the system (erg/s)
+        k1, k2 : int, K-types for each star
 
-    a_out, ecc_out : float
-        Orbital separation and eccentricity
-
-    v_sys : float
-        Systemic velocity of the system
-
-    L_x : float
-        X-ray luminosity of the system
-
-    k1, k2 : int
-        K-types for each star
-
-    Returns
-    -------
-    binary_type : bool
-        Is the binary of the requested type?
-
+    Returns:
+        binary_type : bool, is the binary of the requested type?
     """
 
     m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
@@ -487,23 +511,17 @@ def check_output(output, binary_type):
 
 
 def get_theta_proj(ra, dec, ra_b, dec_b):
-    """ Get the angular distance between two coordinates
+    """
+    Get the angular distance between two coordinates.
 
-    Parameters
-    ----------
-    ra : float
-        RA of coordinate 1 (radians)
-    dec : float
-        Dec of coordinate 1 (radians)
-    ra_b : float
-        RA of coordinate 2 (radians)
-    dec_b : float
-        Dec of coordinate 2 (radians)
+    Args:
+        ra : float, right ascension of coordinate 1 (radians).
+        dec : float, declination of coordinate 1 (radians).
+        ra_b : float, right ascension of coordinate 2 (radians).
+        dec_b : float, declination of coordinate 2 (radians).
 
-    Returns
-    -------
-    theta : float
-        Angular separation of the two coordinates (radians)
+    Returns:
+        theta : float, angular separation of the two coordinates (radians).
     """
 
     return np.sqrt((ra-ra_b)**2 * np.cos(dec)*np.cos(dec_b) + (dec-dec_b)**2)
@@ -511,33 +529,88 @@ def get_theta_proj(ra, dec, ra_b, dec_b):
 
 # Functions for coordinate jacobian transformation
 def get_dtheta_dalpha(alpha, delta, alpha_b, delta_b):
-    """ Calculate the coordinate transformation derivative dtheta/dalpha """
+    """
+    Calculate the coordinate transformation derivative dtheta/dalpha.
+
+    Args:
+        alpha : float, right ascension of coordinate 1 (radians).
+        delta : float, declination of coordinate 1 (radians).
+        alpha_b : float, right ascension of coordinate 2 (radians).
+        delta_b : float, declination of coordinate 2 (radians).
+
+    Returns:
+        dtheta_dalpha : float, coordinate transformation derivative dtheta/dalpha.
+    """
 
     theta_proj = get_theta_proj(alpha, delta, alpha_b, delta_b)
     return (alpha_b-alpha) * np.cos(delta) * np.cos(delta_b) / theta_proj
 
 def get_dtheta_ddelta(alpha, delta, alpha_b, delta_b):
-    """ Calculate the coordinate transformation derivative dtheta/ddelta """
+    """
+    Calculate the coordinate transformation derivative dtheta/ddelta.
+
+    Args:
+        alpha : float, right ascension of coordinate 1 (radians).
+        delta : float, declination of coordinate 1 (radians).
+        alpha_b : float, right ascension of coordinate 2 (radians).
+        delta_b : float, declination of coordinate 2 (radians).
+
+    Returns:
+        dtheta_ddelta : float, coordinate transformation derivative dtheta/ddelta.
+    """
 
     theta_proj = get_theta_proj(alpha, delta, alpha_b, delta_b)
     # return 1.0/(2.0*theta_proj) * (-np.cos(delta_b)*np.sin(delta)*(alpha_b-alpha)**2 + 2.0*(delta_b-delta))
     return (delta_b-delta) / theta_proj
 
 def get_domega_dalpha(alpha, delta, alpha_b, delta_b):
-    """ Calculate the coordinate transformation derivative domega/dalpha """
+    """
+    Calculate the coordinate transformation derivative domega/dalpha.
+
+    Args:
+        alpha : float, right ascension of coordinate 1 (radians).
+        delta : float, declination of coordinate 1 (radians).
+        alpha_b : float, right ascension of coordinate 2 (radians).
+        delta_b : float, declination of coordinate 2 (radians).
+
+    Returns:
+        domega/dalpha : float, coordinate transformation derivative domega/dalpha.
+    """
 
     z = (delta_b-delta) / ((alpha_b-alpha) * np.cos(delta_b))
     return 1.0 / (1.0 + z*z) * z / (alpha_b - alpha)
 
 def get_domega_ddelta(alpha, delta, alpha_b, delta_b):
-    """ Calculate the coordinate transformation derivative domega/ddelta """
+    """
+    Calculate the coordinate transformation derivative domega/ddelta.
+
+    Args:
+        alpha : float, right ascension of coordinate 1 (radians).
+        delta : float, declination of coordinate 1 (radians).
+        alpha_b : float, right ascension of coordinate 2 (radians).
+        delta_b : float, declination of coordinate 2 (radians).
+
+    Returns:
+        domega/ddelta : float, coordinate transformation derivative domega/ddelta.
+    """
 
     z = (delta_b-delta) / ((alpha_b-alpha) * np.cos(delta_b))
     return - 1.0 / (1.0 + z*z) / ((alpha_b-alpha) * np.cos(delta_b))
 
 def get_J_coor(alpha, delta, alpha_b, delta_b):
-    """ Calculate the Jacobian (determinant of the jacobian matrix) of
-    the coordinate transformation
+    """
+    Calculate the Jacobian (determinant of the jacobian matrix) of the
+    coordinate transformation from right ascension and declination to
+    angular separation and position angle.
+
+    Args:
+        alpha : float, right ascension of coordinate 1 (radians).
+        delta : float, declination of coordinate 1 (radians).
+        alpha_b : float, right ascension of coordinate 2 (radians).
+        delta_b : float, declination of coordinate 2 (radians).
+
+    Returns:
+        J_coor : float, Jacobian coordinate transformation.
     """
 
     dt_da = get_dtheta_dalpha(alpha, delta, alpha_b, delta_b)
