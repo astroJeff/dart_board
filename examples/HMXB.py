@@ -27,8 +27,15 @@ except:
     print("Acceptance fraction is too low.")
 
 
+
+# Save outputs
+np.save("../data/HMXB_chain.npy", pub.chains)
+np.save("../data/HMXB_derived.npy", pub.derived)
+np.save("../data/HMXB_lnprobability.npy", pub.lnprobability)
+
+
 # Pickle results
-import pickle
-pickle.dump(pub.chains, open("../data/HMXB_chain.obj", "wb"))
-pickle.dump(pub.lnprobability, open("../data/HMXB_lnprobability.obj", "wb"))
-pickle.dump(pub.derived, open("../data/HMXB_derived.obj", "wb"))
+# import pickle
+# pickle.dump(pub.chains, open("../data/HMXB_chain.obj", "wb"))
+# pickle.dump(pub.lnprobability, open("../data/HMXB_lnprobability.obj", "wb"))
+# pickle.dump(pub.derived, open("../data/HMXB_derived.obj", "wb"))

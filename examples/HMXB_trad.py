@@ -19,8 +19,15 @@ pub.scatter_darts(num_darts=100000000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
+
+# Save outputs
+np.save("../data/HMXB_trad_chain.npy", pub.chains)
+np.save("../data/HMXB_trad_derived.npy", pub.derived)
+np.save("../data/HMXB_trad_lnprobability.npy", pub.lnprobability)
+
+
 # Pickle results
-import pickle
-pickle.dump(pub.chains, open("../data/HMXB_trad_x_i.obj", "wb"))
-pickle.dump(pub.likelihood, open("../data/HMXB_trad_likelihood.obj", "wb"))
-pickle.dump(pub.derived, open("../data/HMXB_trad_derived.obj", "wb"))
+# import pickle
+# pickle.dump(pub.chains, open("../data/HMXB_trad_x_i.obj", "wb"))
+# pickle.dump(pub.likelihood, open("../data/HMXB_trad_likelihood.obj", "wb"))
+# pickle.dump(pub.derived, open("../data/HMXB_trad_derived.obj", "wb"))

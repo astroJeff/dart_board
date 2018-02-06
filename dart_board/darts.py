@@ -57,6 +57,7 @@ class DartBoard():
                  threads=1,
                  mpi=False,
                  evolve_binary=None,
+                 thin=100,
                  prior_kwargs={},
                  system_kwargs={},
                  model_kwargs={}):
@@ -123,6 +124,7 @@ class DartBoard():
             mpi : bool (default: False), when true, use mpi for parallel processing.
             evolve_binary : function (default: None), the binary evolution
                 function. THIS INPUT IS REQUIRED FOR DART_BOARD TO RUN.
+            thin : int (default: 100), thin posterior samples by this number.
             prior_kwargs : kwargs (default: {}), arguments for altering the
                 prior probabilities (e.g., maximum orbital separation, IMF
                 index, etc.). See constants.py for options.
@@ -247,6 +249,7 @@ class DartBoard():
 
 
         # Saved data
+        self.thin = thin
         self.sampler = []
         self.chains = []
         self.derived = []
@@ -770,9 +773,9 @@ class DartBoard():
 
 
             # Save only every 100th sample
-            self.chains = sampler.chain[:,::100,:]
-            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::100,0,:]
-            self.lnprobability = sampler.lnprobability[:,::100]
+            self.chains = sampler.chain[:,::self.thin,:]
+            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::self.thin,0,:]
+            self.lnprobability = sampler.lnprobability[:,::self.thin]
 
             self.sampler = sampler
 
@@ -811,7 +814,7 @@ class DartBoard():
             # Full run
             print("Starting full run...")
             sampler.reset()
-            for pos,prob,state in sampler.sample(pos, iterations=nsteps, thin=100):
+            for pos,prob,state in sampler.sample(pos, iterations=nsteps, thin=self.thin):
                 pass
             print("...full run finished")
 

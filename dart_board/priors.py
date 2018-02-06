@@ -32,7 +32,6 @@ def ln_prior(x, dart):
     # Set defaults
     kick_sigma = c.v_kick_sigma
     M1_alpha = c.alpha
-    mass_function = 'Salpeter'
     M1_min = c.min_mass_M1
     M1_max = c.max_mass_M1
     M2_min = c.min_mass_M2
@@ -57,12 +56,11 @@ def ln_prior(x, dart):
         if key == 't_max': t_max = value
         if key == 'z_min': z_min = value
         if key == 'z_max': z_max = value
-        if key == 'mass_function': mass_function = value
 
 
     # Calculate prior probabilities
     lp = 0.0
-    lp += dart.prior_M1(ln_M1, mass_function=mass_function, alpha=M1_alpha, M1_min=M1_min, M1_max=M1_max)
+    lp += dart.prior_M1(ln_M1, alpha=M1_alpha, M1_min=M1_min, M1_max=M1_max)
     lp += dart.prior_M2(ln_M2, ln_M1, M2_min=M2_min)
     lp += dart.prior_ecc(ecc)
     lp += dart.prior_a(ln_a, ecc, a_min=a_min, a_max=a_max)
@@ -104,6 +102,7 @@ def ln_prior_M1(M1, alpha=c.alpha, M1_min=c.min_mass_M1, M1_max=c.max_mass_M1):
 
     if M1 < M1_min or M1 > M1_max: return -np.inf
     norm_const = (alpha+1.0) / (np.power(M1_max, alpha+1.0) - np.power(M1_min, alpha+1.0))
+    
     return np.log( norm_const * np.power(M1, alpha) )
 
 def ln_prior_ln_M1(ln_M1, alpha=c.alpha, M1_min=c.min_mass_M1, M1_max=c.max_mass_M1):
@@ -120,11 +119,11 @@ def ln_prior_ln_M1(ln_M1, alpha=c.alpha, M1_min=c.min_mass_M1, M1_max=c.max_mass
         ln_P_ln_M1 : float, natural logarithm of the prior on the log of the primary mass.
     """
 
-
     M1 = np.exp(ln_M1)
 
     if M1 < M1_min or M1 > M1_max: return -np.inf
     norm_const = (alpha+1.0) / (np.power(M1_max, alpha+1.0) - np.power(M1_min, alpha+1.0))
+
     return np.log( norm_const * np.power(M1, alpha+1.0) )
 
 def ln_prior_M2(M2, M1, M2_min=c.min_mass_M2):
