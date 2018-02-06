@@ -8,16 +8,22 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 
+delay = 0
+
 #### Load chains ####
 
 # Regular model
 chains = np.load("../data/J0513_nosfh_chain.npy")
+if chains.ndim == 4: chains = chains[0]
+chains = chains[:,delay:,:]
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)
 
 # Flat star formation history
 chains_flat = np.load("../data/J0513_flatsfh_chain.npy")
+if chains_flat.ndim == 4: chains_flat = chains_flat[0]
+chains_flat = chains_flat[:,delay:,:]
 n_chains_flat, length_flat, n_var_flat = chains_flat.shape
 chains_flat = chains_flat.reshape((n_chains_flat*length_flat, n_var_flat))
 print(chains_flat.shape)
@@ -26,10 +32,15 @@ print(chains_flat.shape)
 
 #### Load derived ####
 MCMC_derived = np.load("../data/J0513_nosfh_derived.npy")
+if MCMC_derived.ndim == 4: MCMC_derived = MCMC_derived[0]
+MCMC_derived = MCMC_derived[:,delay:,:]
 n_chains, length, n_var = MCMC_derived.shape
 MCMC_derived = MCMC_derived.reshape((n_chains*length, n_var))
 
+
 MCMC_derived_flat = np.load("../data/J0513_flatsfh_derived.npy")
+if MCMC_derived_flat.ndim == 4: MCMC_derived_flat = MCMC_derived_flat[0]
+MCMC_derived_flat = MCMC_derived_flat[:,delay:,:]
 n_chains_flat, length_flat, n_var_flat = MCMC_derived_flat.shape
 MCMC_derived_flat = MCMC_derived_flat.reshape((n_chains_flat*length_flat, n_var_flat))
 

@@ -67,12 +67,15 @@ def hist2d(x, y, xlim=None, ylim=None, color='k', bins=100, ax=None, alpha=0.2):
 
 
 
+delay = 0
 
 # Load chains
 file_name = sys.argv[1]
 in_file = "../data/" + file_name + "_chain.npy"
 
 chains = np.load(in_file)
+if chains.ndim == 4: chains = chains[0]
+chains = chains[:,delay:,:]
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)
@@ -86,8 +89,9 @@ chains[:,7] = np.exp(chains[:,7])
 # Load derived data
 file_name = sys.argv[1]
 in_file = "../data/" + file_name + "_derived.npy"
-
 derived = np.load(in_file)
+if derived.ndim == 4: derived = derived[0]
+derived = derived[:,delay:,:]
 n_chains, length, n_var = derived.shape
 derived = derived.reshape((n_chains*length, n_var))
 print(derived.shape)

@@ -8,8 +8,12 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 
+delay = 0
+
 # Load chains
 chains = np.load("../data/J0513_chain.npy")
+if chains.ndim == 4: chains = chains[0]
+chains = chains[:,delay:,:]
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)

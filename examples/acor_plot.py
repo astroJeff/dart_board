@@ -21,15 +21,9 @@ else:
 
 
 chains = np.load(file_in)
-if chains.ndim == 3:
-    chains = chains[:,delay:,:]
-elif chains.ndim == 4:
-    chains = chains[0,:,delay:,:]
-else:
-    sys.exit()
-
+if chains.ndim == 4: chains = chains[0]
+chains = chains[:,delay:,:]
 n_chains, length, n_var = chains.shape
-#chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)
 
 

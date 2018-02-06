@@ -11,8 +11,7 @@ file_out = "../figures/" + file_root + "_chains.pdf"
 
 chains = np.load(file_in)
 
-if chains.ndim == 4:
-    chains = chains[0,:,:,:]
+if chains.ndim == 4: chains = chains[0]
 
 chains[:,:,0] = np.exp(chains[:,:,0])
 chains[:,:,1] = np.exp(chains[:,:,1])

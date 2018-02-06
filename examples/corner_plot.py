@@ -22,12 +22,8 @@ else:
 
 
 chains = np.load(in_file)
-if chains.ndim == 3:
-    chains = chains[:,delay:,:]
-elif chains.ndim == 4:
-    chains = chains[0,:,delay:,:]
-else:
-    sys.exit()
+if chains.ndim == 4: chains = chains[0]
+chains = chains[:,delay:,:]
 
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
@@ -127,6 +123,14 @@ if file_name == 'mock_1':
 
     in_file = "../data/" + file_name + "_derived.npy"
     derived = np.load(in_file)
+
+    if derived.ndim == 3:
+        derived = derived[:,delay:,:]
+    elif derived.ndim == 4:
+        derived = derived[0,:,delay:,:]
+    else:
+        sys.exit()
+
     n_chains, length, n_var = derived.shape
     derived = derived.reshape((n_chains*length, n_var))
     print(derived.shape)
