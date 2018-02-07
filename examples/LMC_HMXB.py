@@ -18,11 +18,12 @@ pub = dart_board.DartBoard("HMXB",
                            ln_prior_pos=sf_history.lmc.prior_lmc,
                            metallicity=LMC_metallicity,
                            nwalkers=320, threads=20)
+
 pub.aim_darts()
 
 
 start_time = time.time()
-pub.throw_darts(nburn=200, nsteps=1000)
+pub.throw_darts(nburn=2, nsteps=120000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 # Acceptance fraction

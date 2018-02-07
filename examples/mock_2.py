@@ -25,11 +25,11 @@ pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ntemps=10, thin=100,
                            system_kwargs=system_kwargs)
 
-pub.aim_darts_PT()
+pub.aim_darts(N_iterations=100000)
 
 
 start_time = time.time()
-pub.throw_darts(nburn=2, nsteps=2200, method='emcee_PT')
+pub.throw_darts(nburn=2, nsteps=22000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
