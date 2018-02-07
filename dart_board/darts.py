@@ -270,6 +270,10 @@ class DartBoard():
         """
 
 
+        # To load star formation histories
+        if self.prior_pos is not None: tmp = self.prior_pos(0.0, 0.0, 10.0)
+
+
 
         lp_best = -100000
 
