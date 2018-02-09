@@ -25,7 +25,7 @@ pub.aim_darts(N_iterations=100000)
 
 
 start_time = time.time()
-pub.throw_darts(nburn=2, nsteps=22000)
+pub.throw_darts(nburn=2, nsteps=52000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
@@ -44,7 +44,7 @@ for i in range(ntemps):
 
             x_i = pub.chains[i,j,k]
 
-            ln_M1, ln_M2, ln_a, ecc, v_kick_1, theta_kick_1, phi_kick_1, ra, dec, ln_t = x_i
+            ln_M1, ln_M2, ln_a, ecc, v_kick_1, theta_kick_1, phi_kick_1, ln_t = x_i
             M1 = np.exp(ln_M1)
             M2 = np.exp(ln_M2)
             a = np.exp(ln_a)

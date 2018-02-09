@@ -88,7 +88,7 @@ print(chains.shape)
 chains[:,0] = np.exp(chains[:,0])
 chains[:,1] = np.exp(chains[:,1])
 chains[:,2] = np.exp(chains[:,2])
-chains[:,9] = np.exp(chains[:,9])
+chains[:,-1] = np.exp(chains[:,-1])  # Birth time
 
 # Load derived data
 file_name = sys.argv[1]
