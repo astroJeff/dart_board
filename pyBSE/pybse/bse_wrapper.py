@@ -1,3 +1,4 @@
+import numpy as np
 import sys
 sys.path.append("../")
 import bse
@@ -54,8 +55,10 @@ def evolve(M1,
         idum = int.from_bytes(random_data, byteorder="big")
 
 
-    M1_out, M2_out, a_out, ecc_out, v_sys_out, mdot_out, \
-    t_SN1, k1_out, k2_out = \
+
+    M1_out, M2_out, a_out, ecc_out, v_sys_out, mdot1_out, \
+    mdot2_out, t_SN1, t_SN2, r1_out, r2_out, teff1_out, \
+    teff2_out, lum1_out, lum2_out, k1_out, k2_out = \
     bse.evolv_wrapper(1, M1, M2, P_orb, ecc, v_kick_1,
                       theta_kick_1, phi_kick_1, v_kick_2,
                       theta_kick_2, phi_kick_2, time, metallicity,
@@ -69,5 +72,19 @@ def evolve(M1,
                       beta, xi, acc2, epsnov,
                       eddfac, gamma)
 
-    return M1_out, M2_out, a_out, ecc_out, v_sys_out, mdot_out, \
-                t_SN1, k1_out, k2_out
+    print(M1_out, M2_out, a_out, ecc_out, v_sys_out, mdot1_out, \
+          mdot2_out, t_SN1, t_SN2, r1_out, r2_out, teff1_out, \
+          teff2_out, lum1_out, lum2_out, k1_out, k2_out)
+
+
+    dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
+             ('mdot1', 'f8'), ('mdot2', 'f8'), ('t_SN1', 'f8'), ('t_SN2', 'f8'),
+             ('R1', 'f8'), ('R2', 'f8'), ('Teff1', 'f8'), ('Teff2', 'f8'),
+             ('L1', 'f8'), ('L2', 'f8'), ('k1','i8'), ('k2','i8')]
+
+    output = np.array([M1_out, M2_out, a_out, ecc_out, v_sys_out,
+                       mdot1_out, mdot2_out, t_SN1, t_SN2, r1_out,
+                       r2_out, teff1_out, teff2_out, lum1_out,
+                       lum2_out, int(k1_out), int(k2_out)], dtype=dtype)
+
+    return output
