@@ -446,7 +446,7 @@ def check_output(output, binary_type):
     """
 
     type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS", "BHNS", "WDWD", "ELMWD", "ELMWD_WD",
-                             "nondegenerate"])
+                             "nondegenerate", "subgiants"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
@@ -516,6 +516,11 @@ def check_output(output, binary_type):
 
     elif binary_type == 'nondegenerate':
         if output['k1'] > 9 or output['k2'] > 9: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+
+    elif binary_type == 'subgiants':
+        if output['k1'] != 2 or output['k2'] != 2: return False
         if output['a'] <= 0.0: return False
         if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
