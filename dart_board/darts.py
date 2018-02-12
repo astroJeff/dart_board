@@ -257,7 +257,7 @@ class DartBoard():
         self.lnprobability = []
 
 
-    def iterate_to_initialize(self, N_iterations=10000):
+    def iterate_to_initialize(self, N_iterations=10000, a_set='low'):
         """
         Throw random darts to find a good point in parameter space to being the simulation.
 
@@ -273,9 +273,8 @@ class DartBoard():
         # To load star formation histories
         if self.prior_pos is not None: tmp = self.prior_pos(0.0, 0.0, 10.0)
 
-
-
         lp_best = -100000
+        x_best = None
 
         # Iterate randomly through initial conditions until a viable parameter set is found
         for i in range(N_iterations):
@@ -285,7 +284,11 @@ class DartBoard():
             else:
                 M1 = 30.0 * np.random.uniform(size=1) + 8.0
             M2 = M1 * (np.random.uniform(size=1))
-            a = 5000.0 * np.random.uniform(size=1) + 20.0
+
+            if a_set == 'low':
+                a = 1000.0 * np.random.uniform(size=1)
+            else:
+                a = 4000.0 * np.random.uniform(size=1) + 1000.0
             ecc = np.random.uniform(size=1)
 
             if self.first_SN:
@@ -332,9 +335,9 @@ class DartBoard():
 
             # Keep the best set of model parameter
             if lp > lp_best:
+                print(lp, x)
                 lp_best = lp
                 x_best = copy.copy(x)
-
 
         return x_best
 
@@ -351,18 +354,38 @@ class DartBoard():
 
 
 
-        # For parallel tempering algorithm
-        if self.ntemps is not None:
-            self.aim_darts_PT(N_iterations=N_iterations)
-            return
-
-
         # Set walkers
         print("Setting walkers...")
 
 
+
         # Iterate to find position for focusing walkers
-        x_best = self.iterate_to_initialize(N_iterations=N_iterations)
+        x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
+        x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+        if x_best_low is None and x_best_high is None:
+            print("No valid solutions found within", str(N_iterations), "iterations.")
+            exit()
+        elif x_best_high is None:
+            print("No valid large orbital separations solutions found within", str(N_iterations), "iterations.")
+            x_best = x_best_low
+        elif x_best_low is None:
+            print("No valid small orbital separation solutions found within", str(N_iterations), "iterations.")
+            x_best = x_best_high
+        else:
+            print("Both small and large orbital separations solutions found.")
+            print("Using large orbital separation solution.")
+            x_best = x_best_high
+
+
+
+        # For parallel tempering algorithm
+        if self.ntemps is not None:
+            self.aim_darts_PT(x_best)
+            return
+
+
+
+        # Iterate to find position for focusing walkers
         lp_best, derived = self.posterior_function(x_best, self)
 
 
@@ -457,13 +480,13 @@ class DartBoard():
         self.p0 = np.vstack((self.p0, np.log(time_set))).T
 
 
-        print("...walkers are set")
+        print("...walkers are set.")
 
         sys.stdout.flush()
 
 
 
-    def aim_darts_PT(self, N_iterations=10000):
+    def aim_darts_PT(self, x_best):
         """
         Create a ball around a viable region of parameter space. The initial
         walker positions are saved as the ndarray self.p0. This function differs
@@ -471,16 +494,10 @@ class DartBoard():
         within emcee.
 
         Args:
-            N_iterations : int (default: 10000), the number of initial darts
-                to throw to search in parameter space.
+            x_best : tuple, the initial position in model parameter space.
         """
 
-        # Set walkers
-        print("Setting walkers...")
 
-
-        # Iterate to find position for focusing walkers
-        x_best = self.iterate_to_initialize(N_iterations=N_iterations)
         lp_best = self.posterior_function(x_best, self)
 
 
