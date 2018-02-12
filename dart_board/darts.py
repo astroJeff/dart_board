@@ -339,10 +339,12 @@ class DartBoard():
                 lp_best = lp
                 x_best = copy.copy(x)
 
+        if x_best is None: print("No", a_set, "solutions found within", str(N_iterations), "iterations.")
+
         return x_best
 
 
-    def aim_darts(self, N_iterations=10000):
+    def aim_darts(self, N_iterations=10000, a_set='both'):
         """
         Create a ball around a viable region of parameter space. The initial
         walker positions are saved as the ndarray self.p0.
@@ -357,23 +359,21 @@ class DartBoard():
         # Set walkers
         print("Setting walkers...")
 
-
+        x_best_low = None
+        x_best_high = None
 
         # Iterate to find position for focusing walkers
-        x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
-        x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+        if a_set == 'high' or a_set == 'both': x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
+        if a_set == 'low' or a_set == 'both': x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+
         if x_best_low is None and x_best_high is None:
-            print("No valid solutions found within", str(N_iterations), "iterations.")
+            print("No solutions were found. Exiting...")
             exit()
         elif x_best_high is None:
-            print("No valid large orbital separations solutions found within", str(N_iterations), "iterations.")
+            print("Proceeding with short orbital separation solution.")
             x_best = x_best_low
-        elif x_best_low is None:
-            print("No valid small orbital separation solutions found within", str(N_iterations), "iterations.")
-            x_best = x_best_high
         else:
-            print("Both small and large orbital separations solutions found.")
-            print("Using large orbital separation solution.")
+            print("Proceeding with large orbital separation solution.")
             x_best = x_best_high
 
 
