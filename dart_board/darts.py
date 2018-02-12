@@ -259,15 +259,24 @@ class DartBoard():
 
     def iterate_to_initialize(self, N_iterations=10000):
 
+        x_best = None
         lp_best = -100000
+
+        # Initial birth times
+        t_min = c.min_t
+        t_max = c.max_t
+        for key, value in self.prior_kwargs.items():
+            if key == 't_min': t_min = value
+            if key == 't_max': t_max = value
 
         # Iterate randomly through initial conditions until a viable parameter set is found
         for i in range(N_iterations):
 
-            if "WD" in self.binary_type:
-                M1 = 3.0 * np.random.uniform(size=1) + 8.0
-            else:
+            if "NS" in self.binary_type or "BH" in self.binary_type or "HMXB" in self.binary_type:
                 M1 = 30.0 * np.random.uniform(size=1) + 8.0
+            else:
+                M1 = 10.0 * np.random.uniform(size=1) + 0.5
+
             M2 = M1 * (np.random.uniform(size=1))
             a = 5000.0 * np.random.uniform(size=1) + 20.0
             ecc = np.random.uniform(size=1)
@@ -291,11 +300,7 @@ class DartBoard():
 
             if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
 
-            if "WD" in self.binary_type:
-                time = 1.4e4 * np.random.uniform(size=1)
-            else:
-                time = 40.0 * np.random.uniform(size=1)
-
+            time = (t_max - t_min) * np.random.uniform(size=1) + t_min
 
             # Create tuple of model parameters
             x = np.log(M1), np.log(M2), np.log(a), ecc
@@ -307,7 +312,7 @@ class DartBoard():
 
 
             # Calculate the posterior probability for x
-            lp = self.posterior_function(x, self)
+            lp, output = self.posterior_function(x, self)
 
 
             # Keep the best set of model parameter
@@ -315,8 +320,134 @@ class DartBoard():
                 lp_best = lp
                 x_best = copy.copy(x)
 
+        if x_best is None:
+            print("Unable to find an initial position using", N_iterations, "iterations.")
+            exit()
 
         return x_best
+
+
+    def aim_darts(self, N_iterations=10000):
+        """
+        Create a ball around a viable region of parameter space. The initial
+        walker positions are saved as the ndarray self.p0.
+        Args:
+            N_iterations : int (default: 10000), the number of initial darts
+                to throw to search in parameter space.
+        """
+
+
+
+        # For parallel tempering algorithm
+        if self.ntemps is not None:
+            self.aim_darts_PT(N_iterations=N_iterations)
+            return
+
+
+        # Set walkers
+        print("Setting walkers...")
+
+
+        # Iterate to find position for focusing walkers
+        x_best = self.iterate_to_initialize(N_iterations=N_iterations)
+        lp_best, derived = self.posterior_function(x_best, self)
+
+
+        # Allocate walkers
+        M1_set = np.zeros(self.nwalkers)
+        M2_set = np.zeros(self.nwalkers)
+        a_set = np.zeros(self.nwalkers)
+        ecc_set = np.zeros(self.nwalkers)
+        if self.first_SN:
+            v_kick1_set = np.zeros(self.nwalkers)
+            theta_kick1_set = np.zeros(self.nwalkers)
+            phi_kick1_set = np.zeros(self.nwalkers)
+        if self.second_SN:
+            v_kick2_set = np.zeros(self.nwalkers)
+            theta_kick2_set = np.zeros(self.nwalkers)
+            phi_kick2_set = np.zeros(self.nwalkers)
+        if self.model_metallicity: z_set = np.zeros(self.nwalkers)
+        time_set = np.zeros(self.nwalkers)
+
+        if self.prior_pos is not None:
+            # Use first call of sf_history prior to set ra and dec bounds
+            tmp = self.prior_pos(0.0, 0.0, 20.0)
+            ra_set = np.zeros(self.nwalkers)
+            dec_set = np.zeros(self.nwalkers)
+
+
+
+        # Check if any of these have posteriors with -infinity
+        for i in range(self.nwalkers):
+
+
+            lp = lp_best-10.0
+
+            while lp < lp_best - 5.0:
+
+
+                # Create x_new which holds new set of model parameters
+                x = []
+                for x_i in x_best:
+                    x += (x_i*np.random.normal(loc=1.0, scale=0.001, size=1)[0], )
+
+                # Calculate the posterior probability for x
+                lp, derived = self.posterior_function(x, self)
+
+
+            # Save model parameters to variables
+            ln_M1, ln_M2, ln_a, ecc = x[0:4]
+            x = x[4:]
+            if self.first_SN:
+                v_kick1, theta_kick1, phi_kick1 = x[0:3]
+                x = x[3:]
+            if self.second_SN:
+                v_kick2, theta_kick2, phi_kick2 = x[0:3]
+                x = x[3:]
+            if self.prior_pos is not None:
+                ra_b, dec_b = x[0:2]
+                x = x[2:]
+            if self.model_metallicity:
+                ln_z = x[0]
+                z = np.exp(ln_z)
+                x = x[1:]
+            else:
+                z = self.metallicity
+            ln_t_b = x[0]
+
+
+            M1_set[i] = np.exp(ln_M1)
+            M2_set[i] = np.exp(ln_M2)
+            a_set[i] = np.exp(ln_a)
+            ecc_set[i] = ecc
+            if self.first_SN:
+                v_kick1_set[i] = v_kick1
+                theta_kick1_set[i] = theta_kick1
+                phi_kick1_set[i] = phi_kick1
+            if self.second_SN:
+                v_kick2_set[i] = v_kick2
+                theta_kick2_set[i] = theta_kick2
+                phi_kick2_set[i] = phi_kick2
+            if self.prior_pos is not None:
+                ra_set[i] = ra_b
+                dec_set[i] = dec_b
+            if self.model_metallicity: z_set[i] = z
+            time_set[i] = np.exp(ln_t_b)
+
+
+        # Save and return the walker positions
+        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
+        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
+        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
+        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
+        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
+        self.p0 = np.vstack((self.p0, np.log(time_set))).T
+
+
+        print("...walkers are set")
+
+        sys.stdout.flush()
+
 
 
     def aim_darts_PT(self):
@@ -437,338 +568,6 @@ class DartBoard():
         sys.stdout.flush()
 
 
-    def aim_darts(self, dart=None):
-        """
-        Find a viable region of parameter space then create a ball around it.
-
-        """
-
-        # Set walkers
-        print("Setting walkers...")
-
-
-        # Allocate walkers
-        M1_set = np.zeros(self.nwalkers)
-        M2_set = np.zeros(self.nwalkers)
-        a_set = np.zeros(self.nwalkers)
-        ecc_set = np.zeros(self.nwalkers)
-        if self.first_SN:
-            v_kick1_set = np.zeros(self.nwalkers)
-            theta_kick1_set = np.zeros(self.nwalkers)
-            phi_kick1_set = np.zeros(self.nwalkers)
-        if self.second_SN:
-            v_kick2_set = np.zeros(self.nwalkers)
-            theta_kick2_set = np.zeros(self.nwalkers)
-            phi_kick2_set = np.zeros(self.nwalkers)
-        if self.model_metallicity: z_set = np.zeros(self.nwalkers)
-        time_set = np.zeros(self.nwalkers)
-
-        if self.prior_pos is not None:
-            # Use first call of sf_history prior to set ra and dec bounds
-            tmp = self.prior_pos(0.0, 0.0, 20.0)
-            ra_set = np.zeros(self.nwalkers)
-            dec_set = np.zeros(self.nwalkers)
-
-
-        if dart is None:
-
-            # Throw darts around to get a set of starting positions
-            for j in range(self.nwalkers):
-
-
-                # Iterate randomly through initial conditions until a viable parameter set is found
-                for i in range(100000):
-
-                    if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
-                        M1 = 3.0 * np.random.uniform(size=1) + 8.0
-                    else:
-                        M1 = 30.0 * np.random.uniform(size=1) + 8.0
-                    M2 = M1 * (np.random.uniform(size=1))
-                    a = 5000.0 * np.random.uniform(size=1) + 20.0
-                    ecc = np.random.uniform(size=1)
-
-                    if self.first_SN:
-                        v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
-                        theta_kick1 = np.pi * np.random.uniform(size=1)
-                        phi_kick1 = np.pi * np.random.uniform(size=1)
-                    if self.second_SN:
-                        v_kick2 = 300.0 * np.random.uniform(size=1) + 20.0
-                        theta_kick2 = np.pi * np.random.uniform(size=1)
-                        phi_kick2 = np.pi * np.random.uniform(size=1)
-
-                    if self.prior_pos is not None:
-                        if self.ra_obs is None or self.dec_obs is None:
-                            ra = (c.ra_max-c.ra_min) * np.random.uniform(size=1) + c.ra_min
-                            dec = (c.dec_max-c.dec_min) * np.random.uniform(size=1) + c.dec_min
-                        else:
-                            ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
-                            dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
-
-                    if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
-
-                    if self.binary_type == "ELMWD" or self.binary_type == "ELMWD_WD" or self.binary_type == "WDWD":
-                        time = 1.4e4 * np.random.uniform(size=1)
-                    else:
-                        time = 40.0 * np.random.uniform(size=1)
-
-
-                    # Create tuple of model parameters
-                    x = np.log(M1), np.log(M2), np.log(a), ecc
-                    if self.first_SN: x += v_kick1, theta_kick1, phi_kick1
-                    if self.second_SN: x += v_kick2, theta_kick2, phi_kick2
-                    if self.prior_pos is not None: x += ra, dec
-                    if self.model_metallicity: x+= (np.log(z),)
-                    x += (np.log(time),)
-
-
-
-                    # If the system has a viable posterior probability
-                    if self.posterior_function(x, self)[0] > -500.0:
-
-                        M1_set[j] = M1
-                        M2_set[j] = M2
-                        a_set[j] = a
-                        ecc_set[j] = ecc
-                        if self.first_SN:
-                            v_kick1_set[j] = v_kick1
-                            theta_kick1_set[j] = theta_kick1
-                            phi_kick1_set[j] = phi_kick1
-                        if self.second_SN:
-                            v_kick2_set[j] = v_kick2
-                            theta_kick2_set[j] = theta_kick2
-                            phi_kick2_set[j] = phi_kick2
-                        if self.prior_pos is not None:
-                            ra_set[j] = ra
-                            dec_set[j] = dec
-                        if self.model_metallicity: z_set[j] = z
-                        time_set[j] = time
-
-                        print("Walker", j, "is set. Posterior probability:", self.posterior_function(x, self))
-
-                        # ...then use it as our starting system
-                        break
-
-        # Save and return the walker positions
-        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
-        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
-        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
-        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
-        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
-        self.p0 = np.vstack((self.p0, np.log(time_set))).T
-
-        # if self.second_SN:
-        #     if self.prior_pos is None:
-        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-        #                             phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-        #                             np.log(time_set)]).T
-        #     else:
-        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-        #                             phi_kick1_set, v_kick2_set, theta_kick2_set, phi_kick2_set, \
-        #                             ra_set, dec_set, np.log(time_set)]).T
-        # else:
-        #     if self.prior_pos is None:
-        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-        #                             phi_kick1_set, np.log(time_set)]).T
-        #     else:
-        #         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set, v_kick1_set, theta_kick1_set, \
-        #                             phi_kick1_set, ra_set, dec_set, np.log(time_set)]).T
-
-
-        if dart is not None:
-            # Load up data from internal dart
-            self.p0[0] = dart
-
-            M1_set[0] = np.exp(self.p0[0,0])
-            M2_set[0] = np.exp(self.p0[0,1])
-            a_set[0] = np.exp(self.p0[0,2])
-            ecc_set[0] = self.p0[0,3]
-            i = 4
-            if self.first_SN:
-                v_kick1_set[0] = self.p0[0,i]
-                theta_kick1_set[0] = self.p0[0,i+1]
-                phi_kick1_set[0] = self.p0[0,i+2]
-                i += 3
-            if self.second_SN:
-                v_kick2_set[0] = self.p0[0,i]
-                theta_kick2_set[0] = self.p0[0,i+1]
-                phi_kick2_set[0] = self.p0[0,i+2]
-                i += 3
-            if self.prior_pos is not None:
-                ra_set[0] = self.p0[0,i]
-                dec_set[0] = self.p0[0,i+1]
-                i += 2
-            if self.model_metallicity:
-                z_set[0] = self.p0[0,i]
-                i += 1
-            time_set[0] = np.exp(self.p0[0,i])
-
-
-
-
-        print("Initial parameter space explored.")
-        print("Iterating to do better...")
-
-
-
-
-        # Now, we move to the best position
-        ln_posteriors_set = -1.0e4 * np.ones(self.nwalkers)
-        for i, p in enumerate(self.p0):
-            ln_posteriors_set[i] = self.posterior_function(p, self)[0]
-            print(p, ln_posteriors_set[i])
-        ln_posterior_best = np.max(ln_posteriors_set)
-        idx = np.argmax(ln_posteriors_set)
-
-        # Find values of best data point
-        M1 = M1_set[idx]
-        M2 = M2_set[idx]
-        a = a_set[idx]
-        ecc = ecc_set[idx]
-        if self.first_SN:
-            v_kick1 = v_kick1_set[idx]
-            theta_kick1 = theta_kick1_set[idx]
-            phi_kick1 = phi_kick1_set[idx]
-        if self.second_SN:
-            v_kick2 = v_kick2_set[idx]
-            theta_kick2 = theta_kick2_set[idx]
-            phi_kick2 = phi_kick2_set[idx]
-        if self.prior_pos is not None:
-            ra = ra_set[idx]
-            dec = dec_set[idx]
-        if self.model_metallicity: z = z_set[idx]
-        time = time_set[idx]
-
-
-        # Iterate around data point until solution is stable
-        C = 0.002
-
-
-        lp_prev = -1.0e4 * np.ones(20)
-
-
-        while 1:
-
-            ln_posterior_best = np.max(ln_posteriors_set)
-            idx = np.argmax(ln_posteriors_set)
-
-            # Shift record of previous posterior probabilities
-            for i in range(19):
-                lp_prev[i] = lp_prev[i+1]
-            lp_prev[19] = ln_posterior_best
-
-            # FOR TESTING
-            if lp_prev[17] > -100.0: break
-            if(abs(lp_prev[0] - lp_prev[19]) < 0.2): break
-
-            print("ln_posterior:", idx, ln_posterior_best, lp_prev[0])
-
-
-            M1 = M1_set[idx]
-            M2 = M2_set[idx]
-            a = a_set[idx]
-            ecc = ecc_set[idx]
-            if self.first_SN:
-                v_kick1 = v_kick1_set[idx]
-                theta_kick1 = theta_kick1_set[idx]
-                phi_kick1 = phi_kick1_set[idx]
-            if self.second_SN:
-                v_kick2 = v_kick2_set[idx]
-                theta_kick2 = theta_kick2_set[idx]
-                phi_kick2 = phi_kick2_set[idx]
-            if self.prior_pos is not None:
-                ra = ra_set[idx]
-                dec = dec_set[idx]
-            if self.model_metallicity: z = z_set[idx]
-            time = time_set[idx]
-
-
-
-
-
-            for i in range(self.nwalkers):
-
-                if i == idx: continue
-
-
-                # Create tuple of model parameters
-                p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i]
-                if self.first_SN: p += v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i]
-                if self.second_SN: p += v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i]
-                if self.prior_pos is not None: p += ra_set[i], dec_set[i]
-                if self.model_metallicity: p += (np.log(z_set[i]),)
-                p += (np.log(time_set[i]),)
-
-
-
-                ln_posterior = self.posterior_function(p, self)[0]
-
-
-                k = 0
-                while k == 0 or ln_posterior + 4.0 < ln_posterior_best or np.isinf(ln_posterior):
-
-                    k = k + 1
-
-                    # Binary parameters
-                    M1_set[i] = M1*(1.0 + np.random.normal(0.0, C, 1))
-                    M2_set[i] = M2*(1.0 + np.random.normal(0.0, C, 1))
-                    ecc_set[i] = ecc*(1.0 + np.random.normal(0.0, C, 1))
-                    a_set[i] = a*(1.0 + np.random.normal(0.0, C, 1))
-
-                    # SN kick perameters
-                    if self.first_SN:
-                        v_kick1_set[i] = v_kick1*(1.0 + np.random.normal(0.0, C, 1))
-                        theta_kick1_set[i] = theta_kick1*(1.0 + np.random.normal(0.0, C, 1))
-                        phi_kick1_set[i] = phi_kick1*(1.0 + np.random.normal(0.0, C, 1))
-                    if self.second_SN:
-                        v_kick2_set[i] = v_kick2*(1.0 + np.random.normal(0.0, C, 1))
-                        theta_kick2_set[i] = theta_kick2*(1.0 + np.random.normal(0.0, C, 1))
-                        phi_kick2_set[i] = phi_kick2*(1.0 + np.random.normal(0.0, C, 1))
-
-                    # Position
-                    if self.prior_pos is not None:
-                        ra_set[i] = ra*(1.0 + np.random.normal(0.0, 0.001*C, 1))
-                        dec_set[i] = dec*(1.0 + np.random.normal(0.0, 0.001*C, 1))
-
-                    # Metallicity
-                    if self.model_metallicity: z_set[i] = np.exp(np.random.normal(np.log(0.02), 0.001*C, 1))
-
-                    # Birth time
-                    time_set[i] = time*(1.0 + np.random.normal(0.0, C, 1))
-
-
-                    # Create tuple of model parameters
-                    p = np.log(M1_set[i]), np.log(M2_set[i]), np.log(a_set[i]), ecc_set[i]
-                    if self.first_SN: p += v_kick1_set[i], theta_kick1_set[i], phi_kick1_set[i]
-                    if self.second_SN: p += v_kick2_set[i], theta_kick2_set[i], phi_kick2_set[i]
-                    if self.prior_pos is not None: p += ra_set[i], dec_set[i]
-                    if self.model_metallicity: p += (np.log(z_set[i]),)
-                    p += (np.log(time_set[i]),)
-
-
-                    # Calculate posterior probability of tested data point
-                    ln_posterior = self.posterior_function(p, self)[0]
-
-
-                ln_posteriors_set[i] = ln_posterior
-
-
-
-        # Save and return the walker positions
-        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
-        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
-        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
-        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
-        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
-        self.p0 = np.vstack((self.p0, np.log(time_set))).T
-
-
-        print("...walkers are set")
-
-        sys.stdout.flush()
-
-
-
-
     def throw_darts(self, nburn=1000, nsteps=1000, method='emcee'):
         """
         Run the sampler.
@@ -810,7 +609,7 @@ class DartBoard():
 
             # Save only every 100th sample
             self.chains = sampler.chain[:,::self.thin,:]
-            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::self.thin,0,:]
+            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::self.thin,:]
             self.lnprobability = sampler.lnprobability[:,::self.thin]
 
             self.sampler = sampler

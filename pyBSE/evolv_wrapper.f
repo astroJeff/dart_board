@@ -224,10 +224,15 @@
            a_out = bcm(jj,31)
            mdot1 = bcm(jj,14)
            mdot2 = bcm(jj,28)
+           teff1_out = 10**bcm(jj,7)
+           teff2_out = 10**bcm(jj,21)
+           r1_out = 10**bcm(jj,6)
+           r2_out = 10**bcm(jj,20)
 
            if(out_flag)then
              write(*,*) bcm(jj,1), m1_out, m2_out, k1_out, k2_out,
-     &                   ecc_out, a_out, p_out, mdot1, mdot2
+     &                   ecc_out, a_out, p_out, mdot1, mdot2,
+     &                   teff1_out, teff2_out, r1_out, r2_out
            endif
 
            if(jj.gt.2.and.bcm(jj,1).eq.0.0)then
@@ -253,10 +258,8 @@
          r2_out = 10**bcm(last,20)
          lum1_out = 10**bcm(last,5)
          lum2_out = 10**bcm(last,19)
-         teff1_out = lum1_out /
-     &                   (2.0*twopi*(r1_out*Rsun)**2*stef_boltz)**0.25
-         teff2_out = lum2_out /
-     &                   (2.0*twopi*(r2_out*Rsun)**2*stef_boltz)**0.25
+         teff1_out = 10**bcm(last,7)
+         teff2_out = 10**bcm(last,21)
          mdot1_out = bcm(last,14)
          mdot2_out = bcm(last,28)
          v_sys_out = bcm(last,33)

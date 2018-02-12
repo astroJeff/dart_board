@@ -142,6 +142,11 @@ def ln_likelihood(x, dart):
 
 
     # Proxy values if binary_type does not include second SN
+    if not dart.first_SN:
+        v_kick1 = 0.0
+        theta_kick1 = 0.0
+        phi_kick1 = 0.0
+
     if not dart.second_SN:
         v_kick2 = v_kick1
         theta_kick2 = theta_kick1
@@ -153,8 +158,6 @@ def ln_likelihood(x, dart):
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
                                 t_b, z, False, **dart.model_kwargs)
-    # m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
-
 
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type):
@@ -168,8 +171,10 @@ def ln_likelihood(x, dart):
     ll = 0
     if not dart.system_kwargs == {}: ll = posterior_properties(x_in, output, dart)
 
+    # print("M1 =", output['M1'], "M2 =", output['M2'], "R1 =", output['R1'], "R2 =", output['R2'], "k1 =", output['k1'], "k2 =", output['k2'])
+
     if dart.ntemps is None:
-        return ll, np.array([output])
+        return ll, output.tolist()
     else:
         return ll
 
@@ -193,8 +198,8 @@ def posterior_properties(x, output, dart):
 
     """
 
-    M1_out, M2_out, a_out, ecc_out, v_sys, mdot_out, t_SN1, k1_out, k2_out = output
-    P_orb_out = A_to_P(M1_out, M2_out, a_out)
+    # M1_out, M2_out, a_out, ecc_out, v_sys, mdot_out, t_SN1, k1_out, k2_out = output
+    P_orb_out = A_to_P(output['M1'], output['M2'], output['a'])
 
 
     # Save model parameters to variables
@@ -234,7 +239,7 @@ def posterior_properties(x, output, dart):
     t_b = np.exp(ln_t_b)
 
     # Calculate an X-ray luminosity
-    L_x_out = calculate_L_x(M1_out, mdot_out, k1_out)
+    L_x_out = calculate_L_x(output['M1'], output['mdot1'], output['k1'])
 
 
     def get_error_from_kwargs(param, **kwargs):
@@ -251,8 +256,11 @@ def posterior_properties(x, output, dart):
 
 
     # Possible observables
-    observables = ["M1", "M2", "M_tot", "P_orb", "a", "ecc", "L_x", "v_sys"]
-    model_vals = [M1_out, M2_out, M1_out+M2_out, P_orb_out, a_out, ecc_out, L_x_out, v_sys]
+    observables = ["M1", "M2", "M_tot", "P_orb", "a", "ecc", "L_x", "v_sys", "teff1", "teff2", "L1", "L2", "R1", "R2"]
+    model_vals = [output['M1'], output['M2'], output['M1']+output['M2'],
+                  P_orb_out, output['a'], output['ecc'], L_x_out, output['v_sys'],
+                  output['Teff1'], output['Teff2'], output['L1'], output['L2'],
+                  output['R1'], output['R2']]
 
 
     # Add log probabilities for each observable
@@ -268,12 +276,12 @@ def posterior_properties(x, output, dart):
         # Mass function must be treated specially
         if key == "m_f":
             error = get_error_from_kwargs("m_f", **dart.system_kwargs)
-            likelihood = calc_prob_from_mass_function(M1_out, M2_out, value, error)
+            likelihood = calc_prob_from_mass_function(output['M1'], output['M2'], value, error)
             if likelihood == 0.0: return -np.inf
             ll += np.log(likelihood)
 
         if key == "ecc_max":
-            if ecc_out > value: return -np.inf
+            if output['ecc'] > value: return -np.inf
 
 
     # Add log probabilities if position is provided
@@ -437,75 +445,79 @@ def check_output(output, binary_type):
         binary_type : bool, is the binary of the requested type?
     """
 
-    m1_out, m2_out, a_out, ecc_out, v_sys, mdot, t_SN1, k1, k2 = output
-
-    type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS", "BHNS", "WDWD", "ELMWD", "ELMWD_WD"])
+    type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS", "BHNS", "WDWD", "ELMWD", "ELMWD_WD",
+                             "nondegenerate"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
         sys.exit(-1)
 
     if binary_type == "HMXB":
-        if k1 != 13 and k1 != 14: return False
-        if k2 > 9: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
-        if mdot <= 0.0: return False
-        if m2_out < 6.0: return False
+        if output['k1'] != 13 and output['k1'] != 14: return False
+        if output['k2'] > 9: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+        if output['mdot1'] <= 0.0: return False
+        if output['M2'] < 6.0: return False
 
     if binary_type == "BHHMXB":
-        if k1 != 14: return False
-        if k2 > 9: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
-        if mdot <= 0.0: return False
-        if m2_out < 6.0: return False
+        if output['k1'] != 14: return False
+        if output['k2'] > 9: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+        if output['mdot1'] <= 0.0: return False
+        if output['M2'] < 6.0: return False
 
     if binary_type == "NSHMXB":
-        if k1 != 13: return False
-        if k2 > 9: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
-        if mdot <= 0.0: return False
-        if m2_out < 6.0: return False
+        if output['k1'] != 13: return False
+        if output['k2'] > 9: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+        if output['mdot1'] <= 0.0: return False
+        if output['M2'] < 6.0: return False
 
     elif binary_type == "LMXB":
-        if k1 != 13 and k2 != 14: return False
-        if k2 > 9: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
-        if mdot <= 0.0: return False
-        if m2_out > 6.0: return False
+        if output['k1'] != 13 and output['k1'] != 14: return False
+        if output['k2'] > 9: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+        if output['mdot1'] <= 0.0: return False
+        if output['M2'] > 6.0: return False
 
     elif binary_type == "BHBH":
-        if k1 != 14 or k2 != 14: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if output['k1'] != 14 or output['k2'] != 14: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     elif binary_type == "NSNS":
-        if k1 != 13 or k2 != 13: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if output['k1'] != 13 or output['k2'] != 13: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     elif binary_type == "BHNS":
-        if (k1 != 14 or k2 != 13) and (k1 != 13 or k2 != 14): return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if (output['k1'] != 14 or output['k2'] != 13) and (output['k1'] != 13 or output['k2'] != 14): return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     elif binary_type == "WDWD":
-        if k1 < 10  or k1 > 12 or k2 < 10 or k2 > 12: return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if output['k1'] < 10  or output['k1'] > 12 or output['k2'] < 10 or output['k2'] > 12: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     elif binary_type == "ELMWD":
-        if (k1 != 10) and (k2 != 10): return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if (output['k1'] != 10) and (output['k2'] != 10): return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     elif binary_type == "ELMWD_WD":
-        if k1 < 10  or k1 > 12 or k2 < 10 or k2 > 12 or (k1 != 10 and k2 != 10): return False
-        if a_out <= 0.0: return False
-        if ecc_out < 0.0 or ecc_out >= 1.0: return False
+        if output['k1'] < 10  or output['k1'] > 12 or output['k2'] < 10 or output['k2'] > 12 or (output['k1'] != 10 and output['k2'] != 10): return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+
+    elif binary_type == 'nondegenerate':
+        if output['k1'] > 9 or output['k2'] > 9: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     return True
 
