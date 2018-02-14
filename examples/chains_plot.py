@@ -21,11 +21,14 @@ chains[:,:,2] = np.log10(chains[:,:,2])
 chains[:,:,-1] = np.exp(chains[:,:,-1])
 
 
-if file_root == 'HMXB' or file_root == 'mock_1' or file_root == 'J0513_nosfh' or file_root == 'J0513_nosfh_PT':
+if file_root == 'HMXB' or 'mock_1' in file_root or 'J0513_nosfh' in file_root:
     var = [r'$M_1\ (M_{\odot})$',r'$M_2\ (M_{\odot})$',r'log $a\ (R_{\odot})$',r'$e$',
            r'$v_k\ ({\rm km\ s}^{-1})$', r'$\theta_k$ (rad.)',
            r'$\phi_k$ (rad.)',r'$t_b$ (Myr)']
-elif file_root == 'LMC_HMXB' or file_root == 'mock_2' or file_root == 'mock_3' or file_root == 'J0513' or file_root == 'J0513_flatsfh' or file_root == 'J0513_flatsfh_PT' or file_root == 'J0513_PT':
+else:
+# elif file_root == 'LMC_HMXB' or 'mock_2' in file_root or 'mock_3' in file_root or file_root == 'J0513' \
+#         or file_root == 'J0513_flatsfh' or file_root == 'J0513_flatsfh_PT' or file_root == 'J0513_PT' \
+#         or file_root == 'J0513_low':
     var = [r'$M_1\ (M_{\odot})$',r'$M_2\ (M_{\odot})$',r'log $a\ (R_{\odot})$',r'$e$',
            r'$v_k\ ({\rm km\ s}^{-1})$',r'$\theta_k$ (rad.)',r'$\phi_k$ (rad.)',
            r'$\alpha$',r'$\delta$',r'$t_b$ (Myr)']
