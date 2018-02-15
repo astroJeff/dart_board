@@ -24,7 +24,7 @@ system_kwargs = {"M2" : 6.92, "M2_err" : 0.25,
                  "ra" : 83.41691225 , "dec" : -70.25999352}
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc, nwalkers=320,
-                           threads=20,
+                           threads=20, ntemps=10, 
                            metallicity=LMC_metallicity, thin=100,
                            system_kwargs=system_kwargs)
 
