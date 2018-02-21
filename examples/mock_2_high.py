@@ -12,12 +12,12 @@ from dart_board import sf_history
 
 
 # Values for mock system 2
-# Input values: 12.856 7.787 5.19 0.5434 384.64 2.588 0.978 83.2554 -69.939 25.71 0.008
-# Output values: 1.38 17.17, 59.81, 0.54, 44.14, 7.90e-11, 19.71, 13, 1
+# Input values: 14.113 5.094 45.12 0.624 141.12 1.6982 1.6266 83.2554 -69.939 21.89 0.008
+# Output values: 1.46 15.09, 369.49, 0.67, 22.61, 4.59e-13, 16.91, 13, 1
 
 LMC_metallicity = 0.008
 
-system_kwargs = {"ra" : 82.84012909 , "dec" : -70.12312498 }
+system_kwargs = {"ra" : 83.059940, "dec" : -69.904890 }
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
                            nwalkers=320, threads=20,
