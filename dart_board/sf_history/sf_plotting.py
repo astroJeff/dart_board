@@ -227,8 +227,9 @@ def get_dist_closest(ra, dec, coor):
 
 
 def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
-        ra_dist=None, dec_dist=None, contour_CL='gaussian',
-        dist_bins=25, sfh_bins=30, sfh_levels=None, ra=None, dec=None,
+        ra_dist=None, dec_dist=None, ra_dist_2=None, dec_dist_2=None,
+        contour_CL='gaussian', dist_bins=25, dist2_bins=25,
+        sfh_bins=30, sfh_levels=None, ra=None, dec=None,
         xcenter=None, ycenter=None, xwidth=None, ywidth=None, rot_angle=0.0,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=8, ygrid_density=5,
         color_map='Blues', color_bar=False, colorbar_pad=-20, colorbar_label_y=1.1,
@@ -496,7 +497,8 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
 
 
     # Plot the contours defining the distributions of ra_dist and dec_dist
-    if ra_dist is not None and dec_dist is not None:
+
+    def plot_dist(ra_dist, dec_dist, color, dist_bins):
 
         # Need this function
         def find_confidence_interval(x, pdf, confidence_level):
@@ -552,12 +554,23 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         Z = pdf.T
 
         # Plot contours
-        contour = plt.contour(X, Y, Z, levels=levels[::-1], origin="lower", colors=['k'], rasterized=True)
-        #contour = plt.contour(X, Y, Z, levels=levels[::-1], origin="lower", colors=['r','g','b'])
+        # contour = plt.contour(X, Y, Z, levels=levels[::-1], origin="lower", colors=color, rasterized=True, linewidths=[0.5, 1., 1.5])
+        # contour = plt.contour(X, Y, Z, levels=levels[::-1], origin="lower", colors=color, rasterized=True,
+        #                       linewidths=1.0, linestyles=['dotted','dashed','solid'])
+        contour = plt.contour(X, Y, Z, levels=[levels[0]], origin="lower", colors=color, rasterized=True,
+                              linewidths=1.5, alpha=1.0)
+        contour = plt.contour(X, Y, Z, levels=[levels[1]], origin="lower", colors=color, rasterized=True,
+                              linewidths=1.5, alpha=0.6)
+        contour = plt.contour(X, Y, Z, levels=[levels[2]], origin="lower", colors=color, rasterized=True,
+                              linewidths=1.5, alpha=0.3)
 
-        # To change linewidths
-        zc = contour.collections
-        plt.setp(zc, linewidth=1.5)
+
+
+    if ra_dist_2 is not None and dec_dist_2 is not None:
+        contour = plot_dist(ra_dist, dec_dist, 'C1', dist_bins)
+        contour = plot_dist(ra_dist_2, dec_dist_2, 'C2', dist2_bins)
+    elif ra_dist is not None and dec_dist is not None:
+        contour = plot_dist(ra_dist, dec_dist, 'k', dist_bins)
 
 
 

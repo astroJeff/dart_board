@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, delay=0, ymax=200000):
+def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, delay=0, ymax=200000, truths=None):
 
     if chain.ndim < 3:
         print("You must include a multiple chains")
@@ -13,7 +13,11 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
     print(n_chains, length, n_var)
 
     if (labels is not None) and (len(labels) != n_var):
-        print("You must provide the correct number of variable labels")
+        print("You must provide the correct number of variable labels.")
+        return
+
+    if (truths is not None) and (len(truths) != n_var):
+        print("You must provide the correct number of truths.")
         return
 
     fig, ax = plt.subplots(int(n_var/2) + n_var%2, 2, figsize=(8, 0.8*n_var))
@@ -23,10 +27,12 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
     color = np.empty(n_chains, dtype=str)
     color[:] = 'k'
     alpha = 0.01 * np.ones(n_chains)
+    zorder = np.ones(n_chains)
     if tracers > 0:
         idx = np.random.choice(n_chains, tracers, replace=False)
         color[idx] = 'r'
-        alpha[idx] = 0.5
+        alpha[idx] = 1.0
+        zorder[idx] = 2.0
 
     for i in range(n_var):
         ix = int(i/2)
@@ -35,7 +41,7 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
         for j in range(n_chains):
 
             xvals = (np.arange(length)*downsample - delay) / 1000
-            ax[ix,iy].plot(xvals, chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True)
+            ax[ix,iy].plot(xvals, chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True, zorder=zorder[j])
 
         if ymax is None: ymax = (length*downsample-delay)
 
@@ -47,7 +53,9 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
         # Add y-axis labels if provided by use
         if labels is not None: ax[ix,iy].set_ylabel(labels[i])
 
-        if delay != 0: ax[ix,iy].axvline(0, color='k', linestyle='dashed', linewidth=2.0)     
+        if delay != 0: ax[ix,iy].axvline(0, color='k', linestyle='dashed', linewidth=2.0, zorder=9)
+
+        if truths is not None: ax[ix,iy].axhline(truths[i], color='C0', linestyle='dashed', linewidth=2.0, zorder=10)
 
     # plt.tight_layout()
 
