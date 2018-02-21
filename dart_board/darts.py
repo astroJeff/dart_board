@@ -425,7 +425,7 @@ class DartBoard():
                 # Create x_new which holds new set of model parameters
                 x = []
                 for x_i in x_best:
-                    x += (x_i*np.random.normal(loc=1.0, scale=0.001, size=1)[0], )
+                    x += (x_i*np.random.normal(loc=1.0, scale=0.01, size=1)[0], )
 
                 # Calculate the posterior probability for x
                 lp, derived = self.posterior_function(x, self)
@@ -538,7 +538,7 @@ class DartBoard():
                     # Create x_new which holds new set of model parameters
                     x = []
                     for x_i in x_best:
-                        x += (x_i*np.random.normal(loc=1.0, scale=0.001, size=1)[0], )
+                        x += (x_i*np.random.normal(loc=1.0, scale=0.01, size=1)[0], )
 
 
                     # Calculate the posterior probability for x
