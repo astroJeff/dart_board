@@ -19,7 +19,7 @@ system_kwargs = {"P_orb" : 27.405, "P_orb_err" : 0.5, "ecc_max" : 0.17, "m_f" : 
 pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve, metallicity=LMC_metallicity,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
                            nwalkers=320, threads=20,
-                           ntemps=10, thin=100,
+                           ntemps=10, thin=10,
                            system_kwargs=system_kwargs)
 
 pub.aim_darts(N_iterations=100000)

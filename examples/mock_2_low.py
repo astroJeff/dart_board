@@ -17,7 +17,7 @@ from dart_board import sf_history
 
 LMC_metallicity = 0.008
 
-system_kwargs = {"ra" : 83.059940, "dec" : -69.904890 }
+system_kwargs = {"ra" : 83.0788837, "dec" : -70.0172647 }
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
                            nwalkers=320, threads=20,
@@ -28,7 +28,7 @@ pub.aim_darts(N_iterations=100000, a_set='low')
 
 
 start_time = time.time()
-pub.throw_darts(nburn=2, nsteps=52000)
+pub.throw_darts(nburn=2, nsteps=152000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 

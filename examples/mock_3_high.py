@@ -24,16 +24,16 @@ system_kwargs = {"M2" : 6.92, "M2_err" : 0.25,
                  "ra" : 83.41691225 , "dec" : -70.25999352}
 pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve,
                            ln_prior_pos=sf_history.lmc.prior_lmc, nwalkers=320,
-                           threads=20, ntemps=10, 
+                           threads=20, ntemps=10,  
                            metallicity=LMC_metallicity, thin=100,
                            system_kwargs=system_kwargs)
 
 # Darts need to be in ln
-pub.aim_darts(N_iterations=100000, a_set='high')
+pub.aim_darts(N_iterations=200000, a_set='high')
 
 
 start_time = time.time()
-pub.throw_darts(nburn=2, nsteps=52000)
+pub.throw_darts(nburn=2, nsteps=152000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
