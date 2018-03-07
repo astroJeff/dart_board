@@ -8,13 +8,18 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 
-delay = 500
 
 
 if len(sys.argv) < 2:
+    delay = 200
+else:
+    delay = int(sys.argv[1])
+
+
+if len(sys.argv) < 3:
     sol = 'low'
 else:
-    sol = sys.argv[1]
+    sol = sys.argv[2]
 if sol != 'low' and sol != 'high':
     print("You must provide either 'low' or 'high' as a possible solution.")
     sys.exit()

@@ -179,4 +179,4 @@ ax4.set_ylabel("log N")
 ax4.set_yticklabels([])
 
 # plt.tight_layout()
-plt.savefig("../figures/HMXB_derived.pdf")
+plt.savefig("../figures/" + file_name + "_derived.pdf")

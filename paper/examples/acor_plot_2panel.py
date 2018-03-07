@@ -19,16 +19,34 @@ file_root_2 = sys.argv[2]
 file_in_2 = "../data/" + file_root_2 + "_chain.npy"
 
 
+# Delay for first data set
 if len(sys.argv) < 4:
-    delay_1 = 200
+    delay_1 = 20000
 else:
-    delay_1 = int(int(sys.argv[3]) / 100)
+    delay_1 = int(sys.argv[3])
 
-
+# Delay for second data set
 if len(sys.argv) < 5:
-    delay_2 = 200
+    delay_2 = 200000
 else:
-    delay_2 = int(int(sys.argv[4]) / 100)
+    delay_2 = int(sys.argv[4])
+
+# Thin for first data set
+if len(sys.argv) < 6:
+    thin_1 = 100
+else:
+    thin_1 = int(sys.argv[5])
+
+# Thin for second data set
+if len(sys.argv) < 7:
+    thin_2 = 1000
+else:
+    thin_2 = int(sys.argv[5])
+
+
+# Adjust delay for chain thinning
+delay_1 = int(delay_1 / thin_1)
+delay_2 = int(delay_2 / thin_2)
 
 
 
@@ -73,7 +91,7 @@ elif file_root_2 == 'LMC_HMXB' or 'mock_2' in file_root_2 or 'mock_3' in file_ro
     var_2 = [r'$M_1$',r'$M_2$',r'$a$',r'$e$',r'$v_k$',r'$\theta_k$',r'$\phi_k$',r'$\alpha$',r'$\delta$',r'$t_b$']
 
 
-factor = 100.0
+
 
 n_var_1 = len(var_1)
 n_var_2 = len(var_2)
@@ -88,14 +106,14 @@ for a in ax:
 N = 50
 
 if file_root_1 == 'HMXB':
-    xmax_1 = 20000/factor
+    xmax_1 = 20000/thin_1
 else:
-    xmax_1 = 200000/factor
+    xmax_1 = 200000/thin_1
 
 if file_root_2 == 'HMXB':
-    xmax_2 = 20000/factor
+    xmax_2 = 20000/thin_2
 else:
-    xmax_2 = 200000/factor
+    xmax_2 = 200000/thin_2
 
 
 xmin = 0
@@ -111,7 +129,7 @@ for k in np.arange(n_var_1):
     for i in np.arange(N):
         autocorr[i] = Series.autocorr(series, lag=int(i*float(xmax_1-xmin)/N))
 
-    ax[0].plot(np.linspace(xmin,xmax_1,N)*factor/1000, autocorr, linewidth=2, label=var_1[k])
+    ax[0].plot(np.linspace(xmin,xmax_1,N)*thin_1/1000, autocorr, linewidth=2, label=var_1[k])
 
 
 for k in np.arange(n_var_2):
@@ -125,7 +143,7 @@ for k in np.arange(n_var_2):
     for i in np.arange(N):
         autocorr[i] = Series.autocorr(series, lag=int(i*float(xmax_2-xmin)/N))
 
-    ax[1].plot(np.linspace(xmin,xmax_2,N)*factor/1000, autocorr, linewidth=2, label=var_2[k])
+    ax[1].plot(np.linspace(xmin,xmax_2,N)*thin_2/1000, autocorr, linewidth=2, label=var_2[k])
 
 
 
