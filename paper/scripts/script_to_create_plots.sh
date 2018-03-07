@@ -68,12 +68,12 @@
 
 ###### Figures 12 & 17 ######
 
-# python3 J0513_plots_2.py
+# python3 J0513_plots.py
 
 
 ###### Figures 13 & 18 ######
 
-# python3 J0513_plots_2.py 200 high
+# python3 J0513_plots.py 200 high
 
 
 ###### Figure 14 ######
@@ -94,7 +94,7 @@
 
 ###### Figure 19 ######
 
-# python3 HMXB_plots_2.py
+# python3 HMXB_plots.py
 
 
 ###### Figures 20 & 21 ######
