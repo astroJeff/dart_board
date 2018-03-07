@@ -14,8 +14,7 @@ pub = dart_board.DartBoard("HMXB", evolve_binary=pybse.evolve, nwalkers=320)
 
 
 start_time = time.time()
-pub.scatter_darts(num_darts=100000000)
-# pub.throw_darts(nburn=50000, nsteps=50000)
+pub.scatter_darts(seconds=356700)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
@@ -26,8 +25,3 @@ np.save("../data/HMXB_trad_derived.npy", pub.derived)
 np.save("../data/HMXB_trad_lnprobability.npy", pub.lnprobability)
 
 
-# Pickle results
-# import pickle
-# pickle.dump(pub.chains, open("../data/HMXB_trad_x_i.obj", "wb"))
-# pickle.dump(pub.likelihood, open("../data/HMXB_trad_likelihood.obj", "wb"))
-# pickle.dump(pub.derived, open("../data/HMXB_trad_derived.obj", "wb"))

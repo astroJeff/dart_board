@@ -18,14 +18,14 @@ system_kwargs = {"P_orb" : 27.405, "P_orb_err" : 0.5, "ecc_max" : 0.17, "m_f" : 
                  "m_f_err" : 2.0, "ra" : 78.36775, "dec" : -65.7885278}
 pub = dart_board.DartBoard("NSHMXB", evolve_binary=pybse.evolve, metallicity=LMC_metallicity,
                            ln_prior_pos=sf_history.lmc.prior_lmc,
-                           nwalkers=320, threads=20, thin=100,
+                           nwalkers=320, threads=20, thin=1000,
                            system_kwargs=system_kwargs)
 
 pub.aim_darts(N_iterations=100000, a_set='high')
 
 
 start_time = time.time()
-pub.throw_darts(nburn=2, nsteps=302000)
+pub.throw_darts(nburn=2, nsteps=500000)
 print("Simulation took",time.time()-start_time,"seconds.")
 
 
