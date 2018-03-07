@@ -150,7 +150,8 @@ sf_plot, ax1 = get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=
 
 
 fig.subplots_adjust(right=0.8)
-cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
+# cbar_ax = fig.add_axes([0.87, 0.15, 0.02, 0.7])
+cbar_ax = fig.add_axes([0.87, 0.3, 0.02, 0.45])
 cb = fig.colorbar(sf_plot, cax=cbar_ax, extend='max')
 cb.set_label(r'$\frac{M_{\odot}}{{\rm yr\ deg.}^2}$', rotation=0, labelpad=-20, y=1.1, fontsize=14)
 # cb.set_label(r'$M_{\odot}$ yr$^{-1}$ deg.$^{-2}$', rotation=270, labelpad=17)

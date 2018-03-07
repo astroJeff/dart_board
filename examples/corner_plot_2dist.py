@@ -233,9 +233,9 @@ elif 'mock_2' in file_name:
     n_var = 10
     plt_range = ([4,24], [2.5,15], [1,4], [0,1], [0,650], [np.pi/4.,np.pi], [0,np.pi], [81,85], [-71,-69], [0,75])
 elif 'mock_3' in file_name:
-    truths = [11.01, 7.42, np.log10(744.19), 0.20, 167.69, 1.79, 2.08, 83.2559, -69.9377, 36.59]
+    truths = [11.01, 7.42, np.log10(744.19), 0.50, 167.69, 1.79, 2.08, 83.5744461, -69.4876344, 36.59]
     n_var = 10
-    plt_range = ([5,20], [5.5,8], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [80,85], [-71.0,-69.5], [0,75])
+    plt_range = ([8,14], [6,9], [1,4.5], [0,1], [0,600], [0.0,np.pi], [0,np.pi], [81,86], [-70.4,-68.5], [0,60])
 elif file_name == 'HMXB':
     n_var = 8
     plt_range = ([4,40], [2.5,20], [1,4.9], [0,1.05], [0,650], [0.0,np.pi], [0,np.pi], [0,55])
@@ -247,11 +247,10 @@ elif 'J0513_nosfh' in file_name:
     plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [0,55])
 elif 'J0513_flatsfh' in file_name:
     n_var = 10
-    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [77.5,79], [-66.5,-65.4], [0,55])
+    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [77.7,79], [-66.2,-65.4], [0,55])
 elif 'J0513' in file_name:
     n_var = 10
-    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [77.5,79], [-66.5,-65.0], [0,55])
-
+    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [77,80], [-66.5,-65.0], [0,55])
 
 
 
@@ -405,8 +404,8 @@ if file_name == 'mock_3':
 
     # Observable 1 - Companion mass
     ax1 = plt.subplot(gs[1])
-    tmp_x = np.linspace(6, 9.0, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=6.92, scale=0.25)
+    tmp_x = np.linspace(6.5, 9.0, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=7.84, scale=0.25)
     ax1.plot(tmp_x, tmp_y, color='r')
 
     ax1.hist(derived_low.T[1], histtype='step', color='C1', normed=True, bins=30, zorder=10)
@@ -416,8 +415,8 @@ if file_name == 'mock_3':
 
     # Observable 2 - Eccentricity
     ax2 = plt.subplot(gs[2])
-    tmp_x = np.linspace(0.4, 0.8, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=0.57, scale=0.05)
+    tmp_x = np.linspace(0.2, 0.6, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=0.47, scale=0.05)
     ax2.plot(tmp_x, tmp_y, color='r')
     # ax2.axvline(0.3, color='r')
 
@@ -428,8 +427,8 @@ if file_name == 'mock_3':
 
     # Observable 3 - Orbital Period
     ax3 = plt.subplot(gs[3])
-    tmp_x = np.linspace(42, 52, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=48.3, scale=1.0)
+    tmp_x = np.linspace(10, 18, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=14.11, scale=1.0)
     ax3.plot(tmp_x, tmp_y, color='r')
 
     P_orb = A_to_P(derived_low.T[0], derived_low.T[1], derived_low.T[2])
@@ -441,8 +440,8 @@ if file_name == 'mock_3':
 
     # Observable 4 - X-ray Luminosity
     ax4 = plt.subplot(gs[4])
-    tmp_x = np.linspace(1.5e32, 1.15e33, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=6.7e32, scale=1.0e32)
+    tmp_x = np.linspace(1.5e33, 2.4e33, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=1.94e33, scale=1.0e32)
     ax4.plot(tmp_x, tmp_y, color='r')
 
     L_x_low = np.zeros(len(derived_low))
@@ -472,8 +471,8 @@ if file_name == 'mock_3':
 
     get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs2[4],
         ra_dist=ra_birth_low, dec_dist=dec_birth_low, ra_dist_2=ra_birth_high, dec_dist_2=dec_birth_high,
-        dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=83.41691225, dec=-70.25999352,
-        xcenter=0.0, ycenter=20.0, xwidth=2.5, ywidth=2.5, rot_angle=0.12,
+        dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=83.5744461, dec=-69.4876344,
+        xcenter=0.0, ycenter=20.7, xwidth=2.5, ywidth=2.5, rot_angle=0.12,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
         color_map='Blues', color_bar=True, colorbar_label_y=1.17,
         contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
@@ -498,7 +497,7 @@ if file_name == 'J0513' or file_name == 'J0513_flatsfh':
     levels = np.linspace(1.0e7, 1.5e8, 10) / 1.0e6 * (np.pi/180.0)**2
     get_plot_polar(25.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
         ra_dist=ra_birth_1, dec_dist=dec_birth_1, ra_dist_2=ra_birth_2, dec_dist_2=dec_birth_2,
-        dist_bins=70, dist2_bins=38, sfh_bins=30, sfh_levels=levels, ra=78.36775, dec=-65.7885278,
+        dist_bins=70, dist2_bins=40, sfh_bins=30, sfh_levels=levels, ra=78.36775, dec=-65.7885278,
         # xcenter=0.0, ycenter=24.2, xwidth=0.9, ywidth=0.9, rot_angle=0.205,
         xcenter=0.0, ycenter=23.7, xwidth=2.5, ywidth=1.9, rot_angle=0.205,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,

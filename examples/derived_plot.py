@@ -101,20 +101,26 @@ print(derived.shape)
 
 
 # Create plot
-fig, ax = plt.subplots(5, 1, figsize=(4,12))
+fig, ax = plt.subplots(5, 1, figsize=(4,10))
 
 
-gs = gridspec.GridSpec(5, 1, height_ratios=[1, 1, 1 ,1, 1])
+gs = gridspec.GridSpec(6, 1, height_ratios=[10, 10, 10 ,0.001, 10, 10])
 ax0 = plt.subplot(gs[0])
 ax1 = plt.subplot(gs[1])
 ax2 = plt.subplot(gs[2])
-ax3 = plt.subplot(gs[3])
-ax4 = plt.subplot(gs[4])
+ax3 = plt.subplot(gs[4])
+ax4 = plt.subplot(gs[5])
 
-gs2 = gridspec.GridSpec(5, 2,
-                        height_ratios=[1, 1, 1 ,1, 1],
-                        width_ratios=[99, 0.1])
-#ax3 = plt.subplot(gs2[6])
+plt.subplots_adjust(left=0.17, right=0.95, bottom=0.05, top=0.98, hspace=0.5)
+
+# gs2 = gridspec.GridSpec(5, 2,
+#                         height_ratios=[1, 1, 1 ,1, 1],
+#                         width_ratios=[3, 99])
+# ax0 = plt.subplot(gs2[1])
+# ax1 = plt.subplot(gs2[3])
+# ax2 = plt.subplot(gs2[5])
+# ax3 = plt.subplot(gs2[7])
+# ax4 = plt.subplot(gs2[9])
 
 
 # Panel 1: P_orb vs ecc
@@ -127,7 +133,7 @@ ax0.set_ylabel(r"$e$")
 
 # Panel 2: M_2 vs v_sys
 xlim = [0.0, 30.0]
-ylim = [0.0, 90.0]
+ylim = [0.0, 120.0]
 hist2d(derived.T[1], derived.T[4], ax=ax1, xlim=xlim, ylim=ylim)
 ax1.set_xlabel(r"M$_2$ ($M_{\odot}$)")
 ax1.set_ylabel(r"v$_{\rm sys}$ (km/s)")
@@ -172,5 +178,5 @@ ax4.set_xlabel(r"log L$_{\rm x}$ (erg/s)")
 ax4.set_ylabel("log N")
 ax4.set_yticklabels([])
 
-plt.tight_layout()
+# plt.tight_layout()
 plt.savefig("../figures/HMXB_derived.pdf")

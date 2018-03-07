@@ -37,35 +37,36 @@ chains[:,2] = np.log10(np.exp(chains[:,2]))
 chains[:,-1] = np.exp(chains[:,-1])
 
 
+
+
 truths = None
-if file_name == 'mock_1':
+if 'mock_1' in file_name:
     truths = [11.77, 8.07, np.log10(4850.81), 0.83, 153.04, 2.05, 2.33, 34.74]
     n_var = 8
-    plt_range = ([4,18], [5,11], [1,4], [0,1], [0,650], [0,np.pi], [0,np.pi], [0,70])
-elif file_name == 'mock_2':
-    truths = [12.856, 7.787, np.log10(5.19), 0.5434, 384.64, 2.588, 0.978, 83.2554, -69.9390, 25.71]
+    plt_range = ([4,18], [5,11], [1,5], [0,1], [0,650], [0,np.pi], [0,np.pi], [0,70])
+elif 'mock_2' in file_name:
+    truths = [14.113, 5.094, np.log10(45.12), 0.624, 141.12, 1.6982, 1.6266, 83.2554, -69.939, 21.89]
     n_var = 10
-    plt_range = ([4,24], [2.5,15], [1,4], [0,1], [0,650], [np.pi/4.,np.pi], [0,np.pi], [81,85], [-71,-69], [0,75])
-elif file_name == 'mock_3':
-    truths = [11.01, 7.42, np.log10(744.19), 0.20, 167.69, 1.79, 2.08, 83.2559, -69.9377, 36.59]
+    plt_range = ([4,24], [2.5,15], [1,5], [0,1], [0,650], [np.pi/4.,np.pi], [0,np.pi], [81,85], [-71,-69], [0,75])
+elif 'mock_3' in file_name:
+    truths = [11.01, 7.42, np.log10(744.19), 0.50, 167.69, 1.79, 2.08, 83.5744461, -69.4876344, 36.59]
     n_var = 10
-    plt_range = ([10,14], [6,9], [1,4], [0,1], [0,650], [0.0,np.pi], [0,np.pi], [80,85], [-71.0,-69.5], [0,75])
+    plt_range = ([8,14], [6,9], [1,4.5], [0,1], [0,600], [0.0,np.pi], [0,np.pi], [81,86], [-70.4,-68.5], [0,60])
 elif file_name == 'HMXB':
     n_var = 8
     plt_range = ([4,40], [2.5,20], [1,4.9], [0,1.05], [0,650], [0.0,np.pi], [0,np.pi], [0,55])
 elif file_name == 'LMC_HMXB':
     n_var = 10
-    plt_range = ([4,40], [2.5,20], [1,4], [0,1], [0,650], [0.0,np.pi], [0,np.pi], [69,89], [-73,-65], [0,55])
-elif file_name == 'J0513' or file_name == 'J0513_PT':
-    n_var = 10
-    plt_range = ([4,35], [2.5,20], [1,4], [0,1], [0,650], [0.0,np.pi], [0,np.pi], [77.5,79], [-66.5,-65.4], [0,55])
-elif file_name == 'J0513_flatsfh' or file_name == 'J0513_flatsfh_PT':
-    n_var = 10
-    plt_range = ([4,35], [2.5,20], [1,4], [0,1], [0,650], [0.0,np.pi], [0,np.pi], [77.5,79], [-66.5,-65.4], [0,55])
-elif file_name == 'J0513_nosfh' or file_name == 'J0513_nosfh_PT':
+    plt_range = ([4,45], [2.5,22], [1,5], [0,1], [0,650], [0.0,np.pi], [0,np.pi], [69,89], [-73,-65], [0,55])
+elif 'J0513_nosfh' in file_name:
     n_var = 8
-    plt_range = ([4,35], [2.5,20], [1,4], [0,1], [0,650], [0.0,np.pi], [0,np.pi], [0,55])
-
+    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [0,55])
+elif 'J0513_flatsfh' in file_name:
+    n_var = 10
+    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [77.5,79], [-66.5,-65.4], [0,55])
+elif 'J0513' in file_name:
+    n_var = 10
+    plt_range = ([4,30], [2.5,20], [1,4.5], [0,1], [0,500], [0.0,np.pi], [0,np.pi], [75,81], [-66.5,-65.0], [0,55])
 
 
 
@@ -105,7 +106,7 @@ for i in range(n_var):
         ax[i,0].set_ylabel(labels[i])
     ax[i,0].yaxis.labelpad=5
 
-if file_name == 'mock_1':
+if 'mock_1' in file_name:
     gs = gridspec.GridSpec(2, 3,
                            width_ratios=[3,2,2],
                            height_ratios=[2,5]
@@ -141,7 +142,7 @@ if file_name == 'mock_1':
     ax2.set_xlabel(r"$e$")
 
 
-if file_name == 'mock_2':
+if 'mock_2' in file_name:
     gs = gridspec.GridSpec(3, 2,
                            width_ratios=[2,2],
                            height_ratios=[1,28,40]
@@ -182,7 +183,7 @@ if file_name == 'LMC_HMXB':
 
 
 
-if file_name == 'mock_3':
+if 'mock_3' in file_name:
     gs = gridspec.GridSpec(4, 5,
                            width_ratios=[5,2,2,2,2],
                            height_ratios=[17,1,20,40]
@@ -199,8 +200,8 @@ if file_name == 'mock_3':
 
     # Observable 1 - Companion mass
     ax1 = plt.subplot(gs[1])
-    tmp_x = np.linspace(6, 9.0, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=6.92, scale=0.25)
+    tmp_x = np.linspace(6.5, 9.0, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=7.84, scale=0.25)
     ax1.plot(tmp_x, tmp_y, color='r')
 
     ax1.hist(derived.T[1], histtype='step', color='k', normed=True, bins=30, zorder=10)
@@ -209,8 +210,8 @@ if file_name == 'mock_3':
 
     # Observable 2 - Eccentricity
     ax2 = plt.subplot(gs[2])
-    tmp_x = np.linspace(0.4, 0.8, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=0.57, scale=0.05)
+    tmp_x = np.linspace(0.2, 0.6, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=0.47, scale=0.05)
     ax2.plot(tmp_x, tmp_y, color='r')
     # ax2.axvline(0.3, color='r')
 
@@ -220,8 +221,8 @@ if file_name == 'mock_3':
 
     # Observable 3 - Orbital Period
     ax3 = plt.subplot(gs[3])
-    tmp_x = np.linspace(42, 52, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=48.3, scale=1.0)
+    tmp_x = np.linspace(10, 18, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=14.11, scale=1.0)
     ax3.plot(tmp_x, tmp_y, color='r')
 
     P_orb = A_to_P(derived.T[0], derived.T[1], derived.T[2])
@@ -231,8 +232,8 @@ if file_name == 'mock_3':
 
     # Observable 4 - X-ray Luminosity
     ax4 = plt.subplot(gs[4])
-    tmp_x = np.linspace(1.5e32, 1.15e33, 100)
-    tmp_y = stats.norm.pdf(tmp_x, loc=6.7e32, scale=1.0e32)
+    tmp_x = np.linspace(1.5e33, 2.4e33, 100)
+    tmp_y = stats.norm.pdf(tmp_x, loc=1.94e33, scale=1.0e32)
     ax4.plot(tmp_x, tmp_y, color='r')
 
     L_x = np.zeros(len(derived))
@@ -256,14 +257,16 @@ if file_name == 'mock_3':
 
     get_plot_polar(30.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs2[4],
         ra_dist=ra_birth, dec_dist=dec_birth,
-        dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=83.41691225, dec=-70.25999352,
-        xcenter=0.0, ycenter=20.0, xwidth=2.0, ywidth=2.0, rot_angle=0.135,
+        dist_bins=40, sfh_bins=30, sfh_levels=levels, ra=83.5744461, dec=-69.4876344,
+        xcenter=0.0, ycenter=20.7, xwidth=2.5, ywidth=2.5, rot_angle=0.135,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
         color_map='Blues', color_bar=True, colorbar_label_y=1.17,
         contour_alpha=1.0, title="Star Formation Rate at 30 Myr")
 
+if 'J0513_nosfh' in file_name:
+    pass
 
-if file_name == 'J0513' or file_name == 'J0513_flatsfh':
+elif 'J0513' in file_name:
 
     gs = gridspec.GridSpec(3, 2,
                            width_ratios=[20,18],
@@ -278,7 +281,7 @@ if file_name == 'J0513' or file_name == 'J0513_flatsfh':
     get_plot_polar(25.0, sfh_function=sf_history.lmc.get_SFH, fig_in=fig, gs=gs[3],
         ra_dist=ra_birth, dec_dist=dec_birth,
         dist_bins=50, sfh_bins=30, sfh_levels=levels, ra=78.36775, dec=-65.7885278,
-        xcenter=0.0, ycenter=24.2, xwidth=0.9, ywidth=0.9, rot_angle=0.205,
+        xcenter=0.0, ycenter=24.2, xwidth=1.4, ywidth=1.4, rot_angle=0.205,
         xlabel="Right Ascension", ylabel="Declination", xgrid_density=5, ygrid_density=5,
         color_map='Blues', color_bar=True, contour_alpha=1.0, title="Star Formation Rate at 25 Myr")
 

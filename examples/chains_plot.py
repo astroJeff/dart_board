@@ -38,9 +38,9 @@ truths = None
 if 'mock_1' in file_name:
     truths = [11.77, 8.07, np.log10(4850.81), 0.83, 153.04, 2.05, 2.33, 34.74]
 elif 'mock_2' in file_name:
-    truths = [12.856, 7.787, np.log10(5.19), 0.5434, 384.64, 2.588, 0.978, 83.2554, -69.9390, 25.71]
+    truths = [14.113, 5.094, np.log10(45.12), 0.624, 141.12, 1.6982, 1.6266, 83.2554, -69.939, 21.89]
 elif 'mock_3' in file_name:
-    truths = [11.01, 7.42, np.log10(744.19), 0.20, 167.69, 1.79, 2.08, 83.2559, -69.9377, 36.59]
+    truths = [11.01, 7.42, np.log10(744.19), 0.50, 167.69, 1.79, 2.08, 83.2559, -69.9377, 36.59]
 
 
 
@@ -48,13 +48,19 @@ elif 'mock_3' in file_name:
 # delay = 20000
 # ymax = 200000
 delay = 0
-ymax = 152000
-
+ymax = 150000
+thin = 100
+num_xticks = 7
 
 if len(sys.argv) > 2:
     delay = int(sys.argv[2])
 if len(sys.argv) > 3:
     ymax = int(sys.argv[3])
+if len(sys.argv) > 4:
+    thin = int(sys.argv[4])
+if len(sys.argv) > 5:
+    num_xticks = int(sys.argv[5])
 
 
-dart_board.plotting.plot_chains(chains, fileout=file_out, tracers=1, labels=var, delay=delay, ymax=ymax, truths=truths)
+dart_board.plotting.plot_chains(chains, fileout=file_out, tracers=1, labels=var, delay=delay,
+                                ymax=ymax, thin=thin, num_xticks=num_xticks, truths=truths)

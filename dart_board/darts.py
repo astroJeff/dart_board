@@ -12,6 +12,7 @@ import sys
 import numpy as np
 import emcee
 import copy
+from emcee.utils import MPIPool
 
 import time as tm # temporary for testing
 
@@ -544,6 +545,7 @@ class DartBoard():
                     # Calculate the posterior probability for x
                     lp = self.posterior_function(x, self)
 
+                print("Temp", i, "Walker", j, lp)
 
                 # Save model parameters to variables
                 ln_M1, ln_M2, ln_a, ecc = x[0:4]

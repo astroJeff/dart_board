@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, delay=0, ymax=200000, truths=None):
+def plot_chains(chain, fileout=None, tracers=0, labels=None, delay=0, ymax=200000, thin=100, num_xticks=7, truths=None):
 
     if chain.ndim < 3:
         print("You must include a multiple chains")
@@ -40,13 +40,13 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
 
         for j in range(n_chains):
 
-            xvals = (np.arange(length)*downsample - delay) / 1000
+            xvals = (np.arange(length)*thin - delay) / 1000
             ax[ix,iy].plot(xvals, chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True, zorder=zorder[j])
 
-        if ymax is None: ymax = (length*downsample-delay)
+        if ymax is None: ymax = (length*thin-delay)
 
         ax[ix,iy].set_xlim(-delay/1000, ymax/1000)
-        ax[ix,iy].set_xticks(np.linspace(0,ymax/1000,5))
+        ax[ix,iy].set_xticks(np.linspace(-delay/1000,ymax/1000,num_xticks))
         ax[ix,iy].set_xticklabels([])
 
 
@@ -59,8 +59,8 @@ def plot_chains(chain, fileout=None, tracers=0, downsample=100, labels=None, del
 
     # plt.tight_layout()
 
-    ax[-1,0].set_xticklabels(np.linspace(0,ymax/1000,5).astype('i8').astype('U'))
-    ax[-1,1].set_xticklabels(np.linspace(0,ymax/1000,5).astype('i8').astype('U'))
+    ax[-1,0].set_xticklabels(np.linspace(-delay/1000,ymax/1000,num_xticks).astype('i8').astype('U'))
+    ax[-1,1].set_xticklabels(np.linspace(-delay/1000,ymax/1000,num_xticks).astype('i8').astype('U'))
 
     ax[-1,0].set_xlabel(r'Steps ($\times$1000)')
     ax[-1,1].set_xlabel(r'Steps ($\times$1000)')
