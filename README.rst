@@ -22,13 +22,14 @@ For documentation, see `dart_board.readthedocs.io <http://dart-board.readthedocs
 **Issues**
 -------
 
-Please e-mail any questions about ``dart_board`` to andrews@physics.uoc.gr.
+If you find any problems with ``dart_board``, please _`let us know <https://github.com/astroJeff/dart_board/issues/new>`_.
+Or you can e-mail any questions about ``dart_board`` to andrews@physics.uoc.gr.
 
 
 **Citation**
 -------
 
-If you use dart_board in your research, please cite `our paper <http://cdsads.u-strasbg.fr/abs/2017arXiv171011030A>`_.
+If you use ``dart_board`` in your research, please cite `our paper <http://cdsads.u-strasbg.fr/abs/2017arXiv171011030A>`_.
 
 
 **License**
