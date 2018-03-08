@@ -1,5 +1,5 @@
 **dart_board**
-======================================
+==============
 
 .. image:: https://img.shields.io/badge/GitHub-astroJeff%2Fdart_board-blue.svg?style=flat
     :target: https://github.com/astroJeff/dart_board
@@ -16,7 +16,7 @@ dart_board is a statistical wrapper to rapid binary evolution codes. The default
 **Documentation**
 -------
 
-For documentation, see `dart_board.readthedocs.io <http://dart-board.readthedocs.io/>`_
+For documentation, see `dart_board.readthedocs.io <http://dart-board.readthedocs.io/>`_.
 
 
 **Issues**
