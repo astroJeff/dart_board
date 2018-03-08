@@ -16,7 +16,7 @@
 **Documentation**
 -------
 
-For documentation, see `dart_board.readthedocs.io <http://dart-board.readthedocs.io/>`_.
+For documentation, `read the docs <http://dart-board.readthedocs.io/>`_.
 
 
 **Issues**
