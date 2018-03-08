@@ -28,26 +28,13 @@ Please e-mail any questions about dart_board to andrews@physics.uoc.gr.
 **Citation**
 -------
 
-If you use dart_board for your research, please cite our code release paper::
-
-    @ARTICLE{ dart_board,
-       author = {{Andrews}, J.~J and {Zezas}, A. and {Fragos}, T.},
-        title = "{dart\_board: Binary Population Synthesis with Markov Chain Monte Carlo}",
-      journal = {ArXiv e-prints},
-    archivePrefix = "arXiv",
-       eprint = {1710.11030},
-         year = 2017,
-        month = oct,
-       adsurl = {http://adsabs.harvard.edu/abs/2017arXiv171011030A}
-    }
-
-
+If you use dart_board in your research, please cite `our paper <http://cdsads.u-strasbg.fr/abs/2017arXiv171011030A>`_.
 
 
 **License**
 -------
 
-Copyright 2017-2018 Jeff J. Andrews.
+Copyright (c) 2017-2018 Jeff J. Andrews.
 
-dart_board is free software made available under the MIT License. For details see
+dart_board is made freely available under the MIT License. For details see
 the LICENSE file.
