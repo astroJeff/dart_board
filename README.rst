@@ -11,7 +11,7 @@
       :target: http://arxiv.org/abs/1710.11030
 
 
-dart_board is a statistical wrapper to rapid binary evolution codes. The default prescriptions are BSE (Hurley, Tout, & Pols 2002) for binary evolution and emcee (Foreman-Mackey et al. 2013) for the MCMC sampling method. For a description of the code, see our ArXiv posting: http://adsabs.harvard.edu/abs/2017arXiv171011030A
+``dart_board`` is a statistical wrapper to rapid binary evolution codes. The default prescriptions are ``BSE`` (Hurley, Tout, & Pols 2002) for binary evolution and ``emcee`` (Foreman-Mackey et al. 2013) for the MCMC sampling method. For a description of the code, see our ArXiv posting: http://adsabs.harvard.edu/abs/2017arXiv171011030A
 
 **Documentation**
 -------
@@ -22,7 +22,7 @@ For documentation, see `dart_board.readthedocs.io <http://dart-board.readthedocs
 **Issues**
 -------
 
-Please e-mail any questions about dart_board to andrews@physics.uoc.gr.
+Please e-mail any questions about ``dart_board`` to andrews@physics.uoc.gr.
 
 
 **Citation**
