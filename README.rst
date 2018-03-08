@@ -23,7 +23,7 @@ For documentation, see `dart_board.readthedocs.io <http://dart-board.readthedocs
 -------
 
 If you find any problems with ``dart_board``, please `let us know <https://github.com/astroJeff/dart_board/issues/new>`_.
-Or you can e-mail any questions about ``dart_board`` to andrews@physics.uoc.gr.
+Or you can e-mail any questions to andrews@physics.uoc.gr.
 
 
 **Citation**
