@@ -30,15 +30,15 @@ Please e-mail any questions about dart_board to andrews@physics.uoc.gr.
 
 If you use dart_board for your research, please cite our code release paper::
 
-@ARTICLE{ dart_board,
-   author = {{Andrews}, J.~J and {Zezas}, A. and {Fragos}, T.},
-    title = "{dart\_board: Binary Population Synthesis with Markov Chain Monte Carlo}",
-  journal = {ArXiv e-prints},
-archivePrefix = "arXiv",
-   eprint = {1710.11030},
-     year = 2017,
-    month = oct,
-   adsurl = {http://adsabs.harvard.edu/abs/2017arXiv171011030A}
+    @ARTICLE{ dart_board,
+       author = {{Andrews}, J.~J and {Zezas}, A. and {Fragos}, T.},
+        title = "{dart\_board: Binary Population Synthesis with Markov Chain Monte Carlo}",
+      journal = {ArXiv e-prints},
+    archivePrefix = "arXiv",
+       eprint = {1710.11030},
+         year = 2017,
+        month = oct,
+       adsurl = {http://adsabs.harvard.edu/abs/2017arXiv171011030A}
 }
 
 
