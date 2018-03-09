@@ -184,7 +184,7 @@ def posterior_properties(x, output, dart):
 
     Args:
         x : tuple, set of model parameters
-        output : list, binary evolution output
+        output : ndarray, binary evolution output
         dart : DartBoard class, provides the necessary functions
 
     Returns:

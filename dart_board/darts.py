@@ -368,7 +368,7 @@ class DartBoard():
             print("Initializing large orbital separation solution...")
             x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
 
-        if a_set == 'low' or a_set == 'both': 
+        if a_set == 'low' or a_set == 'both':
             print("Initializing short orbital separation solution...")
             x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
 
@@ -843,7 +843,7 @@ class DartBoard():
 
                     # Save chains and derived
                     chains[i] = np.array([x_i])
-                    derived[i] = np.array([output])
+                    derived[i] = output
 
                     success[i] = True
 
