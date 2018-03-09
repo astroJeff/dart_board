@@ -99,9 +99,9 @@
 
 ###### Figures 20 & 21 ######
 
-# These figures are formed within the python notebook Channel ratios.ipynb
-# found in the directory dart_board/paper/notebook/
-# See this notebook for more details.
+# python3 J0513_evidence_plot.py
+
+
 
 
 
