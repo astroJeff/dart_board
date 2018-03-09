@@ -12,7 +12,10 @@
      &                         beta_in, xi_in, acc2_in, epsnov_in,
      &                         eddfac_in, gamma_in,
      &                         m1_out, m2_out, a_out, ecc_out,
-     &                         v_sys_out, mdot_out, t_SN1,
+     &                         v_sys_out, mdot1_out, mdot2_out,
+     &                         t_SN1, t_SN2, r1_out, r2_out,
+     &                         teff1_out, teff2_out,
+     &                         lum1_out, lum2_out,
      &                         k1_out, k2_out)
 ***
 *
@@ -46,13 +49,17 @@
       real*8 rad(2),lum(2),ospin(2)
       real*8 massc(2),radc(2),menv(2),renv(2)
       real*8 sep0,tb0,ecc0,aursun,yeardy,yearsc,tol
+      real*8 twopi,stef_boltz,Rsun
       PARAMETER(aursun=214.95d0,yeardy=365.25d0,yearsc=3.1557d+07)
       PARAMETER(tol=1.d-07)
       real*8 t1,t2,mx,mx2,tbx,eccx
       real*8 p_out
       real*8 mdot1, mdot2
       real*8, intent(out) :: m1_out, m2_out, a_out, ecc_out
-      real*8, intent(out) :: v_sys_out, mdot_out, t_SN1
+      real*8, intent(out) :: v_sys_out, mdot1_out, mdot2_out
+      real*8, intent(out) :: t_SN1, t_SN2
+      real*8, intent(out) :: r1_out, r2_out, teff1_out, teff2_out
+      real*8, intent(out) :: lum1_out, lum2_out
       real*8, intent(out) :: k1_out, k2_out
       logical out_flag
       CHARACTER*8 label(14)
@@ -150,6 +157,12 @@
 *      OPEN(11,file='binaries.out',status='unknown')
 *      OPEN(12,file='search.out',status='unknown')
 *
+* Some constants
+*
+          twopi = 2.d0*ACOS(-1.d0)
+          stef_boltz = 5.6704d-5
+          Rsun = 6.957d10
+*
       do i = 1,num_bin
 *
 * Read in parameters and set coefficients which depend on metallicity.
@@ -211,10 +224,15 @@
            a_out = bcm(jj,31)
            mdot1 = bcm(jj,14)
            mdot2 = bcm(jj,28)
+           teff1_out = 10**bcm(jj,7)
+           teff2_out = 10**bcm(jj,21)
+           r1_out = 10**bcm(jj,6)
+           r2_out = 10**bcm(jj,20)
 
            if(out_flag)then
              write(*,*) bcm(jj,1), m1_out, m2_out, k1_out, k2_out,
-     &                   ecc_out, a_out, p_out, mdot1, mdot2
+     &                   ecc_out, a_out, p_out, mdot1, mdot2,
+     &                   teff1_out, teff2_out, r1_out, r2_out
            endif
 
            if(jj.gt.2.and.bcm(jj,1).eq.0.0)then
@@ -236,12 +254,14 @@
          p_out = bcm(last,30)*365.25
          a_out = bcm(last,31)
 
-
-* Mass accretion rate out is the largest mdot of the two
-         mdot1 = bcm(last,14)
-         mdot2 = bcm(last,28)
-         mdot_out = mdot1
-         if(mdot2.gt.mdot1) mdot_out = mdot2
+         r1_out = 10**bcm(last,6)
+         r2_out = 10**bcm(last,20)
+         lum1_out = 10**bcm(last,5)
+         lum2_out = 10**bcm(last,19)
+         teff1_out = 10**bcm(last,7)
+         teff2_out = 10**bcm(last,21)
+         mdot1_out = bcm(last,14)
+         mdot2_out = bcm(last,28)
          v_sys_out = bcm(last,33)
 
 * To get t_SN1, we use the bpp array which stores values
@@ -250,9 +270,6 @@
          do while (bpp(jp,1).lt.tmax)
            kstar(1) = INT(bpp(jp,4))
            kstar(2) = INT(bpp(jp,5))
-
-*            write(*,*) bpp(jp,1), bpp(jp,4), bpp(jp,5)
-
 * First time the loop encounters a NS or BH, set t_SN1 and exit loop
            if(kstar(1).gt.12.or.kstar(2).gt.12)then
              t_SN1 = bpp(jp,1)
@@ -261,6 +278,22 @@
 
            jp = jp + 1
          enddo
+
+* To get t_SN2, we use the bpp array which stores values
+* When both stellar k-types are 13 or 14, SN2 occurs.
+         jp = 0
+         do while (bpp(jp,1).lt.tmax)
+           kstar(1) = INT(bpp(jp,4))
+           kstar(2) = INT(bpp(jp,5))
+* Second time the loop encounters a NS or BH, set t_SN1 and exit loop
+           if(kstar(1).gt.12.and.kstar(2).gt.12)then
+             t_SN2 = bpp(jp,1)
+             EXIT
+           endif
+
+           jp = jp + 1
+         enddo
+
 
 *         if(out_flag)then
 *            write(11,*) bcm(last,1), m1_out, m2_out, k1_out, k2_out,
