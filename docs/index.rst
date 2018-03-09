@@ -21,7 +21,8 @@ This documentation will provide a guide to using our code, but for details on th
   :target: https://github.com/astroJeff/dart_board/blob/master/LICENSE
 .. image:: http://img.shields.io/badge/arXiv-1710.11030-orange.svg?style=flat
       :target: http://arxiv.org/abs/1710.11030
-
+.. image:: https://zenodo.org/badge/86565955.svg
+  :target: https://zenodo.org/badge/latestdoi/86565955
 
 a basic example
 --------------------------------------
