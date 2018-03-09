@@ -364,8 +364,13 @@ class DartBoard():
         x_best_high = None
 
         # Iterate to find position for focusing walkers
-        if a_set == 'high' or a_set == 'both': x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
-        if a_set == 'low' or a_set == 'both': x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+        if a_set == 'high' or a_set == 'both':
+            print("Initializing large orbital separation solution...")
+            x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
+
+        if a_set == 'low' or a_set == 'both': 
+            print("Initializing short orbital separation solution...")
+            x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
 
         if x_best_low is None and x_best_high is None:
             print("No solutions were found. Exiting...")
@@ -374,9 +379,15 @@ class DartBoard():
             print("Proceeding with short orbital separation solution.")
             x_best = x_best_low
         else:
-            print("Proceeding with large orbital separation solution.")
-            x_best = x_best_high
+            lp_best_low, derived_low = self.posterior_function(x_best_low, self)
+            lp_best_high, derived_high = self.posterior_function(x_best_high, self)
 
+            if lp_best_low < lp_best_high:
+                print("Proceeding with large orbital separation solution.")
+                x_best = x_best_high
+            else:
+                print("Proceeding with short orbital separation solution.")
+                x_best = x_best_low
 
 
         # For parallel tempering algorithm
