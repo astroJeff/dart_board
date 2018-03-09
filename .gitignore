@@ -59,4 +59,8 @@ Makefile
 pyBSE/build/
 literature/
 docs/_*
-paper/scripts_old
+paper/docs/*.txt
+paper/docs/*.tex
+paper/docs/revised*
+paper/docs/submitted*
+paper/docs/*.bib
