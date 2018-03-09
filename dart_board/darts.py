@@ -379,8 +379,12 @@ class DartBoard():
             print("Proceeding with short orbital separation solution.")
             x_best = x_best_low
         else:
-            lp_best_low, derived_low = self.posterior_function(x_best_low, self)
-            lp_best_high, derived_high = self.posterior_function(x_best_high, self)
+            if self.ntemps == 1:
+                lp_best_low, derived_low = self.posterior_function(x_best_low, self)
+                lp_best_high, derived_high = self.posterior_function(x_best_high, self)
+            else:
+                lp_best_low = self.posterior_function(x_best_low, self)
+                lp_best_high = self.posterior_function(x_best_high, self)
 
             if lp_best_low < lp_best_high:
                 print("Proceeding with large orbital separation solution.")
@@ -795,7 +799,7 @@ class DartBoard():
 
             # Now, we want to zero the outputs
             chains = np.zeros((batch_size, 14))
-            derived = np.zeros((batch_size, 9))
+            derived = np.zeros((batch_size, 17))
             likelihood = np.zeros(batch_size, dtype=float)
             success = np.zeros(batch_size, dtype=bool)
 
@@ -840,6 +844,9 @@ class DartBoard():
                     x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
                             phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], \
                             t_b[i], z
+
+                    # Convert from numpy structured array to a regular ndarray
+                    output = np.column_stack(output[name] for name in output.dtype.names)[0]
 
                     # Save chains and derived
                     chains[i] = np.array([x_i])

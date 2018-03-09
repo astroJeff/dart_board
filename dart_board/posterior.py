@@ -77,7 +77,7 @@ def ln_posterior(x, dart):
 
         ll, output = ln_likelihood(x, dart)
 
-        return lp+ll, output
+        return lp+ll, np.array([output])
 
     else:
 
@@ -154,7 +154,6 @@ def ln_likelihood(x, dart):
                                 v_kick2, theta_kick2, phi_kick2,
                                 t_b, z, False, **dart.model_kwargs)
 
-
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type):
         if dart.ntemps is None:
@@ -166,6 +165,9 @@ def ln_likelihood(x, dart):
     # Check for kwargs arguments
     ll = 0
     if not dart.system_kwargs == {}: ll = posterior_properties(x_in, output, dart)
+
+    # Convert from numpy structured array to a regular ndarray
+    output = np.column_stack(output[name] for name in output.dtype.names)[0]
 
     if dart.ntemps is None:
         return ll, output
