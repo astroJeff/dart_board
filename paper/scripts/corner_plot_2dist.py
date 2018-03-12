@@ -312,14 +312,19 @@ if file_name == 'mock_1':
     derived_high = derived_high.reshape((n_chains*length, n_var))
     print(derived_high.shape)
 
+    # Get indices of derived data for plots
+    idx_M2 = 1
+    idx_e = 3
+
+
     # Observable 1 - Orbital period
     ax1 = plt.subplot(gs[1])
     tmp_x = np.linspace(6, 10.5, 100)
     tmp_y = stats.norm.pdf(tmp_x, loc=7.7, scale=0.5)
     ax1.plot(tmp_x, tmp_y, color='r')
 
-    ax1.hist(derived_low.T[1], histtype='step', color='C1', normed=True, bins=30, zorder=10)
-    ax1.hist(derived_high.T[1], histtype='step', color='C2', normed=True, bins=30, zorder=10)
+    ax1.hist(derived_low.T[idx_M2], histtype='step', color='C1', normed=True, bins=30, zorder=10)
+    ax1.hist(derived_high.T[idx_M2], histtype='step', color='C2', normed=True, bins=30, zorder=10)
     ax1.set_yticks([])
     ax1.set_xlabel(r"M$_2$ ($M_{\odot}$)")
 
@@ -329,8 +334,8 @@ if file_name == 'mock_1':
     tmp_y = stats.norm.pdf(tmp_x, loc=0.69, scale=0.05)
     ax2.plot(tmp_x, tmp_y, color='r')
 
-    ax2.hist(derived_low.T[3], histtype='step', color='C1', normed=True, bins=30, zorder=10)
-    ax2.hist(derived_high.T[3], histtype='step', color='C2', normed=True, bins=30, zorder=10)
+    ax2.hist(derived_low.T[idx_e], histtype='step', color='C1', normed=True, bins=30, zorder=10)
+    ax2.hist(derived_high.T[idx_e], histtype='step', color='C2', normed=True, bins=30, zorder=10)
     ax2.set_yticks([])
     ax2.set_xlabel(r"$e$")
 
@@ -401,6 +406,19 @@ if file_name == 'mock_3':
     derived_high = derived_high.reshape((n_chains*length, n_var))
     print(derived_high.shape)
 
+    # Get indices of derived data for plots
+    idx_M1 = 0
+    idx_M2 = 1
+    idx_a = 2
+    idx_e = 3
+    idx_mdot1 = 5
+    if n_var == 9:
+        idx_k1 = 7
+    elif n_var == 17:
+        idx_k1 = 15
+    else:
+        return
+
 
     # Observable 1 - Companion mass
     ax1 = plt.subplot(gs[1])
@@ -408,8 +426,8 @@ if file_name == 'mock_3':
     tmp_y = stats.norm.pdf(tmp_x, loc=7.84, scale=0.25)
     ax1.plot(tmp_x, tmp_y, color='r')
 
-    ax1.hist(derived_low.T[1], histtype='step', color='C1', normed=True, bins=30, zorder=10)
-    ax1.hist(derived_high.T[1], histtype='step', color='C2', normed=True, bins=30, zorder=10)
+    ax1.hist(derived_low.T[idx_M2], histtype='step', color='C1', normed=True, bins=30, zorder=10)
+    ax1.hist(derived_high.T[idx_M2], histtype='step', color='C2', normed=True, bins=30, zorder=10)
     ax1.set_yticks([])
     ax1.set_xlabel(r"M$_2$ ($M_{\odot}$)")
 
@@ -420,8 +438,8 @@ if file_name == 'mock_3':
     ax2.plot(tmp_x, tmp_y, color='r')
     # ax2.axvline(0.3, color='r')
 
-    ax2.hist(derived_low.T[3], histtype='step', color='C1', normed=True, bins=30, zorder=10)
-    ax2.hist(derived_high.T[3], histtype='step', color='C2', normed=True, bins=30, zorder=10)
+    ax2.hist(derived_low.T[idx_e], histtype='step', color='C1', normed=True, bins=30, zorder=10)
+    ax2.hist(derived_high.T[idx_e], histtype='step', color='C2', normed=True, bins=30, zorder=10)
     ax2.set_yticks([])
     ax2.set_xlabel(r"$e$")
 
@@ -431,9 +449,9 @@ if file_name == 'mock_3':
     tmp_y = stats.norm.pdf(tmp_x, loc=14.11, scale=1.0)
     ax3.plot(tmp_x, tmp_y, color='r')
 
-    P_orb = A_to_P(derived_low.T[0], derived_low.T[1], derived_low.T[2])
+    P_orb = A_to_P(derived_low.T[idx_M1], derived_low.T[idx_M2], derived_low.T[idx_a])
     ax3.hist(P_orb, histtype='step', color='C1', normed=True, bins=30, zorder=10)
-    P_orb = A_to_P(derived_high.T[0], derived_high.T[1], derived_high.T[2])
+    P_orb = A_to_P(derived_high.T[idx_M1], derived_high.T[idx_M2], derived_high.T[idx_a])
     ax3.hist(P_orb, histtype='step', color='C2', normed=True, bins=30, zorder=10)
     ax3.set_yticks([])
     ax3.set_xlabel(r"P$_{\rm orb}$ (days)")
@@ -446,11 +464,11 @@ if file_name == 'mock_3':
 
     L_x_low = np.zeros(len(derived_low))
     for k in range(len(L_x_low)):
-        L_x_low[k] = calculate_L_x(derived_low.T[0][k], derived_low.T[5][k], derived_low.T[7][k])
+        L_x_low[k] = calculate_L_x(derived_low.T[idx_M1][k], derived_low.T[idx_mdot1][k], derived_low.T[idx_k1][k])
     ax4.hist(L_x_low, histtype='step', color='C1', normed=True, bins=30, zorder=10)
     L_x_high = np.zeros(len(derived_high))
     for k in range(len(L_x_high)):
-        L_x_high[k] = calculate_L_x(derived_high.T[0][k], derived_high.T[5][k], derived_high.T[7][k])
+        L_x_high[k] = calculate_L_x(derived_high.T[idx_M1][k], derived_high.T[idx_mdot1][k], derived_high.T[idx_k1][k])
     ax4.hist(L_x_high, histtype='step', color='C2', normed=True, bins=30, zorder=10)
     ax4.set_yticks([])
     ax4.set_xlabel(r"L$_{\rm x}$ (erg/s)")

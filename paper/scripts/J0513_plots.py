@@ -96,6 +96,21 @@ chains_nosfh[:,2] = np.exp(chains_nosfh[:,2])
 chains_nosfh[:,7] = np.exp(chains_nosfh[:,7])
 
 
+
+
+# Get indices of derived data for plots
+idx_M1 = 0
+idx_M2 = 1
+idx_a = 2
+idx_e = 3
+idx_mdot1 = 5
+if n_var == 9:
+    idx_k1 = 7
+elif n_var == 17:
+    idx_k1 = 15
+else:
+    return
+
 # Create a corner plot to show the posterior distribution
 
 #fontProperties = {'family':'serif', 'serif':['Times New Roman'], 'weight':'normal', 'size':12}
@@ -212,34 +227,34 @@ ax[3].axvline(0.17, color='k', zorder=0.1)
 
 
 # Plot results from MCMC
-MCMC_Porb = posterior.A_to_P(MCMC_derived.T[0], MCMC_derived.T[1], MCMC_derived.T[2])
-ax[0].hist(MCMC_derived.T[0], range=plt_range[0], bins=20, normed=True,
+MCMC_Porb = posterior.A_to_P(MCMC_derived.T[idx_M1], MCMC_derived.T[idx_M2], MCMC_derived.T[idx_a])
+ax[0].hist(MCMC_derived.T[idx_M1], range=plt_range[0], bins=20, normed=True,
            color='k', alpha=0.3, label='Full Model', linewidth=2)
-ax[1].hist(MCMC_derived.T[1], range=plt_range[1], bins=20, normed=True, color='k', alpha=0.3, linewidth=2)
+ax[1].hist(MCMC_derived.T[idx_M2], range=plt_range[1], bins=20, normed=True, color='k', alpha=0.3, linewidth=2)
 ax[2].hist(MCMC_Porb, range=plt_range[2], bins=20, normed=True, color='k', alpha=0.3, linewidth=2)
-ax[3].hist(MCMC_derived.T[3], range=plt_range[3], bins=10, normed=True, color='k', alpha=0.3, linewidth=2)
+ax[3].hist(MCMC_derived.T[idx_e], range=plt_range[3], bins=10, normed=True, color='k', alpha=0.3, linewidth=2)
 sin_i = np.sin(forward_pop_synth.get_theta(len(MCMC_Porb)))
-m_f = (MCMC_derived.T[1] * sin_i)**3 / (MCMC_derived.T[0]+MCMC_derived.T[1])**2
+m_f = (MCMC_derived.T[idx_M2] * sin_i)**3 / (MCMC_derived.T[idx_M1]+MCMC_derived.T[idx_M2])**2
 #ax[4].hist(m_f, range=plt_range[4], bins=10, normed=True, histtype='step', color='C1')
 
-MCMC_Porb_flat = posterior.A_to_P(MCMC_derived_flat.T[0], MCMC_derived_flat.T[1], MCMC_derived_flat.T[2])
-ax[0].hist(MCMC_derived_flat.T[0], range=plt_range[0], bins=20, normed=True, histtype='step', color='C2', label='Flat SFH', linewidth=2)
-ax[1].hist(MCMC_derived_flat.T[1], range=plt_range[1], bins=20, normed=True, histtype='step', color='C2', linewidth=2)
+MCMC_Porb_flat = posterior.A_to_P(MCMC_derived_flat.T[idx_M1], MCMC_derived_flat.T[idx_M2], MCMC_derived_flat.T[idx_a])
+ax[0].hist(MCMC_derived_flat.T[idx_M1], range=plt_range[0], bins=20, normed=True, histtype='step', color='C2', label='Flat SFH', linewidth=2)
+ax[1].hist(MCMC_derived_flat.T[idx_M2], range=plt_range[1], bins=20, normed=True, histtype='step', color='C2', linewidth=2)
 ax[2].hist(MCMC_Porb_flat, range=plt_range[2], bins=20, normed=True, histtype='step', color='C2', linewidth=2)
-ax[3].hist(MCMC_derived_flat.T[3], range=plt_range[3], bins=10, normed=True, histtype='step', color='C2', linewidth=2)
+ax[3].hist(MCMC_derived_flat.T[idx_e], range=plt_range[3], bins=10, normed=True, histtype='step', color='C2', linewidth=2)
 sin_i = np.sin(forward_pop_synth.get_theta(len(MCMC_Porb_flat)))
-m_f = (MCMC_derived_flat.T[1] * sin_i)**3 / (MCMC_derived_flat.T[0]+MCMC_derived_flat.T[1])**2
+m_f = (MCMC_derived_flat.T[idx_M2] * sin_i)**3 / (MCMC_derived_flat.T[idx_M1]+MCMC_derived_flat.T[idx_M2])**2
 #ax[4].hist(m_f, range=plt_range[4], bins=10, normed=True, histtype='step', color='C2')
 
 
 
-MCMC_Porb_nosfh = posterior.A_to_P(MCMC_derived_nosfh.T[0], MCMC_derived_nosfh.T[1], MCMC_derived_nosfh.T[2])
-ax[0].hist(MCMC_derived_nosfh.T[0], range=plt_range[0], bins=20, normed=True, histtype='step', color='C4', label='No SFH', linestyle='dashed', zorder=10, linewidth=2)
-ax[1].hist(MCMC_derived_nosfh.T[1], range=plt_range[1], bins=20, normed=True, histtype='step', color='C4', linestyle='dashed', zorder=10, linewidth=2)
+MCMC_Porb_nosfh = posterior.A_to_P(MCMC_derived_nosfh.T[idx_M1], MCMC_derived_nosfh.T[idx_M2], MCMC_derived_nosfh.T[idx_a])
+ax[0].hist(MCMC_derived_nosfh.T[idx_M1], range=plt_range[0], bins=20, normed=True, histtype='step', color='C4', label='No SFH', linestyle='dashed', zorder=10, linewidth=2)
+ax[1].hist(MCMC_derived_nosfh.T[idx_M2], range=plt_range[1], bins=20, normed=True, histtype='step', color='C4', linestyle='dashed', zorder=10, linewidth=2)
 ax[2].hist(MCMC_Porb_nosfh, range=plt_range[2], bins=20, normed=True, histtype='step', color='C4', linestyle='dashed', zorder=10, linewidth=2)
-ax[3].hist(MCMC_derived_nosfh.T[3], range=plt_range[3], bins=10, normed=True, histtype='step', color='C4', linestyle='dashed', zorder=10, linewidth=2)
+ax[3].hist(MCMC_derived_nosfh.T[idx_e], range=plt_range[3], bins=10, normed=True, histtype='step', color='C4', linestyle='dashed', zorder=10, linewidth=2)
 sin_i = np.sin(forward_pop_synth.get_theta(len(MCMC_Porb_nosfh)))
-m_f = (MCMC_derived_nosfh.T[1] * sin_i)**3 / ((MCMC_derived_nosfh.T[0]+MCMC_derived_nosfh.T[1])**2)
+m_f = (MCMC_derived_nosfh.T[idx_M2] * sin_i)**3 / ((MCMC_derived_nosfh.T[idx_M1]+MCMC_derived_nosfh.T[idx_M2])**2)
 #ax[4].hist(m_f, range=plt_range[4], bins=10, normed=True, histtype='step', color='C3')
 
 

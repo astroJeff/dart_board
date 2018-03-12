@@ -40,13 +40,13 @@ def plot_chains(chain, fileout=None, tracers=0, labels=None, delay=0, ymax=20000
 
         for j in range(n_chains):
 
-            xvals = (np.arange(length)*thin - delay) / 1000
+            xvals = (np.arange(length)*thin - delay) / 1000.0
             ax[ix,iy].plot(xvals, chain[j,:,i], color=color[j], alpha=alpha[j], rasterized=True, zorder=zorder[j])
 
         if ymax is None: ymax = (length*thin-delay)
 
-        ax[ix,iy].set_xlim(-delay/1000, ymax/1000)
-        ax[ix,iy].set_xticks(np.linspace(-delay/1000,ymax/1000,num_xticks))
+        ax[ix,iy].set_xlim(-delay/1000.0, ymax/1000.0)
+        ax[ix,iy].set_xticks(np.linspace(-delay/1000.0,ymax/1000.0,num_xticks))
         ax[ix,iy].set_xticklabels([])
 
 
@@ -57,10 +57,11 @@ def plot_chains(chain, fileout=None, tracers=0, labels=None, delay=0, ymax=20000
 
         if truths is not None: ax[ix,iy].axhline(truths[i], color='C0', linestyle='dashed', linewidth=2.0, zorder=10)
 
+
     # plt.tight_layout()
 
-    ax[-1,0].set_xticklabels(np.linspace(-delay/1000,ymax/1000,num_xticks).astype('i8').astype('U'))
-    ax[-1,1].set_xticklabels(np.linspace(-delay/1000,ymax/1000,num_xticks).astype('i8').astype('U'))
+    ax[-1,0].set_xticklabels(np.linspace(-delay/1000.0,ymax/1000.0,num_xticks).astype('i8').astype('U'))
+    ax[-1,1].set_xticklabels(np.linspace(-delay/1000.0,ymax/1000.0,num_xticks).astype('i8').astype('U'))
 
     ax[-1,0].set_xlabel(r'Steps ($\times$1000)')
     ax[-1,1].set_xlabel(r'Steps ($\times$1000)')

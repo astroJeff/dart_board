@@ -121,13 +121,18 @@ if 'mock_1' in file_name:
     derived = derived.reshape((n_chains*length, n_var))
     print(derived.shape)
 
+
+    # Get indices of derived data for plots
+    idx_M2 = 1
+    idx_e = 3
+
     # Observable 1 - Orbital period
     ax1 = plt.subplot(gs[1])
     tmp_x = np.linspace(6, 10.5, 100)
     tmp_y = stats.norm.pdf(tmp_x, loc=7.7, scale=0.5)
     ax1.plot(tmp_x, tmp_y, color='r')
 
-    ax1.hist(derived.T[1], histtype='step', color='k', normed=True, bins=30, zorder=10)
+    ax1.hist(derived.T[idx_M2], histtype='step', color='k', normed=True, bins=30, zorder=10)
     ax1.set_yticks([])
     ax1.set_xlabel(r"M$_2$ ($M_{\odot}$)")
 
@@ -137,7 +142,7 @@ if 'mock_1' in file_name:
     tmp_y = stats.norm.pdf(tmp_x, loc=0.69, scale=0.05)
     ax2.plot(tmp_x, tmp_y, color='r')
 
-    ax2.hist(derived.T[3], histtype='step', color='k', normed=True, bins=30, zorder=10)
+    ax2.hist(derived.T[idx_e], histtype='step', color='k', normed=True, bins=30, zorder=10)
     ax2.set_yticks([])
     ax2.set_xlabel(r"$e$")
 
@@ -198,13 +203,27 @@ if 'mock_3' in file_name:
     print(derived.shape)
 
 
+    # Get indices of derived data for plots
+    idx_M1 = 0
+    idx_M2 = 1
+    idx_a = 2
+    idx_e = 3
+    idx_mdot1 = 5
+    if n_var == 9:
+        idx_k1 = 7
+    elif n_var == 17:
+        idx_k1 = 15
+    else:
+        return
+
+
     # Observable 1 - Companion mass
     ax1 = plt.subplot(gs[1])
     tmp_x = np.linspace(6.5, 9.0, 100)
     tmp_y = stats.norm.pdf(tmp_x, loc=7.84, scale=0.25)
     ax1.plot(tmp_x, tmp_y, color='r')
 
-    ax1.hist(derived.T[1], histtype='step', color='k', normed=True, bins=30, zorder=10)
+    ax1.hist(derived.T[idx_M2], histtype='step', color='k', normed=True, bins=30, zorder=10)
     ax1.set_yticks([])
     ax1.set_xlabel(r"M$_2$ ($M_{\odot}$)")
 
@@ -215,7 +234,7 @@ if 'mock_3' in file_name:
     ax2.plot(tmp_x, tmp_y, color='r')
     # ax2.axvline(0.3, color='r')
 
-    ax2.hist(derived.T[3], histtype='step', color='k', normed=True, bins=30, zorder=10)
+    ax2.hist(derived.T[idx_e], histtype='step', color='k', normed=True, bins=30, zorder=10)
     ax2.set_yticks([])
     ax2.set_xlabel(r"$e$")
 
@@ -225,7 +244,7 @@ if 'mock_3' in file_name:
     tmp_y = stats.norm.pdf(tmp_x, loc=14.11, scale=1.0)
     ax3.plot(tmp_x, tmp_y, color='r')
 
-    P_orb = A_to_P(derived.T[0], derived.T[1], derived.T[2])
+    P_orb = A_to_P(derived.T[idx_M1], derived.T[idx_M2], derived.T[idx_a])
     ax3.hist(P_orb, histtype='step', color='k', normed=True, bins=30, zorder=10)
     ax3.set_yticks([])
     ax3.set_xlabel(r"P$_{\rm orb}$ (days)")
@@ -238,7 +257,7 @@ if 'mock_3' in file_name:
 
     L_x = np.zeros(len(derived))
     for k in range(len(L_x)):
-        L_x[k] = calculate_L_x(derived.T[0][k], derived.T[5][k], derived.T[7][k])
+        L_x[k] = calculate_L_x(derived.T[idx_M1][k], derived.T[idx_mdot1][k], derived.T[idx_k1][k])
     ax4.hist(L_x, histtype='step', color='k', normed=True, bins=30, zorder=10)
     ax4.set_yticks([])
     ax4.set_xlabel(r"L$_{\rm x}$ (erg/s)")

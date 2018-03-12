@@ -101,10 +101,19 @@ derived = derived.reshape((n_chains*length, n_var))
 print(derived.shape)
 
 
+# Get indices of derived data for plots
+idx_v_sys = 4
+if n_var == 9:
+    idx_SN1 = 6
+elif n_var == 17:
+    idx_SN1 = 7
+else:
+    return
+
 
 # Calculate travel distances
-t_flight = chains.T[9] - derived.T[6]
-theta = (t_flight*1.0e6*c.yr_to_sec) * derived.T[4]/c.dist_LMC * get_theta(len(derived.T[0]))
+t_flight = chains.T[9] - derived.T[idx_SN1]
+theta = (t_flight*1.0e6*c.yr_to_sec) * derived.T[idx_v_sys]/c.dist_LMC * get_theta(len(derived.T[0]))
 phi = get_phi(len(derived.T[0]))
 
 # Calculate new positions

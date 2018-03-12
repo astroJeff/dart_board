@@ -10,7 +10,7 @@ from matplotlib import font_manager
 from dart_board import posterior
 
 
-# Fraction of data to ignore 
+# Fraction of data to ignore
 frac = 0.99
 
 
@@ -18,7 +18,7 @@ frac = 0.99
 chains = np.load("../data/HMXB_chain.npy")
 if chains.ndim == 4: chains = chains[0]
 n_chains, length, n_var = chains.shape
-chains = chains[:,int(length*frac):,:]  
+chains = chains[:,int(length*frac):,:]
 n_chains, length, n_var = chains.shape
 chains = chains.reshape((n_chains*length, n_var))
 print(chains.shape)
@@ -27,14 +27,27 @@ print(chains.shape)
 
 # Load derived
 MCMC_derived = np.load("../data/HMXB_derived.npy")
-if MCMC_derived.ndim == 4: MCMC_derived = MCMC_derived[0] 
+if MCMC_derived.ndim == 4: MCMC_derived = MCMC_derived[0]
 n_chains, length, n_var = MCMC_derived.shape
-MCMC_derived = MCMC_derived[:,int(length*frac):,:] 
+MCMC_derived = MCMC_derived[:,int(length*frac):,:]
 n_chains, length, n_var = MCMC_derived.shape
 MCMC_derived = MCMC_derived.reshape((n_chains*length, n_var))
 
-print(MCMC_derived.shape) 
+print(MCMC_derived.shape)
 
+
+# Get indices of derived data for plots
+idx_M1 = 0
+idx_M2 = 1
+idx_a = 2
+idx_e = 3
+idx_mdot1 = 5
+if n_var == 9:
+    idx_k1 = 7
+elif n_var == 17:
+    idx_k1 = 15
+else:
+    return
 
 
 
@@ -69,13 +82,13 @@ plt_range = ([0,40], [0,30], [1,4], [0.0,1], [0,750], [0.0,np.pi], [0.0,np.pi], 
 
 # Load traditional population synthesis results
 trad_x_i = np.load("../data/HMXB_trad_chain.npy")
-length, ndim = trad_x_i.shape 
+length, ndim = trad_x_i.shape
 
 trad_likelihood = np.load("../data/HMXB_trad_lnprobability.npy")
 trad_derived = np.load("../data/HMXB_trad_derived.npy")
 
 length, ndim = trad_x_i.shape
-trad_x_i = trad_x_i[int(length*frac):,:] 
+trad_x_i = trad_x_i[int(length*frac):,:]
 trad_likelihood = trad_likelihood[int(length*frac):]
 trad_derived = trad_derived[int(length*frac):,:]
 
@@ -131,22 +144,22 @@ labels = [r"$M_{\rm 1}\ (M_{\odot})$",
 
 from dart_board import posterior
 from scipy import stats
-trad_Porb = posterior.A_to_P(trad_derived.T[0], trad_derived.T[1], trad_derived.T[2])
+trad_Porb = posterior.A_to_P(trad_derived.T[idx_M1], trad_derived.T[idx_M2], trad_derived.T[idx_a])
 
 plt_range = ([1.0,2.5], [0.0,60.0], [0.0,500.0])
 
 # ax[0].hist(trad_derived.T[0], range=plt_range[0], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3, label='Traditional')
 # ax[1].hist(trad_derived.T[1], range=plt_range[1], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
 # ax[2].hist(trad_Porb, range=plt_range[2], bins=20, normed=True, weights=trad_likelihood, color='C0', alpha=0.3)
-ax[0].hist(trad_derived.T[0], range=plt_range[0], bins=40, normed=True, histtype='step', color='C0', label='Traditional')
-ax[1].hist(trad_derived.T[1], range=plt_range[1], bins=40, normed=True, histtype='step', color='C0')
+ax[0].hist(trad_derived.T[idx_M1], range=plt_range[0], bins=40, normed=True, histtype='step', color='C0', label='Traditional')
+ax[1].hist(trad_derived.T[idx_M2], range=plt_range[1], bins=40, normed=True, histtype='step', color='C0')
 ax[2].hist(trad_Porb, range=plt_range[2], bins=40, normed=True, histtype='step', color='C0')
 
 
 # Plot results from MCMC
-MCMC_Porb = posterior.A_to_P(MCMC_derived.T[0], MCMC_derived.T[1], MCMC_derived.T[2])
-ax[0].hist(MCMC_derived.T[0], range=plt_range[0], bins=40, normed=True, color='k', label='MCMC', alpha=0.3)
-ax[1].hist(MCMC_derived.T[1], range=plt_range[1], bins=40, normed=True, color='k', alpha=0.3)
+MCMC_Porb = posterior.A_to_P(MCMC_derived.T[idx_M1], MCMC_derived.T[idx_M2], MCMC_derived.T[idx_a])
+ax[0].hist(MCMC_derived.T[idx_M1], range=plt_range[0], bins=40, normed=True, color='k', label='MCMC', alpha=0.3)
+ax[1].hist(MCMC_derived.T[idx_M2], range=plt_range[1], bins=40, normed=True, color='k', alpha=0.3)
 ax[2].hist(MCMC_Porb, range=plt_range[2], bins=40, normed=True, color='k', alpha=0.3)
 
 

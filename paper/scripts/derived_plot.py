@@ -97,6 +97,19 @@ derived = derived.reshape((n_chains*length, n_var))
 print(derived.shape)
 
 
+# Get indices of derived data for plots
+idx_M1 = 0
+idx_M2 = 1
+idx_a = 2
+idx_e = 3
+idx_v_sys = 4
+idx_mdot1 = 5
+if n_var == 9:
+    idx_k1 = 7
+elif n_var == 17:
+    idx_k1 = 15
+else:
+    return
 
 
 
@@ -124,7 +137,7 @@ plt.subplots_adjust(left=0.17, right=0.95, bottom=0.05, top=0.98, hspace=0.5)
 
 
 # Panel 1: P_orb vs ecc
-P_orb = A_to_P(derived.T[0], derived.T[1], derived.T[2])
+P_orb = A_to_P(derived.T[idx_M1], derived.T[idx_M2], derived.T[idx_a])
 xlim = [0.0, 100.0]
 ylim = [-0.05, 1.05]
 hist2d(P_orb, derived.T[3], ax=ax0, xlim=xlim, ylim=ylim)
@@ -134,13 +147,13 @@ ax0.set_ylabel(r"$e$")
 # Panel 2: M_2 vs v_sys
 xlim = [0.0, 30.0]
 ylim = [0.0, 120.0]
-hist2d(derived.T[1], derived.T[4], ax=ax1, xlim=xlim, ylim=ylim)
+hist2d(derived.T[idx_M2], derived.T[idx_v_sys], ax=ax1, xlim=xlim, ylim=ylim)
 ax1.set_xlabel(r"M$_2$ ($M_{\odot}$)")
 ax1.set_ylabel(r"v$_{\rm sys}$ (km/s)")
 
 # Panel 3: t_travel vs. theta
 t_flight = chains.T[7] - derived.T[6]
-theta = (t_flight*1.0e6*c.yr_to_sec) * derived.T[4]/c.dist_LMC * np.sin(get_theta(len(derived.T[0]))) * 180.0*60.0/np.pi
+theta = (t_flight*1.0e6*c.yr_to_sec) * derived.T[idx_v_sys]/c.dist_LMC * np.sin(get_theta(len(derived.T[idx_M1]))) * 180.0*60.0/np.pi
 #hist2d(t_flight, theta, ax=ax2, xlim=[0, 6], ylim=[0,10])
 #ax2.set_yticks([0, 5, 10])
 #ax2.set_xlabel(r"$t_{\rm travel}$ (Myr)")
@@ -172,7 +185,7 @@ ax_twin.set_xlabel('Separation (pc)')
 # Panel 4: L_x histogram
 L_x = np.zeros(len(derived.T[0]))
 for k in range(len(L_x)):
-    L_x[k] = calculate_L_x(derived.T[0][k], derived.T[5][k], derived.T[7][k])
+    L_x[k] = calculate_L_x(derived.T[idx_M1][k], derived.T[idx_mdot1][k], derived.T[idx_k1][k])
 ax4.hist(np.log10(L_x), histtype='step', color='k', bins=30, normed=True, range=(30, 40), log=True)
 ax4.set_xlabel(r"log L$_{\rm x}$ (erg/s)")
 ax4.set_ylabel("log N")
