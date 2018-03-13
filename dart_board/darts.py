@@ -345,12 +345,13 @@ class DartBoard():
         return x_best
 
 
-    def aim_darts(self, N_iterations=10000, a_set='both'):
+    def aim_darts(self, starting_point=None, N_iterations=10000, a_set='both'):
         """
         Create a ball around a viable region of parameter space. The initial
         walker positions are saved as the ndarray self.p0.
 
         Args:
+            starting_point : tuple, avoid initialization if starting point provided
             N_iterations : int (default: 10000), the number of initial darts
                 to throw to search in parameter space.
         """
@@ -360,38 +361,45 @@ class DartBoard():
         # Set walkers
         print("Setting walkers...")
 
-        x_best_low = None
-        x_best_high = None
 
-        # Iterate to find position for focusing walkers
-        if a_set == 'high' or a_set == 'both':
-            print("Initializing large orbital separation solution...")
-            x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
+        if starting_point is None:
 
-        if a_set == 'low' or a_set == 'both':
-            print("Initializing short orbital separation solution...")
-            x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+            x_best_low = None
+            x_best_high = None
 
-        if x_best_low is None and x_best_high is None:
-            print("No solutions were found. Exiting...")
-            exit()
-        elif x_best_high is None:
-            print("Proceeding with short orbital separation solution.")
-            x_best = x_best_low
-        else:
-            if self.ntemps == 1:
-                lp_best_low, derived_low = self.posterior_function(x_best_low, self)
-                lp_best_high, derived_high = self.posterior_function(x_best_high, self)
-            else:
-                lp_best_low = self.posterior_function(x_best_low, self)
-                lp_best_high = self.posterior_function(x_best_high, self)
+            # Iterate to find position for focusing walkers
+            if a_set == 'high' or a_set == 'both':
+                print("Initializing large orbital separation solution...")
+                x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
 
-            if lp_best_low < lp_best_high:
-                print("Proceeding with large orbital separation solution.")
-                x_best = x_best_high
-            else:
+            if a_set == 'low' or a_set == 'both':
+                print("Initializing short orbital separation solution...")
+                x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+
+            if x_best_low is None and x_best_high is None:
+                print("No solutions were found. Exiting...")
+                exit()
+            elif x_best_high is None:
                 print("Proceeding with short orbital separation solution.")
                 x_best = x_best_low
+            else:
+                if self.ntemps == 1:
+                    lp_best_low, derived_low = self.posterior_function(x_best_low, self)
+                    lp_best_high, derived_high = self.posterior_function(x_best_high, self)
+                else:
+                    lp_best_low = self.posterior_function(x_best_low, self)
+                    lp_best_high = self.posterior_function(x_best_high, self)
+
+                if lp_best_low < lp_best_high:
+                    print("Proceeding with large orbital separation solution.")
+                    x_best = x_best_high
+                else:
+                    print("Proceeding with short orbital separation solution.")
+                    x_best = x_best_low
+
+        else:
+            # Use provided starting point
+            x_best = starting_point
 
 
         # For parallel tempering algorithm
@@ -435,16 +443,25 @@ class DartBoard():
 
             lp = lp_best-10.0
 
+            counter = 0
+            scale = 0.01
             while lp < lp_best - 5.0:
 
 
                 # Create x_new which holds new set of model parameters
                 x = []
                 for x_i in x_best:
-                    x += (x_i*np.random.normal(loc=1.0, scale=0.01, size=1)[0], )
+                    x += (x_i*np.random.normal(loc=1.0, scale=scale, size=1)[0], )
 
                 # Calculate the posterior probability for x
                 lp, derived = self.posterior_function(x, self)
+
+                counter += 1
+
+                # If scale is too large, decrease size of N-ball
+                if counter > 100:
+                    scale *= 0.1
+                    counter = 0
 
 
             # Save model parameters to variables

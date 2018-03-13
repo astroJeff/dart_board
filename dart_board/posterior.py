@@ -269,6 +269,11 @@ def posterior_properties(x, output, dart):
         if key == "ecc_max":
             if output['ecc'] > value: return -np.inf
 
+        # Age of the compact object, based on e.g., modeling the SN remnant
+        # as in e.g., Circ X-1
+        if key == 'NS_age_max':
+            if t_b - output['t_SN1'] > value: return -np.inf
+
 
     # Add log probabilities if position is provided
     if dart.ra_obs is not None and dart.dec_obs is not None:
