@@ -417,7 +417,7 @@ if file_name == 'mock_3':
     elif n_var == 17:
         idx_k1 = 15
     else:
-        return
+        sys.exit()
 
 
     # Observable 1 - Companion mass
