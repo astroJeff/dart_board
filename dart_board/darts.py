@@ -371,6 +371,7 @@ class DartBoard():
             if a_set == 'high' or a_set == 'both':
                 print("Initializing large orbital separation solution...")
                 x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
+                print("High best:", x_best_high)
 
             if a_set == 'low' or a_set == 'both':
                 print("Initializing short orbital separation solution...")
@@ -382,6 +383,9 @@ class DartBoard():
             elif x_best_high is None:
                 print("Proceeding with short orbital separation solution.")
                 x_best = x_best_low
+            elif x_best_low is None:
+                print("Proceeding with large orbital separation solution.")
+                x_best = x_best_high
             else:
                 if self.ntemps == 1:
                     lp_best_low, derived_low = self.posterior_function(x_best_low, self)
