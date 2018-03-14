@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='dart_board',
-      version='1.0.0',
+      version='1.1.0',
       description='Binary Population Synthesis with MCMC',
       url='http://github.com/astroJeff/dart_board',
       author='Jeff J. Andrews',
