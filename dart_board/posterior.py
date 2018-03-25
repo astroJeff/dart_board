@@ -111,6 +111,8 @@ def ln_likelihood(x, dart):
     if dart.first_SN:
         v_kick1, theta_kick1, phi_kick1 = x[0:3]
         x = x[3:]
+    else:
+        v_kick1, theta_kick1, phi_kick1 = 0.0, 0.0, 0.0
     if dart.second_SN:
         v_kick2, theta_kick2, phi_kick2 = x[0:3]
         x = x[3:]
