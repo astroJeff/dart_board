@@ -16,7 +16,7 @@ C1 = 'C1'
 
 
 
-def evolve_binary(evolve, M1_in, M2_in, P_orb_in, t_min, t_max, metallicity=0.02, verbose_output=False):
+def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max, metallicity=0.02, verbose_output=False):
 
 
     times = np.linspace(t_min, t_max, N_times)
@@ -43,7 +43,7 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, t_min, t_max, metallicity=0.02
 
     for time in times:
 
-        output = evolve(M1_in, M2_in, P_orb_in, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        output = evolve(M1_in, M2_in, P_orb_in, ecc, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                         time, metallicity, verbose_output, alpha1=5)
 
         R1_out = np.append(R1_out, output[9])
@@ -190,7 +190,6 @@ def plot_P_orb(ax, times, P_orb_out, t_max, sys_obs):
     for key, value in sys_obs.items():
         if key == 'P_orb': ax.axhline(value, color='k', linestyle='dashed')
 
-
     ax.set_xlim(np.min(times), t_max)
 
     ax.set_ylabel(r'P$_{\rm orb}$ (days)')
@@ -245,7 +244,7 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
 
 
     # k-type panels
-    ax_k_type_list = fig.add_axes([0.08, 0.77, 0.9, 0.1])
+    ax_k_type_list = fig.add_axes([0.08, 0.75, 0.9, 0.1])
     plot_k_type(ax[0], ax[1], ax_k_type_list, times, k1_out, k2_out)
 
     # Radius panel
@@ -280,11 +279,11 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
         plt.show()
 
 
-def evolve_and_plot(evolve, M1, M2, P_orb, t_max, t_min=0.1, file_out=None, sys_obs={}):
+def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1, file_out=None, sys_obs={}):
 
     # Evolve binary
     times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, \
-            Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out = evolve_binary(evolve, M1, M2, P_orb, t_min, t_max)
+            Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out = evolve_binary(evolve, M1, M2, P_orb, ecc, t_min, t_max)
 
     # Plot binary
     plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot2_out,
