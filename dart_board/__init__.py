@@ -5,8 +5,9 @@ from .darts import *
 from .priors import *
 from .posterior import *
 from .plotting import *
+from .plot_system_evolution import *
 
-__version__ = "0.0.1"
+__version__ = "1.1.0"
 
 # try:
 #     __DART_BOARD_SETUP__

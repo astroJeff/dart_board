@@ -244,11 +244,12 @@ def posterior_properties(x, output, dart):
 
     # Possible observables
     observables = ["M1", "M2", "M_tot", "P_orb", "a", "ecc", "L_x", "v_sys",
-                   "R1", "R2", "Teff1", "Teff2", "L1", "L2"]
+                   "R1", "R2", "Teff1", "Teff2", "L1", "L2",'Mdot1', 'Mdot2']
     model_vals = [output['M1'], output['M2'], output['M1']+output['M2'],
                   P_orb_out, output['a'], output['ecc'], L_x_out,
                   output['v_sys'], output['R1'], output['R2'], output['Teff1'],
-                  output['Teff2'], output['L1'], output['L2']]
+                  output['Teff2'], output['L1'], output['L2'], output['mdot1'],
+                  output['modt2'] ]
 
 
     # Add log probabilities for each observable

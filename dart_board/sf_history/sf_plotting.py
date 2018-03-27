@@ -420,6 +420,8 @@ def get_plot_polar(age, sfh_function=None, fig_in=None, ax=None, gs=None,
         if isinstance(ra, np.ndarray):
             coor_pol = tr.transform(np.array([ra, dec]).T)
             sf_plot = plt.scatter(coor_pol[:,0], coor_pol[:,1], color='r', s=25, marker=".", zorder=10)
+            # sf_plot = plt.scatter(coor_pol[:,0], coor_pol[:,1], color='r', s=80, zorder=10,
+            #                       facecolors='none', edgecolors='r', linewidth=2)
         else:
             coor_pol1, coor_pol2 = tr.transform(np.array([np.array([ra, ra]), np.array([dec, dec])]).T)
             sf_plot = plt.scatter(coor_pol1[0], coor_pol1[1], color='r', s=50, marker="*", zorder=10)
