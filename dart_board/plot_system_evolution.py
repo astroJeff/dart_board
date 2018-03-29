@@ -16,7 +16,9 @@ C1 = 'C1'
 
 
 
-def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max, metallicity=0.02, verbose_output=False):
+def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
+                  v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0),
+                  metallicity=0.02, verbose_output=False):
 
 
     times = np.linspace(t_min, t_max, N_times)
@@ -30,6 +32,7 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max, metallicity
     Teff1_out = np.array([])
     Teff2_out = np.array([])
 
+    Mdot1_out = np.array([])
     Mdot2_out = np.array([])
 
     P_orb_out = np.array([])
@@ -43,8 +46,10 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max, metallicity
 
     for time in times:
 
-        output = evolve(M1_in, M2_in, P_orb_in, ecc, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                        time, metallicity, verbose_output, alpha1=5)
+        output = evolve(M1_in, M2_in, P_orb_in, ecc,
+                        v1_kick[0], v1_kick[1], v1_kick[2],
+                        v2_kick[0], v2_kick[1], v2_kick[2],
+                        time, metallicity, verbose_output)
 
         R1_out = np.append(R1_out, output[9])
         R2_out = np.append(R2_out, output[10])
@@ -55,6 +60,7 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max, metallicity
         Teff1_out = np.append(Teff1_out, output[11])
         Teff2_out = np.append(Teff2_out, output[12])
 
+        Mdot1_out = np.append(Mdot1_out, output[5])
         Mdot2_out = np.append(Mdot2_out, output[6])
 
         P_orb_tmp = A_to_P(output[0], output[1], output[2])
@@ -68,7 +74,7 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max, metallicity
         L2_out = np.append(L2_out, output[14])
 
 
-    return times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot2_out, \
+    return times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot1_out, Mdot2_out, \
                 P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out
 
 
@@ -172,10 +178,11 @@ def plot_Teff(ax, times, Teff1_out, Teff2_out, sys_obs):
     ax.set_xlabel("Time (Myr)")
 
 
-def plot_Mdot(ax, times, Mdot2_out):
+def plot_Mdot(ax, times, Mdot1_out, Mdot2_out):
 
     # Mass accretion rate
-    ax.plot(times, np.log10(np.clip(Mdot2_out, 1.0e-16, None)), color='k')
+    ax.plot(times, np.log10(np.clip(Mdot1_out, 1.0e-16, None)), color=C0)
+    ax.plot(times, np.log10(np.clip(Mdot2_out, 1.0e-16, None)), color=C1)
     ax.set_ylabel(r'Mass Accretion Rate ($M_{\odot}$ yr$^{-1}$)')
 
     ax.set_ylim(-14, ax.get_ylim()[1])
@@ -228,7 +235,7 @@ def plot_HR_diagram(ax, L1_out, L2_out, Teff1_out, Teff2_out):
 
 
 def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out,
-                     Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out,
+                     Mdot1_out, Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out,
                      title=None, file_out=None, sys_obs={}):
 
 
@@ -257,7 +264,7 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
     plot_Teff(ax[6], times, Teff1_out, Teff2_out, sys_obs)
 
     # Mass accretion rate panel
-    plot_Mdot(ax[3], times, Mdot2_out)
+    plot_Mdot(ax[3], times, Mdot1_out, Mdot2_out)
 
     # Orbital period panel
     plot_P_orb(ax[5], times[k2_out<15], P_orb_out[k2_out<15], np.max(times), sys_obs)
@@ -279,12 +286,17 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
         plt.show()
 
 
-def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1, file_out=None, sys_obs={}):
+def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1,
+                    v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
+                    file_out=None, sys_obs={}):
 
     # Evolve binary
     times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, \
-            Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out = evolve_binary(evolve, M1, M2, P_orb, ecc, t_min, t_max)
+            Mdot1_out, Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, \
+            k2_out = evolve_binary(evolve, M1, M2, P_orb, ecc, t_min, t_max,
+                                   v1_kick, v2_kick, metallicity)
+
 
     # Plot binary
-    plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot2_out,
+    plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot1_out, Mdot2_out,
                      P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out, file_out=file_out, sys_obs=sys_obs)

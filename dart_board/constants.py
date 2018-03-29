@@ -32,11 +32,9 @@ min_mass_M2 = 2.0   # in Msun
 max_mass_M2 = 150.0   # in Msun
 min_a = 1.0e1   # In Rsun
 max_a = 1.0e5   # In Rsun
-min_z = 0.001
-max_z = 0.03
 min_t = 0.0
 max_t = 1.0e4  # in Myr
-min_z = 1.0e-10
+min_z = 5.0e-5
 max_z = 0.03
 
 ra_max = None

@@ -861,17 +861,16 @@ class DartBoard():
                     if(np.isinf(likelihood[i])): continue
 
 
-
                     x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
                             phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], \
                             t_b[i], z
 
-                    # Convert from numpy structured array to a regular ndarray
-                    output = np.column_stack(output[name] for name in output.dtype.names)[0]
 
                     # Save chains and derived
                     chains[i] = np.array([x_i])
-                    derived[i] = output
+
+                    # Convert from numpy structured array to a regular ndarray
+                    derived[i] = np.column_stack(output[name] for name in output.dtype.names)[0]
 
                     success[i] = True
 
