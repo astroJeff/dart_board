@@ -200,6 +200,7 @@ def plot_P_orb(ax, times, P_orb_out, t_max, sys_obs):
     ax.set_xlim(np.min(times), t_max)
 
     ax.set_ylabel(r'P$_{\rm orb}$ (days)')
+    ax.set_yscale('log')
     # ax.set_xlabel("Time (Myr)")
 
 
