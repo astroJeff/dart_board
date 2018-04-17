@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 
-from dart_board.posterior import A_to_P
+from dart_board.posterior import A_to_P, P_to_A
 
 
 
@@ -13,6 +13,28 @@ N_times = 500
 # Colors
 C0 = 'C0'
 C1 = 'C1'
+
+
+
+def func_Roche_radius(M1, M2, A):
+    """ Get Roche lobe radius (Eggleton 1983)
+
+    Parameters
+    ----------
+    M1 : float
+        Primary mass (Msun)
+    M2 : float
+        Secondary mass (Msun)
+    A : float
+        Orbital separation (any unit)
+
+    Returns
+    -------
+    Roche radius : float
+        in units of input, A
+    """
+    q = M1 / M2
+    return A * 0.49*q**(2.0/3.0) / (0.6*q**(2.0/3.0) + np.log(1.0 + q**(1.0/3.0)))
 
 
 
@@ -112,11 +134,18 @@ def plot_k_type(ax_1, ax_2, ax_k_type_list, times, k1_out, k2_out):
 
 
 
-def plot_radius(ax, times, R1_out, R2_out, sys_obs):
+def plot_radius(ax, times, R1_out, R2_out, M1_out, M2_out, P_orb_out, ecc_out, sys_obs):
 
     # Radius
     ax.plot(times, R1_out, color=C0)
     ax.plot(times, R2_out, color=C1)
+
+    # Roche radii - at periastron
+    A_out = P_to_A(M1_out, M2_out, P_orb_out)
+    R1_Roche = func_Roche_radius(M1_out, M2_out, A_out*(1.0-ecc_out))
+    R2_Roche = func_Roche_radius(M2_out, M1_out, A_out*(1.0-ecc_out))
+    ax.plot(times, R1_Roche, color=C0, linestyle='--')
+    ax.plot(times, R2_Roche, color=C1, linestyle='--')
 
 
     for key, value in sys_obs.items():
@@ -256,7 +285,7 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
     plot_k_type(ax[0], ax[1], ax_k_type_list, times, k1_out, k2_out)
 
     # Radius panel
-    plot_radius(ax[2], times, R1_out, R2_out, sys_obs)
+    plot_radius(ax[2], times, R1_out, R2_out, M1_out, M2_out, P_orb_out, ecc_out, sys_obs)
 
     # Mass panel
     plot_mass(ax[4], times, M1_out, M2_out, sys_obs)
