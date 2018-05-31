@@ -64,3 +64,4 @@ paper/docs/*.tex
 paper/docs/revised*
 paper/docs/submitted*
 paper/docs/*.bib
+paper/notebooks

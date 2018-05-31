@@ -269,6 +269,9 @@ def posterior_properties(x, output, dart):
             if likelihood == 0.0: return -np.inf
             ll += np.log(likelihood)
 
+        if key == 'L_x_min':
+            if L_x_out < value: return -np.inf
+
         if key == "ecc_max":
             if output['ecc'] > value: return -np.inf
 
