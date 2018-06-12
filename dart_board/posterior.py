@@ -442,12 +442,23 @@ def check_output(output, binary_type):
         binary_type : bool, is the binary of the requested type?
     """
 
-    type_options = np.array(["BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS",
+    type_options = np.array(["BH", "NS",
+                             "BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS",
                              "BHNS", "WDWD", "ELMWD", "ELMWD_WD", "nondegenerate"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
         sys.exit(-1)
+
+    if binary_type == "BH":
+        if output['k1'] != 14: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+
+    if binary_type == "NS":
+        if output['k1'] != 13: return False
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
     if binary_type == "HMXB":
         if output['k1'] != 13 and output['k1'] != 14: return False
