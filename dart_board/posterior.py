@@ -263,9 +263,15 @@ def posterior_properties(x, output, dart):
                 ll += np.log(likelihood)
 
         # Mass function must be treated specially
-        if key == "m_f":
-            error = get_error_from_kwargs("m_f", **dart.system_kwargs)
+        if key == "m_f_1":
+            error = get_error_from_kwargs("m_f_1", **dart.system_kwargs)
             likelihood = calc_prob_from_mass_function(output['M1'], output['M2'], value, error)
+            if likelihood == 0.0: return -np.inf
+            ll += np.log(likelihood)
+
+        if key == "m_f_2":
+            error = get_error_from_kwargs("m_f_2", **dart.system_kwargs)
+            likelihood = calc_prob_from_mass_function(output['M2'], output['M1'], value, error)
             if likelihood == 0.0: return -np.inf
             ll += np.log(likelihood)
 
