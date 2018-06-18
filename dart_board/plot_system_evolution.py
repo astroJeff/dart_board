@@ -40,7 +40,7 @@ def func_Roche_radius(M1, M2, A):
 
 def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
                   v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0),
-                  metallicity=0.02, verbose_output=False):
+                  metallicity=0.02, verbose_output=False, model_kwargs={}):
 
 
     times = np.linspace(t_min, t_max, N_times)
@@ -71,7 +71,7 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
         output = evolve(M1_in, M2_in, P_orb_in, ecc,
                         v1_kick[0], v1_kick[1], v1_kick[2],
                         v2_kick[0], v2_kick[1], v2_kick[2],
-                        time, metallicity, verbose_output)
+                        time, metallicity, verbose_output, **model_kwargs)
 
         R1_out = np.append(R1_out, output[9])
         R2_out = np.append(R2_out, output[10])
@@ -318,13 +318,13 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
 
 def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1,
                     v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
-                    file_out=None, sys_obs={}):
+                    file_out=None, sys_obs={}, model_kwargs={}):
 
     # Evolve binary
     times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, \
             Mdot1_out, Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, \
             k2_out = evolve_binary(evolve, M1, M2, P_orb, ecc, t_min, t_max,
-                                   v1_kick, v2_kick, metallicity)
+                                   v1_kick, v2_kick, metallicity, model_kwargs=model_kwargs)
 
 
     # Plot binary
