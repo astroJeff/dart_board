@@ -262,6 +262,12 @@ def posterior_properties(x, output, dart):
                 if likelihood == 0.0: return -np.inf
                 ll += np.log(likelihood)
 
+        # Constraints on k-type
+        if key == 'k1':
+            if not output['k1'] in value: return -np.inf
+        if key == 'k2':
+            if not output['k2'] in value: return -np.inf
+
         # Mass function must be treated specially
         if key == "m_f_1":
             error = get_error_from_kwargs("m_f_1", **dart.system_kwargs)
@@ -277,6 +283,8 @@ def posterior_properties(x, output, dart):
 
         if key == 'L_x_min':
             if L_x_out < value: return -np.inf
+        if key == 'L_x_max':
+            if L_x_out > value: return -np.inf
 
         if key == "ecc_max":
             if output['ecc'] > value: return -np.inf
