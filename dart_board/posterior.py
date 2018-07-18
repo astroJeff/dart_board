@@ -65,7 +65,7 @@ def ln_posterior(x, dart):
     """
 
     # Empty array for emcee blobs
-    empty_arr = np.zeros(9)
+    empty_arr = np.zeros(17)
 
 
     # Calculate the prior probability
@@ -76,6 +76,11 @@ def ln_posterior(x, dart):
         if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
 
         ll, output = ln_likelihood(x, dart)
+
+        # Convert from numpy structured array to a regular ndarray
+        if output.dtype is not 'float64':
+            output = np.column_stack(output[name] for name in output.dtype.names)[0]
+
 
         return lp+ll, np.array([output])
 
@@ -136,7 +141,7 @@ def ln_likelihood(x, dart):
 
 
     # Empty array for emcee blobs
-    empty_arr = np.zeros(9)
+    empty_arr = np.zeros(17)
 
 
     # Get initial orbital period
@@ -167,9 +172,6 @@ def ln_likelihood(x, dart):
     # Check for kwargs arguments
     ll = 0
     if not dart.system_kwargs == {}: ll = posterior_properties(x_in, output, dart)
-
-    # Convert from numpy structured array to a regular ndarray
-    output = np.column_stack(output[name] for name in output.dtype.names)[0]
 
     if dart.ntemps is None:
         return ll, output
