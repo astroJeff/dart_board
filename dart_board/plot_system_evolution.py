@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
 
-from dart_board.posterior import A_to_P, P_to_A
+from .utils import A_to_P, P_to_A
 
 
 
@@ -42,7 +42,6 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
                   v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0),
                   metallicity=0.02, verbose_output=False, model_kwargs={}):
 
-
     times = np.linspace(t_min, t_max, N_times)
 
     R1_out = np.array([])
@@ -71,7 +70,8 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
         output = evolve(M1_in, M2_in, P_orb_in, ecc,
                         v1_kick[0], v1_kick[1], v1_kick[2],
                         v2_kick[0], v2_kick[1], v2_kick[2],
-                        time, metallicity, verbose_output, **model_kwargs)
+                        time, metallicity, verbose_output,
+                        **model_kwargs)
 
         R1_out = np.append(R1_out, output[9])
         R2_out = np.append(R2_out, output[10])
@@ -314,6 +314,32 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
         plt.savefig(file_out)
     else:
         plt.show()
+
+
+def evolve_return_type(evolve, M1, M2, P_orb, ecc, time,
+                       v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
+                       verbose_output=False, sys_obs={}, model_kwargs={}):
+
+    output, sys_type = evolve(M1, M2, P_orb, ecc,
+                              v1_kick[0], v1_kick[1], v1_kick[2],
+                              v2_kick[0], v2_kick[1], v2_kick[2],
+                              time, metallicity, verbose_output,
+                              print_history=False, sys_type=True,
+                              **model_kwargs)
+
+    return output, sys_type
+
+def evolve_and_print(evolve, M1, M2, P_orb, ecc, time,
+                     v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
+                     verbose_output=False, sys_obs={}, model_kwargs={}):
+
+
+    output = evolve(M1, M2, P_orb, ecc,
+                    v1_kick[0], v1_kick[1], v1_kick[2],
+                    v2_kick[0], v2_kick[1], v2_kick[2],
+                    time, metallicity, verbose_output,
+                    print_history=True, **model_kwargs)
+
 
 
 def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1,

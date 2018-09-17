@@ -5,6 +5,7 @@ from .darts import *
 from .priors import *
 from .posterior import *
 from .plotting import *
+from .utils import *
 from .plot_system_evolution import *
 
 __version__ = "1.1.0"

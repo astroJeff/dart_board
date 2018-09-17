@@ -16,6 +16,7 @@ from emcee.utils import MPIPool
 
 import time as tm # temporary for testing
 
+from .utils import P_to_A
 from . import priors
 from . import posterior
 from . import forward_pop_synth
@@ -814,7 +815,7 @@ class DartBoard():
             # Get ln of parameters
             ln_M1 = np.log(M1)
             ln_M2 = np.log(M2)
-            ln_a = np.log(posterior.P_to_A(M1, M2, orbital_period))
+            ln_a = np.log(P_to_A(M1, M2, orbital_period))
             ln_t_b = np.log(t_b)
 
 

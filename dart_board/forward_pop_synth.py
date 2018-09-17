@@ -3,7 +3,7 @@ from scipy.stats import maxwell, uniform
 
 from . import constants as c
 #from . import darts
-from .posterior import A_to_P
+from .utils import A_to_P
 
 def generate_population(dart, N, ra_in=None, dec_in=None):
     """
