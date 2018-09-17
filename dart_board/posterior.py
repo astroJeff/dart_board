@@ -78,7 +78,7 @@ def ln_posterior(x, dart):
         ll, output = ln_likelihood(x, dart)
 
         # Convert from numpy structured array to a regular ndarray
-        if output.dtype is not 'float64':
+        if len(output.shape) == 0:
             output = np.column_stack(output[name] for name in output.dtype.names)[0]
 
 
