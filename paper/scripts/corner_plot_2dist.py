@@ -262,12 +262,12 @@ fig, ax = plt.subplots(n_var,n_var, figsize=(10,10))
 if n_var == 8:
     labels = [r"$M_{\rm 1, i}\ (M_{\odot})$", r"$M_{\rm 2, i}\ (M_{\odot})$", r"log $a_{\rm i}\ (R_{\odot})$", \
               r"$e_{\rm i}$", r"$v_{\rm k}\ ({\rm km}\ {\rm s}^{-1})$", r"$\theta_{\rm k}\ ({\rm rad.})$", \
-              r"$\phi_{\rm k}\ ({\rm deg.}) $",
+              r"$\phi_{\rm k}\ ({\rm rad.}) $",
               r"$t_{\rm i}\ ({\rm Myr})$"]
 elif n_var == 10:
     labels = [r"$M_{\rm 1, i}\ (M_{\odot})$", r"$M_{\rm 2, i}\ (M_{\odot})$", r"log $a_{\rm i}\ (R_{\odot})$", \
               r"$e_{\rm i}$", r"$v_{\rm k}\ ({\rm km}\ {\rm s}^{-1})$", r"$\theta_{\rm k}\ ({\rm rad.})$", \
-              r"$\phi_{\rm k}\ ({\rm deg.}) $",
+              r"$\phi_{\rm k}\ ({\rm rad.}) $",
               r"$\alpha_{\rm i}\ ({\rm deg.}) $", r"$\delta_{\rm i}\ ({\rm deg.}) $", r"$t_{\rm i}\ ({\rm Myr})$"]
 
 

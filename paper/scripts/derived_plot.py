@@ -109,7 +109,7 @@ if n_var == 9:
 elif n_var == 17:
     idx_k1 = 15
 else:
-    return
+    sys.exit()
 
 
 
