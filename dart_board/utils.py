@@ -39,6 +39,72 @@ def A_to_P(M1, M2, a):
     return P / c.day_to_sec
 
 
+def roche_radius(M1, M2, a):
+    """ Calculate the Roche lobe radius using formulat from Eggleton (1983) 
+
+    Parameters
+    ----------
+    M1 : float
+        Mass of the star for calculating the Roche radius
+    M2 : float
+        Mass of the companion star
+    a : float
+        Orbital separation
+
+    Returns
+    -------
+    r_L : float
+        Roche radius (same units as input parameter, a)
+    """
+
+
+    q = M1 / M2
+    return a * 0.49*q**(2.0/3.0) / (0.6*q**(2.0/3.0) + np.log(1.0 + q**(1.0/3.0)))
+
+def bondi_radius(M1, velocity):
+    """ Calculate the Bondi radius
+
+    Parameters
+    ----------
+    M1 : float
+        Mass of the accreting object (Msun)
+    velocity : float
+        Velocity of the object through the material (km/s)
+
+    Returns
+    -------
+    r_b : float
+        Bondi radius
+
+    """
+
+    r_b = 2.0 * c.G * (M1 * c.Msun_to_g) / (velocity*1.0e5)**2 / c.Rsun_to_cm
+
+    return r_b
+
+
+def orbital_velocity(M1, M2, a):
+    """ Calculate the orbital velocity of a binary
+    
+    Parameters
+    ----------
+    M1, M2 : float
+        Masses of the primary and secondary stars in the binary (Msun)
+    a : float
+        Orbital separation of the binary (Rsun)
+
+    Returns
+    -------
+    v_orb : float
+        Orbital velocity (km/s)
+
+    """
+
+    v_orb = np.sqrt(c.G * (M1+M2) * c.Msun_to_g / (a * c.Rsun_to_cm)) / 1.0e5
+
+    return v_orb
+
+
 def flatten_chains(chains, temp=0, thin=None):
     """ A function to flatten (and possibly thin) an emcee or PTemcee chain (or blob)
 
