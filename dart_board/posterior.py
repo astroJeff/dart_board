@@ -293,6 +293,71 @@ def posterior_properties(x, output, dart):
 
 
 
+def calculate_ADAF_efficiency(Mdot, Mdot_edd, delta=0.1):
+    """
+    Calculate the mass-luminosity efficiency based on the ADAF
+    model of Xie & Yuan (2012), using the piecewise fitting function
+    using values provided their Table 1 for their Equation 11.
+
+    Args:
+        Mdot : mass transfer rate onto a BH
+        Mdot_edd : Eddington mass transfer rate (same units as Mdot)
+        delta : (optional) fraction of ionization energy acting on electrons
+
+    Returns:
+        epsilon : mass-light conversion efficiency
+    """
+
+
+    M_ratio = Mdot/Mdot_edd
+
+    if not delta in [0.5, 0.1, 0.01, 0.001]:
+        print("You must provide an acceptable value for delta.")
+        sys.exit(-1)
+
+    if delta == 0.5:
+        conds = [M_ratio < 2.9e-5,
+                 (M_ratio >= 2.9e-5) & (M_ratio < 3.3e-3),
+                 (M_ratio >= 3.3e-3) & (M_ratio < 5.3e-3),
+                 M_ratio >= 5.3e-3]
+        func_epsilon = [lambda M_ratio: 1.58*(100*M_ratio)**0.65,
+                        lambda M_ratio: 0.055*(100*M_ratio)**0.076,
+                        lambda M_ratio: 0.17*(100*M_ratio)**1.12,
+                        lambda M_ratio: 0.1]
+
+    if delta == 0.1:
+        conds = [M_ratio < 9.4e-5,
+                 (M_ratio >= 9.4e-5) & (M_ratio < 5.0e-3),
+                 (M_ratio >= 5.0e-3) & (M_ratio < 6.6e-3),
+                 M_ratio >= 6.6e-3]
+        func_epsilon = [lambda M_ratio: 0.12*(100*M_ratio)**0.59,
+                        lambda M_ratio: 0.026*(100*M_ratio)**0.27,
+                        lambda M_ratio: 0.50*(100*M_ratio)**4.53,
+                        lambda M_ratio: 0.1]
+
+    if delta == 1.0e-2:
+        conds = [M_ratio < 1.6e-5,
+                 (M_ratio >= 1.6e-5) & (M_ratio < 5.3e-3),
+                 (M_ratio >= 5.3e-3) & (M_ratio < 7.1e-3),
+                 M_ratio >= 7.1e-3]
+        func_epsilon = [lambda M_ratio: 0.069*(100*M_ratio)**0.69,
+                        lambda M_ratio: 0.027*(100*M_ratio)**0.54,
+                        lambda M_ratio: 0.42*(100*M_ratio)**4.85,
+                        lambda M_ratio: 0.1]
+
+    if delta == 1.0e-3:
+        conds = [M_ratio < 7.6e-5,
+                 (M_ratio >= 7.6e-5) & (M_ratio < 4.5e-3),
+                 (M_ratio >= 4.5e-3) & (M_ratio < 7.1e-3),
+                 M_ratio >= 7.1e-3]
+        func_epsilon = [lambda M_ratio: 0.065*(100*M_ratio)**0.71,
+                        lambda M_ratio: 0.020*(100*M_ratio)**0.47,
+                        lambda M_ratio: 0.26*(100*M_ratio)**3.67,
+                        lambda M_ratio: 0.1]
+
+    return np.piecewise(M_ratio, conds, func_epsilon)
+
+
 def calculate_L_x(M1, mdot, k1):
     """
     Calculate the X-ray luminosity of an accreting binary.
@@ -306,13 +371,19 @@ def calculate_L_x(M1, mdot, k1):
         L_x : float, X-ray luminosity (erg/s)
     """
 
+
     if k1 == 13:
         R_acc = c.R_NS * 1.0e5  # NS radius in cm
         epsilon = 1.0 # Surface accretion
         eta = 0.15 # Wind accretion
     elif k1 == 14:
         R_acc = 3.0 * 2.0 * c.G * (M1*c.Msun_to_g) / (c.c_light * c.c_light) # BH has accretion radius of 3 Schwarzchild radii
-        epsilon = 0.5 # Disk accretion
+
+
+#        epsilon = 0.5 # Disk accretion
+        mdot_edd = 1.26e38*M1
+        epsilon = calculate_ADAF_efficiency(mdot, mdot_edd)
+
         eta = 0.8 # All BH accretion
     else:
         return -1

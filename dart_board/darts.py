@@ -405,6 +405,8 @@ class DartBoard():
         else:
             # Use provided starting point
             x_best = starting_point
+            lp_best, derived_best = self.posterior_function(x_best, self)
+            print("Starting point posterior probability:", lp_best)
 
 
         # For parallel tempering algorithm
