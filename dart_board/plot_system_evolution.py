@@ -333,7 +333,6 @@ def evolve_and_print(evolve, M1, M2, P_orb, ecc, time,
                      v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
                      verbose_output=False, sys_obs={}, model_kwargs={}):
 
-
     output = evolve(M1, M2, P_orb, ecc,
                     v1_kick[0], v1_kick[1], v1_kick[2],
                     v2_kick[0], v2_kick[1], v2_kick[2],

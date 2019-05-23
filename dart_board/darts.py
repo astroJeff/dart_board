@@ -287,8 +287,11 @@ class DartBoard():
                 M1 = 30.0 * np.random.uniform(size=1) + 8.0
             M2 = M1 * (np.random.uniform(size=1))
 
-            if a_set == 'low':
-                a = 500.0 * np.random.uniform(size=1)
+            if a_set == 'very_low':
+                a = 200.0 + 20.0 * np.random.uniform(size=1)
+                a[a<1.0] = 100.0 + 10.0 * np.random.uniform(size=1)
+            elif a_set == 'low':
+                a = 500.0 * np.random.uniform(size=1) + 10.0
             else:
                 a = 4000.0 * np.random.uniform(size=1) + 500.0
             ecc = np.random.uniform(size=1)
