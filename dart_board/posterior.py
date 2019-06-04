@@ -360,7 +360,7 @@ def calculate_ADAF_efficiency(Mdot, Mdot_edd, delta=0.1):
            not (isinstance(conds[0], list) or
                 isinstance(conds[0], np.ndarray)):
         conds = [conds]
-    conds = [asarray(c, dtype=bool) for c in conds]
+    conds = [np.asarray(c, dtype=bool) for c in conds]
 
     return np.piecewise(M_ratio, conds, func_epsilon)
 
