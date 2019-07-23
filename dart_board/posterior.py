@@ -356,11 +356,11 @@ def calculate_ADAF_efficiency(Mdot, Mdot_edd, delta=0.1):
                         lambda M_ratio: 0.1]
 
     # For compatibility with older version of np.piecewise, ensure conds is an ndarray
-    if np.isscalar(conds) or \
-           not (isinstance(conds[0], list) or
-                isinstance(conds[0], np.ndarray)):
-        conds = [conds]
-    conds = [np.asarray(c, dtype=bool) for c in conds]
+    # if np.isscalar(conds) or \
+    #        not (isinstance(conds[0], list) or
+    #             isinstance(conds[0], np.ndarray)):
+    #     conds = [conds]
+    # conds = [np.asarray(c, dtype=bool) for c in conds]
 
     return np.piecewise(M_ratio, conds, func_epsilon)
 
