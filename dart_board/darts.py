@@ -214,8 +214,8 @@ class DartBoard():
 
         # The type of objects
         self.first_SN = False
-        if "NS" in binary_type or "BH" in binary_type or "HMXB" in binary_type
-            or "XRB" in binary_type:
+        if ("NS" in binary_type or "BH" in binary_type or "HMXB" in binary_type
+                or "XRB" in binary_type):
             self.first_SN = True
 
         self.second_SN = False
