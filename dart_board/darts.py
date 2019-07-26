@@ -214,7 +214,8 @@ class DartBoard():
 
         # The type of objects
         self.first_SN = False
-        if "NS" in binary_type or "BH" in binary_type or "HMXB" in binary_type:
+        if "NS" in binary_type or "BH" in binary_type or "HMXB" in binary_type
+            or "XRB" in binary_type:
             self.first_SN = True
 
         self.second_SN = False
@@ -315,10 +316,8 @@ class DartBoard():
 
             if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
 
-            if "WD" in self.binary_type:
-                time = 1.4e4 * np.random.uniform(size=1)
-            else:
-                time = 40.0 * np.random.uniform(size=1)
+            # Randomly initialize between minimum and maximum time
+            time = (c.max_t-c.min_t) * np.random.uniform(size=1) + c.min_t
 
 
             # Create tuple of model parameters
@@ -391,7 +390,7 @@ class DartBoard():
                 print("Proceeding with large orbital separation solution.")
                 x_best = x_best_high
             else:
-                if self.ntemps == 1:
+                if self.ntemps == 1 or self.ntemps is None:
                     lp_best_low, derived_low = self.posterior_function(x_best_low, self)
                     lp_best_high, derived_high = self.posterior_function(x_best_high, self)
                 else:
@@ -418,10 +417,8 @@ class DartBoard():
             return
 
 
-
         # Iterate to find position for focusing walkers
         lp_best, derived = self.posterior_function(x_best, self)
-
 
         # Allocate walkers
         M1_set = np.zeros(self.nwalkers)
@@ -472,6 +469,8 @@ class DartBoard():
                 if counter > 100:
                     scale *= 0.1
                     counter = 0
+
+
 
 
             # Save model parameters to variables
