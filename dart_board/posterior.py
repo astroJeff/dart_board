@@ -587,7 +587,8 @@ def check_output(output, binary_type):
         if output['a'] <= 0.0: return False
         if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
 
-    elif binary_type == "HMXB":
+    elif binary_type == "XRB":
+        if np.isnan(output['mdot1']) or np.isnan(output['mdot2']): return False
         if output['k1'] != 13 and output['k1'] != 14: return False
         if output['a'] <= 0.0: return False
         if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
