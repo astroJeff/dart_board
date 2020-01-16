@@ -1,3 +1,5 @@
+*__pycache__*
+
 *.old
 dart_board/*.pyc
 dart_board/sf_history/*.pyc
