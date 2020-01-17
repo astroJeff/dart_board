@@ -283,33 +283,33 @@ class DartBoard():
         for i in range(N_iterations):
 
             if "WD" in self.binary_type:
-                M1 = 3.0 * np.random.uniform(size=1) + 8.0
+                M1 = 3.0 * np.random.uniform() + 8.0
             else:
-                M1 = 30.0 * np.random.uniform(size=1) + 8.0
-            M2 = M1 * (np.random.uniform(size=1))
+                M1 = 30.0 * np.random.uniform() + 8.0
+            M2 = M1 * (np.random.uniform())
 
             if a_set == 'very_low':
-                a = 200.0 + 20.0 * np.random.uniform(size=1)
-                a[a<1.0] = 100.0 + 10.0 * np.random.uniform(size=1)
+                a = 200.0 + 20.0 * np.random.uniform()
+                a[a<1.0] = 100.0 + 10.0 * np.random.uniform()
             elif a_set == 'low':
-                a = 500.0 * np.random.uniform(size=1) + 10.0
+                a = 500.0 * np.random.uniform() + 10.0
             else:
-                a = 4000.0 * np.random.uniform(size=1) + 500.0
+                a = 4000.0 * np.random.uniform() + 500.0
             ecc = np.random.uniform(size=1)
 
             if self.first_SN:
-                v_kick1 = 300.0 * np.random.uniform(size=1) + 20.0
-                theta_kick1 = np.pi * np.random.uniform(size=1)
-                phi_kick1 = np.pi * np.random.uniform(size=1)
+                v_kick1 = 300.0 * np.random.uniform() + 20.0
+                theta_kick1 = np.pi * np.random.uniform()
+                phi_kick1 = np.pi * np.random.uniform()
             if self.second_SN:
-                v_kick2 = 300.0 * np.random.uniform(size=1) + 20.0
-                theta_kick2 = np.pi * np.random.uniform(size=1)
-                phi_kick2 = np.pi * np.random.uniform(size=1)
+                v_kick2 = 300.0 * np.random.uniform() + 20.0
+                theta_kick2 = np.pi * np.random.uniform()
+                phi_kick2 = np.pi * np.random.uniform()
 
             if self.prior_pos is not None:
                 if self.ra_obs is None or self.dec_obs is None:
-                    ra = (c.ra_max-c.ra_min) * np.random.uniform(size=1) + c.ra_min
-                    dec = (c.dec_max-c.dec_min) * np.random.uniform(size=1) + c.dec_min
+                    ra = (c.ra_max-c.ra_min) * np.random.uniform() + c.ra_min
+                    dec = (c.dec_max-c.dec_min) * np.random.uniform() + c.dec_min
                 else:
                     ra = self.ra_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
                     dec = self.dec_obs * (1.0 + np.random.normal(0.0, 0.00001, 1))
@@ -317,7 +317,10 @@ class DartBoard():
             if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
 
             # Randomly initialize between minimum and maximum time
-            time = (c.max_t-c.min_t) * np.random.uniform(size=1) + c.min_t
+            if 'HMXB' in self.binary_type or 'NS' in self.binary_type or 'BH' in self.binary_type:
+                time = 100 * np.random.uniform() + c.min_t
+            else:
+                time = (c.max_t-c.min_t) * np.random.uniform() + c.min_t
 
 
             # Create tuple of model parameters
@@ -382,7 +385,7 @@ class DartBoard():
 
             if x_best_low is None and x_best_high is None:
                 print("No solutions were found. Exiting...")
-                exit()
+                sys.exit()
             elif x_best_high is None:
                 print("Proceeding with short orbital separation solution.")
                 x_best = x_best_low

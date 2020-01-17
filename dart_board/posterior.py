@@ -73,6 +73,7 @@ def ln_likelihood(x, dart):
     # For use later in posterior properties
     x_in = x
 
+
     # Save model parameters to variables
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
     x = x[4:]
@@ -124,6 +125,7 @@ def ln_likelihood(x, dart):
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
                                 t_b, z, False, **dart.model_kwargs)
+
 
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type):

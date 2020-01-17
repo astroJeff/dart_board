@@ -35,15 +35,6 @@ bcm_dtype = [('tphys','f8'), ('kstar_1','f8'), ('mass0_1','f8'), ('mass_1','f8')
 
 
 
-    # BSEDict = {
-    #
-    #            'natal_kick_array' : [v_kick_1,v_kick_2,np.pi/2-theta_kick_1,np.pi/2-theta_kick_2,phi_kick_1,phi_kick_2],
-    #            'qcrit_array' : [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
-    #            'fprimc_array' : [2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0],
-
-
-
-
 
 def evolve(M1,
            M2,
@@ -115,11 +106,12 @@ def evolve(M1,
 
 
 
-    natal_kick_array = [v_kick_1,v_kick_2,np.pi/2-theta_kick_1,np.pi/2-theta_kick_2,phi_kick_1,phi_kick_2]
+    natal_kick_array = [v_kick_1,v_kick_2,
+                        np.pi/2-theta_kick_1,np.pi/2-theta_kick_2,
+                        phi_kick_1,phi_kick_2]
     qcrit_array = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
     fprimc_array = [2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0]
 
-# initial_conditions = initialbinarytable[INITIAL_CONDITIONS_PASS_COLUMNS].values
 
     _evolvebin.windvars.neta = neta
     _evolvebin.windvars.bwind = bwind
@@ -173,7 +165,6 @@ def evolve(M1,
     _evolvebin.flags.st_tide = ST_tide
     _evolvebin.cmcpass.using_cmc = 0
 
-
     kstar_1 = 1
     kstar_2 = 1
 
@@ -216,18 +207,6 @@ def evolve(M1,
     idx = np.argmax(bpp['tphys'])
     bpp = bpp[:idx]
 
-
-    # print(tmp[0])
-    # print(tmp[10]['tphys'])
-    #
-    # bpp = np.array(bpp, dtype=bpp_dtype)
-    # bcm = np.array(bcm, dtype=bcm_dtype)
-
-    # print(bcm.shape)
-    # print(bcm[0].shape)
-    # print(bcm[0][0])
-    # print(bcm[0]['tphys'])
-    # print(bcm[0])
 
 
     dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
