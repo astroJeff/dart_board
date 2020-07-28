@@ -48,7 +48,7 @@ def evolve(M1,
            phi_kick_2,
            time,
            metallicity,
-           verbose_output,
+           verbose_output = False,
            idum = None,
            dtp = 0.1,
            neta = 0.5,
@@ -208,7 +208,6 @@ def evolve(M1,
     bpp = bpp[:idx]
 
 
-
     dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
              ('mdot1', 'f8'), ('mdot2', 'f8'), ('t_SN1', 'f8'), ('t_SN2', 'f8'),
              ('R1', 'f8'), ('R2', 'f8'), ('Teff1', 'f8'), ('Teff2', 'f8'),
@@ -231,7 +230,7 @@ def evolve(M1,
     except:
         output[0]['t_SN1'] = 0.0
     try:
-        output[0]['t_SN2'] = bpp[bpp['evol_type'] == 15][0]['tphys']
+        output[0]['t_SN2'] = bpp[bpp['evol_type'] == 16][0]['tphys']
     except:
         output[0]['t_SN2'] = 0.0
     output[0]['R1'] = bcm[-1]['rad_1']
