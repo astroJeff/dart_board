@@ -13,6 +13,12 @@ from . import constants as c
 from . import priors
 
 
+blobs_dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
+               ('mdot1', 'f8'), ('mdot2', 'f8'), ('t_SN1', 'f8'), ('t_SN2', 'f8'),
+               ('R1', 'f8'), ('R2', 'f8'), ('Teff1', 'f8'), ('Teff2', 'f8'),
+               ('L1', 'f8'), ('L2', 'f8'), ('k1','i8'), ('k2','i8')]
+
+
 def ln_posterior(x, dart):
     """
     Calculate the natural log of the posterior probability. This function
@@ -28,7 +34,8 @@ def ln_posterior(x, dart):
     """
 
     # Empty array for emcee blobs
-    empty_arr = np.zeros(17)
+    empty_arr = tuple(np.zeros(17))
+
 
 
     # Calculate the prior probability
@@ -36,16 +43,21 @@ def ln_posterior(x, dart):
 
     if dart.ntemps is None:
 
-        if np.isinf(lp) or np.isnan(lp): return -np.inf, empty_arr
+        if np.isinf(lp) or np.isnan(lp):
+            return (-np.inf,) + empty_arr
 
         ll, output = ln_likelihood(x, dart)
 
         # Convert from numpy structured array to a regular ndarray
-        if len(output.shape) == 0:
-            output = np.column_stack(output[name] for name in output.dtype.names)[0]
+        if isinstance(output, np.ndarray):
+            output = tuple(output)
+#         if len(output.shape) == 0:
+#             output = np.column_stack(output[name] for name in output.dtype.names)[0]
+# #
+        # print(output)
 
-
-        return lp+ll, np.array([output])
+        # return lp+ll, np.array([output])
+        return (lp+ll,) + tuple(output)
 
     else:
 
@@ -106,7 +118,7 @@ def ln_likelihood(x, dart):
 
 
     # Empty array for emcee blobs
-    empty_arr = np.zeros(17)
+    empty_arr = tuple(np.zeros(17))
 
 
     # Get initial orbital period
@@ -119,13 +131,13 @@ def ln_likelihood(x, dart):
         theta_kick2 = theta_kick1
         phi_kick2 = phi_kick1
 
+    # print(v_kick2, theta_kick2, phi_kick2)
 
     # Run rapid binary evolution code
     output = dart.evolve_binary(M1, M2, orbital_period, ecc,
                                 v_kick1, theta_kick1, phi_kick1,
                                 v_kick2, theta_kick2, phi_kick2,
                                 t_b, z, False, **dart.model_kwargs)
-
 
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type):
@@ -502,13 +514,22 @@ def check_output(output, binary_type):
         binary_type : bool, is the binary of the requested type?
     """
 
-    type_options = np.array(["BH", "NS",
+    type_options = np.array(["all", "all_bound", "BH", "NS",
                              "BHHMXB", "NSHMXB", "HMXB", "LMXB", "BHBH", "NSNS",
-                             "BHNS", "WDWD", "ELMWD", "ELMWD_WD", "nondegenerate", "XRB"])
+                             "BHNS", "WDWD", "ELMWD", "ELMWD_WD", "nondegenerate",
+                             "XRB", "giant"])
 
     if not np.any(binary_type == type_options):
         print("The code is not set up to detect the type of binary you are interested in")
         sys.exit(-1)
+
+    if binary_type == "all":
+        pass
+
+    if binary_type == "all_bound":
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+        if output['k1'] == 15 or output['k2'] == 15: return False
 
     if binary_type == "BH":
         if output['k1'] != 14: return False
@@ -595,6 +616,11 @@ def check_output(output, binary_type):
         if output['a'] <= 0.0: return False
         if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
         if output['mdot1'] <= 0.0: return False
+
+    elif binary_type == 'giant':
+        if output['a'] <= 0.0: return False
+        if output['ecc'] < 0.0 or output['ecc'] >= 1.0: return False
+        if output['k1'] != 3 and output['k1'] != 5 and output['k1'] != 6 and output['k2'] != 3 and output['k2'] != 5 and output['k2'] != 6: return False
 
     return True
 
