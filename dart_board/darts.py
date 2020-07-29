@@ -12,7 +12,12 @@ import sys
 import numpy as np
 import emcee
 import copy
-from emcee.utils import MPIPool
+
+# import mpi4py
+# from schwimmbad import MPIPool
+# # from emcee.utils import MPIPool
+# mpi4py.rc.threads = False
+# mpi4py.rc.recv_mprobe = False
 
 import time as tm # temporary for testing
 
@@ -58,7 +63,7 @@ class DartBoard():
                  ntemps=None,
                  nwalkers=80,
                  threads=1,
-                 mpi=False,
+                 pool=None,
                  evolve_binary=None,
                  thin=100,
                  prior_kwargs={},
@@ -124,7 +129,7 @@ class DartBoard():
                 ensemble sampler algorithm.
             threads : int (default: 1), the number of threads to use for
                 parallel processing using multi-threading.
-            mpi : bool (default: False), when true, use mpi for parallel processing.
+            pool : MPIPool (default: None), when not None, use MPIPool for parallel processing.
             evolve_binary : function (default: None), the binary evolution
                 function. THIS INPUT IS REQUIRED FOR DART_BOARD TO RUN.
             thin : int (default: 100), thin posterior samples by this number.
@@ -204,7 +209,7 @@ class DartBoard():
         self.ntemps = ntemps
         self.nwalkers = nwalkers
         self.threads = threads
-        self.mpi = mpi
+        self.pool = pool
 
         # Current dart positions
         self.p0 = []
@@ -258,7 +263,6 @@ class DartBoard():
         self.chains = []
         self.derived = []
         self.lnprobability = []
-
 
     def iterate_to_initialize(self, N_iterations=10000, a_set='low'):
         """
@@ -334,7 +338,10 @@ class DartBoard():
 
             # Calculate the posterior probability for x
             if self.ntemps is None:
-                lp, derived = self.posterior_function(x, self)
+                out = self.posterior_function(x, self)
+                lp = out[0]
+                derived = out[1:]
+                # lp, derived = self.posterior_function(x, self)
             else:
                 lp = self.posterior_function(x, self)
 
@@ -394,8 +401,12 @@ class DartBoard():
                 x_best = x_best_high
             else:
                 if self.ntemps == 1 or self.ntemps is None:
-                    lp_best_low, derived_low = self.posterior_function(x_best_low, self)
-                    lp_best_high, derived_high = self.posterior_function(x_best_high, self)
+                    out = self.posterior_function(x_best_low, self)
+                    lp_best_low = out[0]
+                    out = self.posterior_function(x_best_high, self)
+                    lp_best_high = out[0]
+                    # lp_best_low, derived_low = self.posterior_function(x_best_low, self)
+                    # lp_best_high, derived_high = self.posterior_function(x_best_high, self)
                 else:
                     lp_best_low = self.posterior_function(x_best_low, self)
                     lp_best_high = self.posterior_function(x_best_high, self)
@@ -410,7 +421,9 @@ class DartBoard():
         else:
             # Use provided starting point
             x_best = starting_point
-            lp_best, derived_best = self.posterior_function(x_best, self)
+            out = self.posterior_function(x_best, self)
+            lp_best = out[0]
+            # lp_best, derived_best = self.posterior_function(x_best, self)
             print("Starting point posterior probability:", lp_best)
 
 
@@ -421,7 +434,9 @@ class DartBoard():
 
 
         # Iterate to find position for focusing walkers
-        lp_best, derived = self.posterior_function(x_best, self)
+        out = self.posterior_function(x_best, self)
+        lp_best = out[0]
+        # lp_best, derived = self.posterior_function(x_best, self)
 
         # Allocate walkers
         M1_set = np.zeros(self.nwalkers)
@@ -464,7 +479,9 @@ class DartBoard():
                     x += (x_i*np.random.normal(loc=1.0, scale=scale, size=1)[0], )
 
                 # Calculate the posterior probability for x
-                lp, derived = self.posterior_function(x, self)
+                out = self.posterior_function(x, self)
+                lp = out[0]
+                # lp, derived = self.posterior_function(x, self)
 
                 counter += 1
 
@@ -671,35 +688,49 @@ class DartBoard():
         if method == 'emcee':
 
             # Define sampler
-            if self.mpi == True:
-                pool = MPIPool()
-                if not pool.is_master():
-                    pool.wait()
-                    sys.exit(0)
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, args=[self], pool=pool)
-
+            if self.pool is not None:
+                sampler = emcee.EnsembleSampler(self.nwalkers,
+                                                self.dim,
+                                                self.posterior_function,
+                                                args=[self],
+                                                blobs_dtype=posterior.blobs_dtype,
+                                                pool=self.pool)
+                self.pool = None
             elif self.threads != 1:
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, args=[self], threads=self.threads)
+                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers,
+                                                dim=self.dim,
+                                                lnpostfn=self.posterior_function,
+                                                args=[self],
+                                                blobs_dtype=posterior.blobs_dtype,
+                                                threads=self.threads)
             else:
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers, dim=self.dim, lnpostfn=self.posterior_function, args=[self])
+                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers,
+                                                dim=self.dim,
+                                                lnpostfn=self.posterior_function,
+                                                blobs_dtype=posterior.blobs_dtype,
+                                                args=[self])
 
 
             # Burn-in
             print("Starting burn-in...")
-            pos,prob,state,binary_data = sampler.run_mcmc(self.p0, N=nburn)
+            pos = sampler.run_mcmc(self.p0, nburn)
+            # pos,prob,state,binary_data = sampler.run_mcmc(self.p0, nburn)
             print("...finished running burn-in")
 
+            # breakpoint()
 
             # Full run
             print("Starting full run...")
             sampler.reset()
-            pos,prob,state,binary_data = sampler.run_mcmc(pos, N=nsteps)
+            sampler.run_mcmc(pos, nsteps)
+            # pos,prob,state,binary_data = sampler.run_mcmc(pos, nsteps)
             print("...full run finished")
 
 
             # Save only every 100th sample
             self.chains = sampler.chain[:,::self.thin,:]
-            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::self.thin,0,:]
+            self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::self.thin]
+            # self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)[:,::self.thin,0,:]
             self.lnprobability = sampler.lnprobability[:,::self.thin]
 
             self.sampler = sampler
@@ -710,15 +741,11 @@ class DartBoard():
             # THIS DOES NOT YET WORK #
 
             # Define sampler
-            if self.mpi == True:
-                pool = MPIPool()
-                if not pool.is_master():
-                    pool.wait()
-                    sys.exit(0)
+            if self.pool is not None:
                 sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
                                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
-                                          loglargs=(self,), logpargs=(self,), pool=pool)
-
+                                          loglargs=(self,), logpargs=(self,), pool=self.pool)
+                self.pool = None
             elif self.threads != 1:
                 sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
                                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
