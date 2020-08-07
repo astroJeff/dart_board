@@ -8,32 +8,81 @@ from cosmic.evolve import Evolve
 from cosmic import _evolvebin
 
 
+BPP_COLUMNS = ['tphys', 'mass_1', 'mass_2', 'kstar_1', 'kstar_2', 'sep', 'porb', 'ecc',
+               'RRLO_1', 'RRLO_2', 'evol_type', 'aj_1', 'aj_2', 'tms_1', 'tms_2',
+               'massc_1', 'massc_2', 'rad_1', 'rad_2', 'mass0_1', 'mass0_2', 'lum_1',
+               'lum_2', 'teff_1', 'teff_2', 'radc_1', 'radc_2', 'menv_1', 'menv_2',
+               'renv_1', 'renv_2', 'omega_spin_1', 'omega_spin_2', 'B_1', 'B_2',
+               'bacc_1', 'bacc_2', 'tacc_1', 'tacc_2', 'epoch_1', 'epoch_2',
+               'bhspin_1', 'bhspin_2']
+# BPP_COLUMNS = ['tphys', 'mass_1', 'mass_2', 'kstar_1', 'kstar_2' ,
+#                'sep', 'porb', 'ecc', 'RROL_1', 'RROL_2', 'evol_type',
+#                'Vsys_1', 'Vsys_2', 'SNkick', 'SNtheta',
+#                'aj_1', 'aj_2', 'tms_1', 'tms_2',
+#                'massc_1', 'massc_2', 'rad_1', 'rad_2',
+#                'bin_num']
 
-BPP_COLUMNS = ['tphys', 'mass_1', 'mass_2', 'kstar_1', 'kstar_2' ,
-               'sep', 'porb', 'ecc', 'RROL_1', 'RROL_2', 'evol_type',
-               'Vsys_1', 'Vsys_2', 'SNkick', 'SNtheta',
-               'aj_1', 'aj_2', 'tms_1', 'tms_2',
-               'massc_1', 'massc_2', 'rad_1', 'rad_2',
-               'bin_num']
+bpp_dtype = [('tphys','f8'),
+             ('mass_1','f8'), ('mass_2','f8'),
+             ('kstar_1','f8'), ('kstar_2','f8'),
+             ('sep','f8'), ('porb','f8'), ('ecc','f8'),
+             ('RROL_1','f8'), ('RROL_2','f8'),
+             ('evol_type','f8'),
+             ('aj_1','f8'), ('aj_2','f8'),
+             ('tms_1','f8'), ('tms_2','f8'),
+             ('massc_1','f8'), ('massc_2','f8'),
+             ('rad_1','f8'), ('rad_2','f8'),
+             ('mass0_1','f8'), ('mass0_2','f8'),
+             ('lum_1','f8'), ('lum_2','f8'),
+             ('teff_1','f8'), ('teff_2','f8'),
+             ('radc_1','f8'), ('radc_2','f8'),
+             ('menv_1','f8'), ('menv_2','f8'),
+             ('renv_1','f8'), ('renv_2','f8'),
+             ('omega_spin_1','f8'), ('omega_spin_2','f8'),
+             ('B_1','f8'), ('B_2','f8'),
+             ('bacc_1','f8'), ('bacc_2','f8'),
+             ('tacc_1','f8'), ('tacc_2','f8'),
+             ('epoch_1','f8'), ('epoch_2','f8'),
+             ('bhspin_1','f8'), ('bhspin_2','f8')]
+# bpp_dtype = [('tphys','f8'), ('mass_1','f8'), ('mass_2','f8'), ('kstar_1','f8'), ('kstar_2','f8'),
+#              ('sep','f8'), ('porb','f8'), ('ecc','f8'), ('RROL_1','f8'), ('RROL_2','f8'), ('evol_type','f8'),
+#              ('Vsys_1','f8'), ('Vsys_2','f8'), ('SNkick','f8'), ('SNtheta','f8'),
+#              ('aj_1','f8'), ('aj_2','f8'), ('tms_1','f8'), ('tms_2','f8'),
+#              ('massc_1','f8'), ('massc_2','f8'), ('rad_1','f8'), ('rad_2','f8')]
+             # ('Vsys_1','f8'), ('Vsys_2','f8'), ('SNkick','f8'), ('SNtheta','f8'),
 
-bpp_dtype = [('tphys','f8'), ('mass_1','f8'), ('mass_2','f8'), ('kstar_1','f8'), ('kstar_2','f8'),
-             ('sep','f8'), ('porb','f8'), ('ecc','f8'), ('RROL_1','f8'), ('RROL_2','f8'), ('evol_type','f8'),
-             ('Vsys_1','f8'), ('Vsys_2','f8'), ('SNkick','f8'), ('SNtheta','f8'),
-             ('aj_1','f8'), ('aj_2','f8'), ('tms_1','f8'), ('tms_2','f8'),
-             ('massc_1','f8'), ('massc_2','f8'), ('rad_1','f8'), ('rad_2','f8')]
 
 
-
-bcm_dtype = [('tphys','f8'), ('kstar_1','f8'), ('mass0_1','f8'), ('mass_1','f8'), ('lumin_1','f8'), ('rad_1','f8'),
-             ('teff_1','f8'), ('massc_1','f8'), ('radc_1','f8'), ('menv_1','f8'), ('renv_1','f8'), ('epoch_1','f8'),
-             ('ospin_1','f8'), ('deltam_1','f8'), ('RROL_1','f8'), ('kstar_2','f8'), ('mass0_2','f8'), ('mass_2','f8'),
-             ('lumin_2','f8'), ('rad_2','f8'), ('teff_2','f8'), ('massc_2','f8'), ('radc_2','f8'), ('menv_2','f8'),
-             ('renv_2','f8'), ('epoch_2','f8'), ('ospin_2','f8'), ('deltam_2','f8'), ('RROL_2','f8'),
-             ('porb','f8'), ('sep','f8'), ('ecc','f8'), ('B_0_1','f8'), ('B_0_2','f8'),
-             ('SNkick_1','f8'), ('SNkick_2','f8'), ('Vsys_final','f8'), ('SNtheta_final','f8'),
+bcm_dtype = [('tphys','f8'),
+             ('kstar_1','f8'), ('mass0_1','f8'), ('mass_1','f8'), ('lum_1','f8'), ('rad_1','f8'),
+             ('teff_1','f8'), ('massc_1','f8'), ('radc_1','f8'), ('menv_1','f8'), ('renv_1','f8'),
+             ('epoch_1','f8'),('omega_spin_1','f8'), ('deltam_1','f8'), ('RROL_1','f8'),
+             ('kstar_2','f8'), ('mass0_2','f8'), ('mass_2','f8'),('lum_2','f8'), ('rad_2','f8'),
+             ('teff_2','f8'), ('massc_2','f8'), ('radc_2','f8'), ('menv_2','f8'),
+             ('renv_2','f8'), ('epoch_2','f8'), ('omega_spin_2','f8'), ('deltam_2','f8'), ('RROL_2','f8'),
+             ('porb','f8'), ('sep','f8'), ('ecc','f8'), ('B_1','f8'), ('B_2','f8'),
              ('SN_1','f8'), ('SN_2','f8'), ('bin_state','f8'), ('merger_type','f8')]
+# bcm_dtype = [('tphys','f8'), ('kstar_1','f8'), ('mass0_1','f8'), ('mass_1','f8'), ('lumin_1','f8'), ('rad_1','f8'),
+#              ('teff_1','f8'), ('massc_1','f8'), ('radc_1','f8'), ('menv_1','f8'), ('renv_1','f8'), ('epoch_1','f8'),
+#              ('ospin_1','f8'), ('deltam_1','f8'), ('RROL_1','f8'), ('kstar_2','f8'), ('mass0_2','f8'), ('mass_2','f8'),
+#              ('lumin_2','f8'), ('rad_2','f8'), ('teff_2','f8'), ('massc_2','f8'), ('radc_2','f8'), ('menv_2','f8'),
+#              ('renv_2','f8'), ('epoch_2','f8'), ('ospin_2','f8'), ('deltam_2','f8'), ('RROL_2','f8'),
+#              ('porb','f8'), ('sep','f8'), ('ecc','f8'), ('B_0_1','f8'), ('B_0_2','f8'),
+#              ('SNkick_1','f8'), ('SNkick_2','f8'), ('Vsys_final','f8'), ('SNtheta_final','f8'),
+#              ('SN_1','f8'), ('SN_2','f8'), ('bin_state','f8'), ('merger_type','f8')]
 
+KICK_COLUMNS = ['star', 'disrupted', 'natal_kick', 'phi', 'theta', 'eccentric_anomaly',
+                'delta_vsysx_1', 'delta_vsysy_1', 'delta_vsysz_1', 'vsys_1_total',
+                'delta_vsysx_2', 'delta_vsysy_2', 'delta_vsysz_2', 'vsys_2_total',
+                'delta_theta_total', 'omega', 'randomseed', 'bin_num']
 
+kick_dtype = [('star','f8'), ('disrupted','f8'), ('natal_kick','f8'),
+              ('phi','f8'), ('theta','f8'), ('eccentric_anomaly','f8'),
+              ('delta_vsysx_1','f8'), ('delta_vsysy_1','f8'), ('delta_vsysz_1','f8'),
+              ('vsys_1_total','f8'),
+              ('delta_vsysx_2','f8'), ('delta_vsysy_2','f8'), ('delta_vsysz_2','f8'),
+              ('vsys_2_total','f8'),
+              ('delta_theta_total','f8'), ('omega','f8'), ('randomseed','f8')]
 
 
 def evolve(M1,
@@ -69,15 +118,16 @@ def evolve(M1,
            bhflag = 1,
            bhspinflag = 0,
            bhspinmag = 0.0,
-           nsflag = 3,
+           remnantflag = 3,
            mxns = 2.5,
-           rejuvflag = 0.0,
+           rejuvflag = 0,
            rejuv_fac = 1.0,
            pts1 = 0.001,
            pts2 = 0.01,
            pts3 = 0.02,
            sigma = 265.0,
            polar_kick_angle = 90.0,
+           qcrit_array = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],
            bhsigmafrac = 1.0,
            pisn = 45.0,
            ecsn = 2.5,
@@ -85,6 +135,7 @@ def evolve(M1,
            aic = 1,
            ussn = 0,
            eddlimflag = 0,
+           fprimc_array = [2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0],
            beta = 0.125,
            xi = 1.0,
            acc2 = 1.5,
@@ -97,7 +148,10 @@ def evolve(M1,
            htpmb = 1,
            ST_cr = 1,
            ST_tide = 0,
-           bdecayfac = 1):
+           bdecayfac = 1,
+           rembar_massloss = 0.5,
+           kickflag = 0,
+           zsun = 0.014):
 
 
     if idum is None:
@@ -105,13 +159,18 @@ def evolve(M1,
         idum = int.from_bytes(random_data, byteorder="big")
 
 
-
-    natal_kick_array = [v_kick_1,v_kick_2,
-                        np.pi/2-theta_kick_1,np.pi/2-theta_kick_2,
-                        phi_kick_1,phi_kick_2]
-    qcrit_array = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-    fprimc_array = [2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0,2.0/21.0]
-
+    # This is a stand in - the eccentric anomaly needs to be passed instead of pi/3 below
+    # Unfortunately, this needs to be updated within cosmic to be the mean anomaly.
+    # natal_kick_array = [[v_kick_1, np.pi/2-theta_kick_1, phi_kick_1, np.pi/3, 0],
+    #                     [v_kick_2, np.pi/2-theta_kick_2, phi_kick_2, np.pi/3, 0]]
+    natal_kick_array = [[-100.0, -100.0, -100.0, -100.0, 0.0], [-100.0, -100.0, -100.0, -100.0, 0.0]]
+    kick_info = np.zeros((2,len(KICK_COLUMNS)-1))
+    kick_info[0,2] = v_kick_1
+    kick_info[0,3] = np.pi/2-theta_kick_1
+    kick_info[0,4] = phi_kick_1
+    kick_info[1,2] = v_kick_2
+    kick_info[1,3] = np.pi/2-theta_kick_2
+    kick_info[1,4] = phi_kick_2
 
     _evolvebin.windvars.neta = neta
     _evolvebin.windvars.bwind = bwind
@@ -124,7 +183,8 @@ def evolve(M1,
     _evolvebin.flags.wdflag = wdflag
     _evolvebin.snvars.pisn = pisn
     _evolvebin.flags.bhflag = bhflag
-    _evolvebin.flags.nsflag = nsflag
+    # _evolvebin.flags.nsflag = nsflag
+    _evolvebin.flags.remnantflag = remnantflag
     _evolvebin.ceflags.cekickflag = cekickflag
     _evolvebin.ceflags.cemergeflag = cemergeflag
     _evolvebin.ceflags.cehestarflag = cehestarflag
@@ -163,18 +223,32 @@ def evolve(M1,
     _evolvebin.flags.htpmb = htpmb
     _evolvebin.flags.st_cr = ST_cr
     _evolvebin.flags.st_tide = ST_tide
+    _evolvebin.flags.rembar_massloss = rembar_massloss
+    _evolvebin.flags.zsun = zsun
+    _evolvebin.flags.kickflag = kickflag
     _evolvebin.cmcpass.using_cmc = 0
 
     kstar_1 = 1
     kstar_2 = 1
 
-    [tmp_bpp, tmp_bcm] = _evolvebin.evolv2([kstar_1, kstar_2],
+    print([kstar_1, kstar_2],
+                        [M1, M2],
+                        P_orb,
+                        ecc,
+                        metallicity,
+                        time,
+                        time,
+                        [M1, M2], np.zeros((2,len(KICK_COLUMNS)-1)))
+
+    [tmp_bpp, tmp_bcm, tmp_bpp_index, tmp_bcm_index, tmp_kick_info_out] \
+                       = _evolvebin.evolv2([kstar_1, kstar_2],
                                            [M1, M2],
                                            P_orb,
                                            ecc,
                                            metallicity,
                                            time,
-                                           dtp,
+                                           time,
+                                           # dtp,
                                            [M1, M2],
                                            [0.0, 0.0],
                                            [0.0, 0.0],
@@ -191,14 +265,19 @@ def evolve(M1,
                                            [0.0, 0.0],
                                            0.0,
                                            np.zeros(20),
-                                           np.zeros(20))
+                                           kick_info)
+                                           # np.zeros((2,len(KICK_COLUMNS)-1)))
 
 
 
 
+    print(tmp_bcm.ravel().shape)
+    print(tmp_bcm.ravel()[0:50])
+    print(len(bcm_dtype))
 
     bcm = tmp_bcm.ravel().view(dtype=bcm_dtype)
     bpp = tmp_bpp.ravel().view(dtype=bpp_dtype)
+    kick = tmp_kick_info_out.ravel().view(dtype=kick_dtype)
 
 
 
@@ -207,6 +286,8 @@ def evolve(M1,
     idx = np.argmax(bpp['tphys'])
     bpp = bpp[:idx]
 
+
+    # return bpp
 
     dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
              ('mdot1', 'f8'), ('mdot2', 'f8'), ('t_SN1', 'f8'), ('t_SN2', 'f8'),
@@ -217,12 +298,15 @@ def evolve(M1,
 
     if len(bcm) == 0: return output[0]
 
+    V_sys_1 = np.sqrt(kick[0]['delta_vsysx_1']**2 + kick[0]['delta_vsysy_1']**2 + kick[0]['delta_vsysz_1']**2)
+    V_sys_2 = np.sqrt(kick[1]['delta_vsysx_2']**2 + kick[1]['delta_vsysy_2']**2 + kick[1]['delta_vsysz_2']**2)
+
 
     output[0]['M1'] = bcm[-1]['mass_1']
     output[0]['M2'] = bcm[-1]['mass_2']
     output[0]['a'] = bcm[-1]['sep']
     output[0]['ecc'] = bcm[-1]['ecc']
-    output[0]['v_sys'] = bcm[-1]['Vsys_final']
+    output[0]['v_sys'] = np.sqrt(V_sys_1**2 + V_sys_2**2)
     output[0]['mdot1'] = bcm[-1]['deltam_1']
     output[0]['mdot2'] = bcm[-1]['deltam_2']
     try:
@@ -237,8 +321,8 @@ def evolve(M1,
     output[0]['R2'] = bcm[-1]['rad_2']
     output[0]['Teff1'] = bcm[-1]['teff_1']
     output[0]['Teff2'] = bcm[-1]['teff_2']
-    output[0]['L1'] = bcm[-1]['lumin_1']
-    output[0]['L2'] = bcm[-1]['lumin_2']
+    output[0]['L1'] = bcm[-1]['lum_1']
+    output[0]['L2'] = bcm[-1]['lum_2']
     output[0]['k1'] = bcm[-1]['kstar_1']
     output[0]['k2'] = bcm[-1]['kstar_2']
 
