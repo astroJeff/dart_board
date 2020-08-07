@@ -697,16 +697,16 @@ class DartBoard():
                                                 pool=self.pool)
                 self.pool = None
             elif self.threads != 1:
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers,
-                                                dim=self.dim,
-                                                lnpostfn=self.posterior_function,
+                sampler = emcee.EnsembleSampler(self.nwalkers,
+                                                self.dim,
+                                                self.posterior_function,
                                                 args=[self],
                                                 blobs_dtype=posterior.blobs_dtype,
                                                 threads=self.threads)
             else:
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers,
-                                                dim=self.dim,
-                                                lnpostfn=self.posterior_function,
+                sampler = emcee.EnsembleSampler(self.nwalkers,
+                                                self.dim,
+                                                self.posterior_function,
                                                 blobs_dtype=posterior.blobs_dtype,
                                                 args=[self])
 
@@ -740,18 +740,19 @@ class DartBoard():
 
             # THIS DOES NOT YET WORK #
 
+
             # Define sampler
             if self.pool is not None:
-                sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                sampler = emcee.ptsampler.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
                                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
                                           loglargs=(self,), logpargs=(self,), pool=self.pool)
                 self.pool = None
             elif self.threads != 1:
-                sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                sampler = emcee.ptsampler.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
                                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
                                           loglargs=(self,), logpargs=(self,), threads=self.threads)
             else:
-                sampler = emcee.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                sampler = emcee.ptsampler.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
                                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
                                           loglargs=(self,), logpargs=(self,))
 
