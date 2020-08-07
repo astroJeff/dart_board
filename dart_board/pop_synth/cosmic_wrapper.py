@@ -161,16 +161,16 @@ def evolve(M1,
 
     # This is a stand in - the eccentric anomaly needs to be passed instead of pi/3 below
     # Unfortunately, this needs to be updated within cosmic to be the mean anomaly.
-    # natal_kick_array = [[v_kick_1, np.pi/2-theta_kick_1, phi_kick_1, np.pi/3, 0],
-    #                     [v_kick_2, np.pi/2-theta_kick_2, phi_kick_2, np.pi/3, 0]]
-    natal_kick_array = [[-100.0, -100.0, -100.0, -100.0, 0.0], [-100.0, -100.0, -100.0, -100.0, 0.0]]
+    natal_kick_array = [[v_kick_1, (np.pi/2-theta_kick_1) * 180/np.pi, phi_kick_1 * 180/np.pi, np.pi/3, 0],
+                        [v_kick_2, (np.pi/2-theta_kick_2) * 180/np.pi, phi_kick_2 * 180/np.pi, np.pi/3, 0]]
+    # natal_kick_array = [[-100.0, -100.0, -100.0, -100.0, 0.0], [-100.0, -100.0, -100.0, -100.0, 0.0]]
     kick_info = np.zeros((2,len(KICK_COLUMNS)-1))
-    kick_info[0,2] = v_kick_1
-    kick_info[0,3] = np.pi/2-theta_kick_1
-    kick_info[0,4] = phi_kick_1
-    kick_info[1,2] = v_kick_2
-    kick_info[1,3] = np.pi/2-theta_kick_2
-    kick_info[1,4] = phi_kick_2
+    # kick_info[0,2] = v_kick_1
+    # kick_info[0,3] = np.pi/2-theta_kick_1
+    # kick_info[0,4] = phi_kick_1
+    # kick_info[1,2] = v_kick_2
+    # kick_info[1,3] = np.pi/2-theta_kick_2
+    # kick_info[1,4] = phi_kick_2
 
     _evolvebin.windvars.neta = neta
     _evolvebin.windvars.bwind = bwind
@@ -188,7 +188,7 @@ def evolve(M1,
     _evolvebin.ceflags.cekickflag = cekickflag
     _evolvebin.ceflags.cemergeflag = cemergeflag
     _evolvebin.ceflags.cehestarflag = cehestarflag
-    _evolvebin.windvars.mxns = mxns
+    _evolvebin.snvars.mxns = mxns
     _evolvebin.points.pts1 = pts1
     _evolvebin.points.pts2 = pts2
     _evolvebin.points.pts3 = pts3
@@ -213,7 +213,7 @@ def evolve(M1,
     _evolvebin.magvars.ck = ck
     _evolvebin.flags.windflag = windflag
     _evolvebin.flags.qcflag = qcflag
-    _evolvebin.windvars.eddlimflag = eddlimflag
+    _evolvebin.flags.eddlimflag = eddlimflag
     _evolvebin.tidalvars.fprimc_array = fprimc_array
     _evolvebin.rand1.idum1 = idum
     _evolvebin.flags.bhspinflag = bhspinflag
@@ -223,9 +223,9 @@ def evolve(M1,
     _evolvebin.flags.htpmb = htpmb
     _evolvebin.flags.st_cr = ST_cr
     _evolvebin.flags.st_tide = ST_tide
-    _evolvebin.flags.rembar_massloss = rembar_massloss
-    _evolvebin.flags.zsun = zsun
-    _evolvebin.flags.kickflag = kickflag
+    _evolvebin.snvars.rembar_massloss = rembar_massloss
+    _evolvebin.metvars.zsun = zsun
+    _evolvebin.snvars.kickflag = kickflag
     _evolvebin.cmcpass.using_cmc = 0
 
     kstar_1 = 1
