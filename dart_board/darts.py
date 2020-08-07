@@ -697,16 +697,16 @@ class DartBoard():
                                                 pool=self.pool)
                 self.pool = None
             elif self.threads != 1:
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers,
-                                                dim=self.dim,
-                                                lnpostfn=self.posterior_function,
+                sampler = emcee.EnsembleSampler(self.nwalkers,
+                                                self.dim,
+                                                self.posterior_function,
                                                 args=[self],
                                                 blobs_dtype=posterior.blobs_dtype,
                                                 threads=self.threads)
             else:
-                sampler = emcee.EnsembleSampler(nwalkers=self.nwalkers,
-                                                dim=self.dim,
-                                                lnpostfn=self.posterior_function,
+                sampler = emcee.EnsembleSampler(self.nwalkers,
+                                                self.dim,
+                                                self.posterior_function,
                                                 blobs_dtype=posterior.blobs_dtype,
                                                 args=[self])
 
@@ -739,7 +739,7 @@ class DartBoard():
         elif method == 'emcee_PT':
 
             # THIS DOES NOT YET WORK #
-            
+
 
             # Define sampler
             if self.pool is not None:
