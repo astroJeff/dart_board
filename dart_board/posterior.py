@@ -106,7 +106,8 @@ def ln_likelihood(x, dart):
         x = x[1:]
     else:
         z = dart.metallicity
-    ln_t_b = x[0]
+    if dart.model_time:
+        ln_t_b = x[0]
 
 
 
@@ -114,8 +115,10 @@ def ln_likelihood(x, dart):
     M1 = np.exp(ln_M1)
     M2 = np.exp(ln_M2)
     a = np.exp(ln_a)
-    t_b = np.exp(ln_t_b)
-
+    if dart.model_time:
+        t_b = np.exp(ln_t_b)
+    else:
+        t_b = c.Hubble_time
 
     # Empty array for emcee blobs
     empty_arr = tuple(np.zeros(17))
@@ -197,13 +200,14 @@ def posterior_properties(x, output, dart):
         x = x[1:]
     else:
         z = dart.metallicity
-    ln_t_b = x[0]
+    if dart.model_time:
+        ln_t_b = x[0]
 
 
     M1 = np.exp(ln_M1)
     M2 = np.exp(ln_M2)
     a = np.exp(ln_a)
-    t_b = np.exp(ln_t_b)
+    if dart.model_time: t_b = np.exp(ln_t_b)
 
     # Calculate an X-ray luminosity
     L_x_out = calculate_L_x(output['M1'], output['mdot1'], output['k1'])

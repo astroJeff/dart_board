@@ -189,6 +189,7 @@ def evolve(M1,
     _evolvebin.windvars.eddfac = eddfac
     _evolvebin.windvars.gamma = gamma
     _evolvebin.flags.bdecayfac = bdecayfac
+    _evolvebin.flags.grflag = GRflag
     _evolvebin.magvars.bconst = bconst
     _evolvebin.magvars.ck = ck
     _evolvebin.flags.windflag = windflag
@@ -248,7 +249,6 @@ def evolve(M1,
     bcm = bcm[:idx+1]
     idx = np.argmax(bpp['tphys'])
     bpp = bpp[:idx]
-
 
     dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
              ('mdot1', 'f8'), ('mdot2', 'f8'), ('t_SN1', 'f8'), ('t_SN2', 'f8'),
