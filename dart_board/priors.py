@@ -27,7 +27,8 @@ def ln_prior(x, dart):
     if dart.model_metallicity:
         ln_z = x[0]
         x = x[1:]
-    ln_t_b = x[0]
+    if dart.model_time:
+        ln_t_b = x[0]
 
     # Set defaults
     kick_sigma = c.v_kick_sigma
@@ -76,7 +77,8 @@ def ln_prior(x, dart):
         lp += dart.prior_phi_kick2(phi_kick2)
 
     if dart.prior_pos is None:
-        lp += dart.prior_t(ln_t_b, t_min=t_min, t_max=t_max)
+        if dart.model_time:
+            lp += dart.prior_t(ln_t_b, t_min=t_min, t_max=t_max)
     else:
         lp += dart.prior_pos(ra_b, dec_b, ln_t_b)
 

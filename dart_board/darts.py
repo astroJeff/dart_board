@@ -168,11 +168,18 @@ class DartBoard():
         self.prior_theta_kick2 = ln_prior_theta_kick
         self.prior_phi_kick2 = ln_prior_phi_kick
 
-        self.prior_pos = None
+        self.model_time = True
         if ln_prior_pos is None:
-            self.prior_t = ln_prior_t
+            self.prior_pos = None
+            if ln_prior_t is None:  # time is not set as a parameter
+                self.prior_t = None
+                self.model_time = False
+            else:
+                self.prior_t = ln_prior_t
+                self.model_time = True
         else:
             self.prior_pos = ln_prior_pos
+            self.model_time = True
 
         self.model_metallicity = False
         if ln_prior_z is not None:
@@ -254,7 +261,7 @@ class DartBoard():
         if self.second_SN: self.dim += 3  # Second SN parameters
         if self.prior_pos is not None: self.dim += 2  # RA and Dec
         if self.model_metallicity: self.dim += 1  # for modeling the metallicity
-        self.dim += 1  # Birth time
+        if self.model_time: self.dim += 1  # Birth time
 
 
         # Saved data
@@ -289,7 +296,7 @@ class DartBoard():
             if "WD" in self.binary_type:
                 M1 = 3.0 * np.random.uniform() + 8.0
             else:
-                M1 = 30.0 * np.random.uniform() + 8.0
+                M1 = 50.0 * np.random.uniform() + 8.0
             M2 = M1 * (np.random.uniform())
 
             if a_set == 'very_low':
@@ -321,10 +328,11 @@ class DartBoard():
             if self.model_metallicity: z = np.exp(np.random.normal(np.log(0.02), 0.001, 1))
 
             # Randomly initialize between minimum and maximum time
-            if 'HMXB' in self.binary_type or 'NS' in self.binary_type or 'BH' in self.binary_type:
-                time = 100 * np.random.uniform() + c.min_t
-            else:
-                time = (c.max_t-c.min_t) * np.random.uniform() + c.min_t
+            if self.model_time:
+                if 'HMXB' in self.binary_type or 'NS' in self.binary_type or 'BH' in self.binary_type:
+                    time = 100 * np.random.uniform() + c.min_t
+                else:
+                    time = (c.max_t-c.min_t) * np.random.uniform() + c.min_t
 
 
             # Create tuple of model parameters
@@ -333,7 +341,7 @@ class DartBoard():
             if self.second_SN: x += v_kick2, theta_kick2, phi_kick2
             if self.prior_pos is not None: x += ra, dec
             if self.model_metallicity: x+= (np.log(z),)
-            x += (np.log(time),)
+            if self.model_time: x += (np.log(time),)
 
 
             # Calculate the posterior probability for x
@@ -452,7 +460,7 @@ class DartBoard():
             theta_kick2_set = np.zeros(self.nwalkers)
             phi_kick2_set = np.zeros(self.nwalkers)
         if self.model_metallicity: z_set = np.zeros(self.nwalkers)
-        time_set = np.zeros(self.nwalkers)
+        if self.model_time: time_set = np.zeros(self.nwalkers)
 
         if self.prior_pos is not None:
             # Use first call of sf_history prior to set ra and dec bounds
@@ -511,7 +519,8 @@ class DartBoard():
                 x = x[1:]
             else:
                 z = self.metallicity
-            ln_t_b = x[0]
+            if self.model_time:
+                ln_t_b = x[0]
 
 
             M1_set[i] = np.exp(ln_M1)
@@ -530,7 +539,7 @@ class DartBoard():
                 ra_set[i] = ra_b
                 dec_set[i] = dec_b
             if self.model_metallicity: z_set[i] = z
-            time_set[i] = np.exp(ln_t_b)
+            if self.model_time: time_set[i] = np.exp(ln_t_b)
 
 
         # Save and return the walker positions
@@ -539,8 +548,9 @@ class DartBoard():
         if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
         if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
         if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
-        self.p0 = np.vstack((self.p0, np.log(time_set))).T
+        if self.model_time: self.p0 = np.vstack((self.p0, np.log(time_set)))
 
+        self.p0 = self.p0.T
 
         print("...walkers are set.")
 
@@ -576,7 +586,7 @@ class DartBoard():
             v_kick2_set = np.zeros((self.ntemps, self.nwalkers))
             theta_kick2_set = np.zeros((self.ntemps, self.nwalkers))
             phi_kick2_set = np.zeros((self.ntemps, self.nwalkers))
-        time_set = np.zeros((self.ntemps, self.nwalkers))
+        if self.model_time: time_set = np.zeros((self.ntemps, self.nwalkers))
 
         if self.prior_pos is not None:
             # Use first call of sf_history prior to set ra and dec bounds
@@ -626,7 +636,8 @@ class DartBoard():
                     x = x[1:]
                 else:
                     z = self.metallicity
-                ln_t_b = x[0]
+                if self.model_time:
+                    ln_t_b = x[0]
 
 
 
@@ -646,7 +657,7 @@ class DartBoard():
                     ra_set[i,j] = ra_b
                     dec_set[i,j] = dec_b
                 if self.model_metallicity: z_set[i,j] = z
-                time_set[i,j] = np.exp(ln_t_b)
+                if self.model_time: time_set[i,j] = np.exp(ln_t_b)
 
 
         # Save and return the walker positions
@@ -655,7 +666,7 @@ class DartBoard():
         if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set[np.newaxis,:,:], theta_kick2_set[np.newaxis,:,:], phi_kick2_set[np.newaxis,:,:]))
         if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set[np.newaxis,:,:], dec_set[np.newaxis,:,:]))
         if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set[np.newaxis,:,:])))
-        self.p0 = np.vstack((self.p0, np.log(time_set[np.newaxis,:,:])))
+        if self.model_time: self.p0 = np.vstack((self.p0, np.log(time_set[np.newaxis,:,:])))
 
 
         # Swap axes for parallel tempered sampler
@@ -712,6 +723,7 @@ class DartBoard():
 
 
             # Burn-in
+            print(self.p0.shape)
             print("Starting burn-in...")
             pos = sampler.run_mcmc(self.p0, nburn)
             # pos,prob,state,binary_data = sampler.run_mcmc(self.p0, nburn)
@@ -851,7 +863,10 @@ class DartBoard():
             ln_M1 = np.log(M1)
             ln_M2 = np.log(M2)
             ln_a = np.log(P_to_A(M1, M2, orbital_period))
-            ln_t_b = np.log(t_b)
+            if self.model_time:
+                ln_t_b = np.log(t_b)
+            else:
+                ln_t_b = np.log(c.Hubble_time * np.ones(batch_size))
 
 
             # Now, we want to zero the outputs
@@ -887,7 +902,7 @@ class DartBoard():
                     if self.second_SN: x_i += v_kick2[i], theta_kick2[i], phi_kick2[i]
                     if self.prior_pos is not None: x_i += ra[i], dec[i]
                     if self.model_metallicity: x_i += (ln_z[i],)
-                    x_i += (ln_t_b[i],)
+                    if self.model_time: x_i += (ln_t_b[i],)
 
                     # Calculate the likelihood function
                     likelihood[i] = posterior.posterior_properties(x_i, output, self)

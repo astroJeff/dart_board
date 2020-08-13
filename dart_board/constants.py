@@ -15,7 +15,7 @@ day_to_sec = 3600.0*24.0 # Sec in day
 deg_to_rad = 0.0174532925199 # Degrees to radians
 rad_to_deg = 57.2957795131 # Radians to degrees
 asec_to_rad = 4.84814e-6 # Arcsec to radians
-
+Hubble_time = 1.47e4 # Hubble time set to be 14.7 Gyr
 
 R_NS = 10.0  # NS radius in km
 eta_bol = 0.15  # Calibrated to Chandra X-ray sensitivity
