@@ -102,7 +102,7 @@ def evolve(M1,
            mxns = 2.5,
            rejuvflag = 0,
            rejuv_fac = 1.0,
-           pts1 = 0.001,
+           pts1 = 0.005,
            pts2 = 0.01,
            pts3 = 0.02,
            sigma = 265.0,
@@ -211,7 +211,6 @@ def evolve(M1,
 
     kstar_1 = 1
     kstar_2 = 1
-
 
     [bpp_index, bcm_index, kick_info_out] \
                        = _evolvebin.evolv2([kstar_1, kstar_2],
