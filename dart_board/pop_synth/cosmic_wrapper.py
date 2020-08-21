@@ -213,7 +213,7 @@ def evolve(M1,
     kstar_2 = 1
 
 
-    [tmp_bpp, tmp_bcm, tmp_bpp_index, tmp_bcm_index, tmp_kick_info_out] \
+    [bpp_index, bcm_index, kick_info_out] \
                        = _evolvebin.evolv2([kstar_1, kstar_2],
                                            [M1, M2],
                                            P_orb,
@@ -240,15 +240,14 @@ def evolve(M1,
                                            np.zeros(20),
                                            kick_info)
 
+    bcm = _evolvebin.binary.bcm[:bcm_index].copy()
+    bpp = _evolvebin.binary.bpp[:bpp_index].copy()
+    _evolvebin.binary.bpp[:bpp_index] = np.zeros(bpp.shape)
+    _evolvebin.binary.bcm[:bcm_index] = np.zeros(bcm.shape)
+    bcm = bcm.view(dtype=bcm_dtype)
+    bpp = bpp.view(dtype=bpp_dtype)
 
-    bcm = tmp_bcm.ravel().view(dtype=bcm_dtype)
-    bpp = tmp_bpp.ravel().view(dtype=bpp_dtype)
-    kick = tmp_kick_info_out.ravel().view(dtype=kick_dtype)
-
-    idx = np.argmax(bcm['tphys'])
-    bcm = bcm[:idx+1]
-    idx = np.argmax(bpp['tphys'])
-    bpp = bpp[:idx]
+    kick = kick_info_out.ravel().view(dtype=kick_dtype)
 
     dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
              ('mdot1', 'f8'), ('mdot2', 'f8'), ('t_SN1', 'f8'), ('t_SN2', 'f8'),
