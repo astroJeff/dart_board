@@ -1,6 +1,9 @@
 import numpy as np
 from . import constants as c
 
+# For calculating GR merger times
+H_e = None
+
 def P_to_A(M1, M2, P):
     """
     Calculate the orbital separation from the stellar masses and orbital period.
@@ -40,7 +43,7 @@ def A_to_P(M1, M2, a):
 
 
 def roche_radius(M1, M2, a):
-    """ Calculate the Roche lobe radius using formulat from Eggleton (1983) 
+    """ Calculate the Roche lobe radius using formulat from Eggleton (1983)
 
     Parameters
     ----------
@@ -85,7 +88,7 @@ def bondi_radius(M1, velocity):
 
 def orbital_velocity(M1, M2, a):
     """ Calculate the orbital velocity of a binary
-    
+
     Parameters
     ----------
     M1, M2 : float
@@ -162,3 +165,67 @@ def thin_chains(chains, thin_factor):
         return chains[:,:,::thin_factor,:]
     else:
         return chains[:,::thin_factor,:]
+
+
+##############################################################################
+##################                                          ##################
+################## Gravitational Wave Merger Time Functions ##################
+##################                                          ##################
+##############################################################################
+
+def integrand_ecc(e):
+    return e**(29./19.) * (1.0 + 121./304.*e*e)**(1181./2299.) / (1.0-e*e)**(1.5)
+
+def H_e_full(e):
+
+    from scipy.integrate import quad
+
+    term_1 = ((1.0 + 121./304.*e*e)**(-870./2299.))**4.
+    term_2 = ((1.0-e*e) * e**(-12./19.))**4.
+    term_3 = quad(integrand_ecc, 0.0, e, epsabs=1.0e-60, epsrel=1.0e-60)[0]
+
+    return term_1 * term_2 * term_3
+
+
+def calc_merger_time(M1, M2, A_f=None, P_orb=None, ecc=0.0):
+    """ Calculate the merger time due to gravitational waves (Myr) """
+
+    global H_e
+    if H_e is None:
+        merger_time_set_up()
+
+    if A_f is None and P_orb is None:
+        raise ValueError("You must provide either an orbital separation, A_f, or an orbital period, P_orb.")
+
+    if A_f is None:
+        A_f = P_to_A(M1, M2, P_orb)
+
+    beta = 64./5. * c.G**3 * M1 * M2 * (M1+M2) * c.Msun_to_g**3 / (c.c_light)**5
+
+    return 12./19. * (A_f * c.Rsun_to_cm)**4 / beta * H_e(ecc) / (1.0e6 * c.yr_to_sec)
+
+
+
+def merger_time_set_up():
+
+    from scipy.interpolate import interp1d
+
+    global H_e
+
+    # Calculate the interpolation function of H(e)
+    ecc_set = np.linspace(1.0e-4, 0.9, 50)
+    ecc_set = np.append(ecc_set, 1.0 - 10**np.linspace(-1.1, -10, 50))
+    H = np.zeros(100)
+    for i, ecc in enumerate(ecc_set): H[i] = H_e_full(ecc)
+
+    ecc_set = np.append(0.0, ecc_set)
+    H = np.append(H[0], H)
+    ecc_set = np.append(ecc_set, 1.0)
+    H = np.append(H, 0.0)
+
+    H[ecc_set>0.999] = 304./425. * (1.0-ecc_set[ecc_set>0.999]**2)**3.5
+
+	# Make sure no negative values exist
+    H = np.clip(H,a_min=0.0, a_max=1.0e10)
+
+    H_e = interp1d(ecc_set, H, bounds_error=False, fill_value=0.0, kind='cubic')
