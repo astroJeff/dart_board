@@ -90,20 +90,20 @@ def ln_likelihood(x, dart):
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
     x = x[4:]
     if dart.first_SN:
-        v_kick1, theta_kick1, phi_kick1 = x[0:3]
-        x = x[3:]
+        v_kick1, theta_kick1, phi_kick1, omega_kick1 = x[0:4]
+        x = x[4:]
     else:
-        v_kick1, theta_kick1, phi_kick1 = 0.0, 0.0, 0.0
+        v_kick1, theta_kick1, phi_kick1, omega_kick1 = 0.0, 0.0, 0.0, 0.0
     if dart.second_SN:
-        v_kick2, theta_kick2, phi_kick2 = x[0:3]
-        x = x[3:]
+        v_kick2, theta_kick2, phi_kick2, omega_kick2 = x[0:4]
+        x = x[4:]
     if dart.prior_pos is not None:
         ra_b, dec_b = x[0:2]
         x = x[2:]
     if dart.model_metallicity:
         ln_z = x[0]
         z = np.exp(ln_z)
-        x = x[1:]
+        if dart.model_time: x = x[1:]
     else:
         z = dart.metallicity
     if dart.model_time:
@@ -133,13 +133,12 @@ def ln_likelihood(x, dart):
         v_kick2 = v_kick1
         theta_kick2 = theta_kick1
         phi_kick2 = phi_kick1
-
-    # print(v_kick2, theta_kick2, phi_kick2)
+        omega_kick2 = omega_kick1
 
     # Run rapid binary evolution code
     output = dart.evolve_binary(M1, M2, orbital_period, ecc,
-                                v_kick1, theta_kick1, phi_kick1,
-                                v_kick2, theta_kick2, phi_kick2,
+                                v_kick1, theta_kick1, phi_kick1, omega_kick1,
+                                v_kick2, theta_kick2, phi_kick2, omega_kick2,
                                 t_b, z, False, **dart.model_kwargs)
 
     # Return posterior probability and blobs
@@ -186,10 +185,10 @@ def posterior_properties(x, output, dart):
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
     x = x[4:]
     if dart.first_SN:
-        v_kick1, theta_kick1, phi_kick1 = x[0:3]
+        v_kick1, theta_kick1, phi_kick1, omega_kick1 = x[0:4]
         x = x[3:]
     if dart.second_SN:
-        v_kick2, theta_kick2, phi_kick2 = x[0:3]
+        v_kick2, theta_kick2, phi_kick2, omega_kick2 = x[0:4]
         x = x[3:]
     if dart.prior_pos is not None:
         ra_b, dec_b = x[0:2]
@@ -197,7 +196,7 @@ def posterior_properties(x, output, dart):
     if dart.model_metallicity:
         ln_z = x[0]
         z = np.exp(ln_z)
-        x = x[1:]
+        if dart.model_time: x = x[1:]
     else:
         z = dart.metallicity
     if dart.model_time:

@@ -275,6 +275,20 @@ def ln_prior_phi_kick(phi_kick):
     if phi_kick < 0.0 or phi_kick > np.pi: return -np.inf
     return -np.log(np.pi)
 
+def ln_prior_omega_kick(omega_kick):
+    """
+    Return the natural log of the prior probability on the orbital mean anomaly during SN: ln P(omega_kick).
+
+    Args:
+        omega_kick : float, mean anomaly when the SN occurs.
+
+    Returns:
+        ln_P_phi_kick : float, natural logarithm of the prior on the mean anomaly.
+    """
+
+    if omega_kick < 0.0 or omega_kick > 2*np.pi: return -np.inf
+    return -np.log(2*np.pi)
+
 
 def ln_prior_t(t_b, t_min=c.min_t, t_max=c.max_t):
     """
