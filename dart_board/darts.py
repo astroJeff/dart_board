@@ -344,7 +344,7 @@ class DartBoard():
 
 
             # Create tuple of model parameters
-            x = np.log(M1), np.log(M2), np.log(a), ecc
+            x = np.log(M1), np.log(M2), np.log(a), ecc[0]
             if self.first_SN: x += v_kick1, theta_kick1, phi_kick1, omega_kick1
             if self.second_SN: x += v_kick2, theta_kick2, phi_kick2, omega_kick2
             if self.prior_pos is not None: x += ra, dec
@@ -883,7 +883,7 @@ class DartBoard():
                         omega_kick1, v_kick2, theta_kick2, omega_kick2, \
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size)
             else:
-                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1,
+                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, \
                         omega_kick1, v_kick2, theta_kick2, omega_kick2, \
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size, \
                         ra_in=self.ra_obs, dec_in=self.dec_obs)

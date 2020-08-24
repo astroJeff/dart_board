@@ -1,7 +1,8 @@
 ***
-      SUBROUTINE evolv_wrapper(num_bin, m1, m2, tb, ecc, v_kick1,
-     &                         theta_kick1, phi_kick1, v_kick2,
-     &                         theta_kick2, phi_kick2, tmax, z,
+      SUBROUTINE evolv_wrapper(num_bin, m1, m2, tb, ecc,
+     &                         v_kick1, theta_kick1, phi_kick1,
+     &                         omega_kick1, v_kick2, theta_kick2,
+     &                         phi_kick2, omega_kick2, tmax, z,
      &                         out_flag, idum_in,
      &                         neta_in, bwind_in, hewind_in,
      &                         alpha1_in, lambda_in, ceflag_in,
@@ -32,8 +33,8 @@
       integer, intent(in) :: num_bin
 *
       real*8, intent(in) :: tb, ecc
-      real*8, intent(in) :: v_kick1, theta_kick1, phi_kick1
-      real*8, intent(in) :: v_kick2, theta_kick2, phi_kick2
+      real*8, intent(in) :: v_kick1, theta_kick1, phi_kick1, omega_kick1
+      real*8, intent(in) :: v_kick2, theta_kick2, phi_kick2, omega_kick2
       real*8, intent(in) :: m1, m2, tmax, z
       integer, intent(in) :: idum_in
       real*8, intent(in) :: neta_in, bwind_in, hewind_in
