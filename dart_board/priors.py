@@ -16,11 +16,11 @@ def ln_prior(x, dart):
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
     x = x[4:]
     if dart.first_SN:
-        v_kick1, theta_kick1, phi_kick1 = x[0:3]
-        x = x[3:]
+        v_kick1, theta_kick1, phi_kick1, omega_kick1 = x[0:4]
+        x = x[4:]
     if dart.second_SN:
-        v_kick2, theta_kick2, phi_kick2 = x[0:3]
-        x = x[3:]
+        v_kick2, theta_kick2, phi_kick2, omega_kick2 = x[0:4]
+        x = x[4:]
     if dart.prior_pos is not None:
         ra_b, dec_b = x[0:2]
         x = x[2:]
@@ -70,11 +70,13 @@ def ln_prior(x, dart):
         lp += dart.prior_v_kick1(v_kick1, sigma=kick_sigma)
         lp += dart.prior_theta_kick1(theta_kick1)
         lp += dart.prior_phi_kick1(phi_kick1)
+        lp += dart.prior_omega_kick1(omega_kick1)
 
     if dart.second_SN:
         lp += dart.prior_v_kick2(v_kick2, sigma=kick_sigma)
         lp += dart.prior_theta_kick2(theta_kick2)
         lp += dart.prior_phi_kick2(phi_kick2)
+        lp += dart.prior_omega_kick2(omega_kick2)
 
     if dart.prior_pos is None:
         if dart.model_time:
@@ -272,6 +274,20 @@ def ln_prior_phi_kick(phi_kick):
 
     if phi_kick < 0.0 or phi_kick > np.pi: return -np.inf
     return -np.log(np.pi)
+
+def ln_prior_omega_kick(omega_kick):
+    """
+    Return the natural log of the prior probability on the orbital mean anomaly during SN: ln P(omega_kick).
+
+    Args:
+        omega_kick : float, mean anomaly when the SN occurs.
+
+    Returns:
+        ln_P_phi_kick : float, natural logarithm of the prior on the mean anomaly.
+    """
+
+    if omega_kick < 0.0 or omega_kick > 2*np.pi: return -np.inf
+    return -np.log(2*np.pi)
 
 
 def ln_prior_t(t_b, t_min=c.min_t, t_max=c.max_t):

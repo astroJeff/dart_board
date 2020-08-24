@@ -27,10 +27,12 @@ def generate_population(dart, N, ra_in=None, dec_in=None):
     v_kick1 = dart.generate_v_kick1(N)
     theta_kick1 = dart.generate_theta_kick1(N)
     phi_kick1 = dart.generate_phi_kick1(N)
+    omega_kick1 = dart.generate_omega_kick1(N)
 
     v_kick2 = dart.generate_v_kick2(N)
     theta_kick2 = dart.generate_theta_kick2(N)
     phi_kick2 = dart.generate_phi_kick2(N)
+    omega_kick2 = dart.generate_omega_kick2(N)
 
     # Orbit parameters
     a = np.zeros(N)
@@ -67,7 +69,7 @@ def generate_population(dart, N, ra_in=None, dec_in=None):
 
 
     return M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, \
-            v_kick2, theta_kick2, phi_kick2, ra, dec, t_b
+            omega_kick1, v_kick2, theta_kick2, phi_kick2, omega_kick2, ra, dec, t_b
 
 
 
@@ -101,6 +103,19 @@ def get_theta(N):
     return np.arccos(1.0-2.0*uniform.rvs(size = N))
 
 def get_phi(N):
+    """
+    Generate N random azimuthal angles. It is assumed to be isotropic.
+
+    Args:
+        N : int, number of random samples to generate
+
+    Returns:
+        phi : ndarray, array of random kick azimuthal angles (radians)
+    """
+
+    return 2.0*np.pi*uniform.rvs(size = N)
+
+def get_omega(N):
     """
     Generate N random azimuthal angles. It is assumed to be isotropic.
 

@@ -72,9 +72,11 @@ def evolve(M1,
            v_kick_1,
            theta_kick_1,
            phi_kick_1,
+           omega_kick_1,
            v_kick_2,
            theta_kick_2,
            phi_kick_2,
+           omega_kick_2,
            time,
            metallicity,
            verbose_output = False,
@@ -141,8 +143,8 @@ def evolve(M1,
 
     # This is a stand in - the eccentric anomaly needs to be passed instead of pi/3 below
     # Unfortunately, this needs to be updated within cosmic to be the mean anomaly.
-    natal_kick_array = [[v_kick_1, (np.pi/2-theta_kick_1) * 180/np.pi, phi_kick_1 * 180/np.pi, np.pi/3, 0],
-                        [v_kick_2, (np.pi/2-theta_kick_2) * 180/np.pi, phi_kick_2 * 180/np.pi, np.pi/3, 0]]
+    natal_kick_array = [[v_kick_1, (np.pi/2-theta_kick_1) * 180/np.pi, phi_kick_1 * 180/np.pi, omega_kick_1, 0],
+                        [v_kick_2, (np.pi/2-theta_kick_2) * 180/np.pi, phi_kick_2 * 180/np.pi, omega_kick_2, 0]]
     # natal_kick_array = [[-100.0, -100.0, -100.0, -100.0, 0.0], [-100.0, -100.0, -100.0, -100.0, 0.0]]
     kick_info = np.zeros((2,len(KICK_COLUMNS)-1))
     # kick_info[0,2] = v_kick_1
