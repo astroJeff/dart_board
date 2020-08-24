@@ -84,7 +84,11 @@ def ln_prior(x, dart):
     else:
         lp += dart.prior_pos(ra_b, dec_b, ln_t_b)
 
-    if dart.model_metallicity: lp += dart.prior_z(ln_z, ln_t_b)
+    if dart.model_metallicity:
+        if dart.model_time:
+            lp += dart.prior_z(ln_z, ln_t_b)
+        else:
+            lp += dart.prior_z(ln_z)
 
     return lp
 
