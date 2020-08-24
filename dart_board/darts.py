@@ -46,6 +46,7 @@ class DartBoard():
                  ln_prior_v_kick=priors.ln_prior_v_kick,
                  ln_prior_theta_kick=priors.ln_prior_theta_kick,
                  ln_prior_phi_kick=priors.ln_prior_phi_kick,
+                 ln_prior_omega_kick = priors.ln_prior_omega_kick,
                  ln_prior_t=priors.ln_prior_ln_t,
                  ln_prior_pos=None,
                  ln_prior_z=None,
@@ -57,6 +58,7 @@ class DartBoard():
                  generate_v_kick=forward_pop_synth.get_v_kick,
                  generate_theta_kick=forward_pop_synth.get_theta,
                  generate_phi_kick=forward_pop_synth.get_phi,
+                 generate_omega_kick=forward_pop_synth.get_omega,
                  generate_t=forward_pop_synth.get_t,
                  generate_z=forward_pop_synth.get_z,
                  generate_pos=None,
@@ -164,9 +166,11 @@ class DartBoard():
         self.prior_v_kick1 = ln_prior_v_kick
         self.prior_theta_kick1 = ln_prior_theta_kick
         self.prior_phi_kick1 = ln_prior_phi_kick
+        self.prior_omega_kick1 = ln_prior_omega_kick
         self.prior_v_kick2 = ln_prior_v_kick
         self.prior_theta_kick2 = ln_prior_theta_kick
         self.prior_phi_kick2 = ln_prior_phi_kick
+        self.prior_omega_kick2 = ln_prior_omega_kick
 
         self.model_time = True
         if ln_prior_pos is None:
@@ -195,9 +199,11 @@ class DartBoard():
         self.generate_v_kick1 = generate_v_kick
         self.generate_theta_kick1 = generate_theta_kick
         self.generate_phi_kick1 = generate_phi_kick
+        self.generate_omega_kick1 = generate_omega_kick
         self.generate_v_kick2 = generate_v_kick
         self.generate_theta_kick2 = generate_theta_kick
         self.generate_phi_kick2 = generate_phi_kick
+        self.generate_omega_kick2 = generate_omega_kick
 
         self.generate_pos = None
         self.generate_z = generate_z
@@ -257,8 +263,8 @@ class DartBoard():
 
         # Determine the number of dimensions
         self.dim = 4  # M1, M2, a, ecc
-        if self.first_SN: self.dim += 3  # First SN parameters
-        if self.second_SN: self.dim += 3  # Second SN parameters
+        if self.first_SN: self.dim += 4  # First SN parameters
+        if self.second_SN: self.dim += 4  # Second SN parameters
         if self.prior_pos is not None: self.dim += 2  # RA and Dec
         if self.model_metallicity: self.dim += 1  # for modeling the metallicity
         if self.model_time: self.dim += 1  # Birth time
@@ -312,10 +318,12 @@ class DartBoard():
                 v_kick1 = 300.0 * np.random.uniform() + 20.0
                 theta_kick1 = np.pi * np.random.uniform()
                 phi_kick1 = np.pi * np.random.uniform()
+                omega_kick1 = 2*np.pi * np.random.uniform()
             if self.second_SN:
                 v_kick2 = 300.0 * np.random.uniform() + 20.0
                 theta_kick2 = np.pi * np.random.uniform()
                 phi_kick2 = np.pi * np.random.uniform()
+                omega_kick2 = 2*np.pi * np.random.uniform()
 
             if self.prior_pos is not None:
                 if self.ra_obs is None or self.dec_obs is None:
@@ -337,8 +345,8 @@ class DartBoard():
 
             # Create tuple of model parameters
             x = np.log(M1), np.log(M2), np.log(a), ecc
-            if self.first_SN: x += v_kick1, theta_kick1, phi_kick1
-            if self.second_SN: x += v_kick2, theta_kick2, phi_kick2
+            if self.first_SN: x += v_kick1, theta_kick1, phi_kick1, omega_kick1
+            if self.second_SN: x += v_kick2, theta_kick2, phi_kick2, omega_kick2
             if self.prior_pos is not None: x += ra, dec
             if self.model_metallicity: x+= (np.log(z),)
             if self.model_time: x += (np.log(time),)
@@ -455,10 +463,12 @@ class DartBoard():
             v_kick1_set = np.zeros(self.nwalkers)
             theta_kick1_set = np.zeros(self.nwalkers)
             phi_kick1_set = np.zeros(self.nwalkers)
+            omega_kick1_set = np.zeros(self.nwalkers)
         if self.second_SN:
             v_kick2_set = np.zeros(self.nwalkers)
             theta_kick2_set = np.zeros(self.nwalkers)
             phi_kick2_set = np.zeros(self.nwalkers)
+            omega_kick2_set = np.zeros(self.nwalkers)
         if self.model_metallicity: z_set = np.zeros(self.nwalkers)
         if self.model_time: time_set = np.zeros(self.nwalkers)
 
@@ -505,11 +515,11 @@ class DartBoard():
             ln_M1, ln_M2, ln_a, ecc = x[0:4]
             x = x[4:]
             if self.first_SN:
-                v_kick1, theta_kick1, phi_kick1 = x[0:3]
-                x = x[3:]
+                v_kick1, theta_kick1, phi_kick1, omega_kick1 = x[0:4]
+                x = x[4:]
             if self.second_SN:
-                v_kick2, theta_kick2, phi_kick2 = x[0:3]
-                x = x[3:]
+                v_kick2, theta_kick2, phi_kick2, omega_kick2 = x[0:4]
+                x = x[4:]
             if self.prior_pos is not None:
                 ra_b, dec_b = x[0:2]
                 x = x[2:]
@@ -531,10 +541,12 @@ class DartBoard():
                 v_kick1_set[i] = v_kick1
                 theta_kick1_set[i] = theta_kick1
                 phi_kick1_set[i] = phi_kick1
+                omega_kick1_set[i] = omega_kick1
             if self.second_SN:
                 v_kick2_set[i] = v_kick2
                 theta_kick2_set[i] = theta_kick2
                 phi_kick2_set[i] = phi_kick2
+                omega_kick2_set[i] = omega_kick2
             if self.prior_pos is not None:
                 ra_set[i] = ra_b
                 dec_set[i] = dec_b
@@ -544,8 +556,8 @@ class DartBoard():
 
         # Save and return the walker positions
         self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
-        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set))
-        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set))
+        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set, theta_kick1_set, phi_kick1_set, omega_kick1_set))
+        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set, theta_kick2_set, phi_kick2_set, omega_kick2_set))
         if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set, dec_set))
         if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set)))
         if self.model_time: self.p0 = np.vstack((self.p0, np.log(time_set)))
@@ -582,10 +594,12 @@ class DartBoard():
             v_kick1_set = np.zeros((self.ntemps, self.nwalkers))
             theta_kick1_set = np.zeros((self.ntemps, self.nwalkers))
             phi_kick1_set = np.zeros((self.ntemps, self.nwalkers))
+            omega_kick1_set = np.zeros((self.ntemps, self.nwalkers))
         if self.second_SN:
             v_kick2_set = np.zeros((self.ntemps, self.nwalkers))
             theta_kick2_set = np.zeros((self.ntemps, self.nwalkers))
             phi_kick2_set = np.zeros((self.ntemps, self.nwalkers))
+            omega_kick2_set = np.zeros((self.ntemps, self.nwalkers))
         if self.model_time: time_set = np.zeros((self.ntemps, self.nwalkers))
 
         if self.prior_pos is not None:
@@ -622,11 +636,11 @@ class DartBoard():
                 ln_M1, ln_M2, ln_a, ecc = x[0:4]
                 x = x[4:]
                 if self.first_SN:
-                    v_kick1, theta_kick1, phi_kick1 = x[0:3]
-                    x = x[3:]
+                    v_kick1, theta_kick1, phi_kick1, omega_kick1 = x[0:4]
+                    x = x[4:]
                 if self.second_SN:
-                    v_kick2, theta_kick2, phi_kick2 = x[0:3]
-                    x = x[3:]
+                    v_kick2, theta_kick2, phi_kick2, omega_kick2 = x[0:4]
+                    x = x[4:]
                 if self.prior_pos is not None:
                     ra_b, dec_b = x[0:2]
                     x = x[2:]
@@ -649,10 +663,12 @@ class DartBoard():
                     v_kick1_set[i,j] = v_kick1
                     theta_kick1_set[i,j] = theta_kick1
                     phi_kick1_set[i,j] = phi_kick1
+                    omega_kick1_set[i,j] = omega_kick1
                 if self.second_SN:
                     v_kick2_set[i,j] = v_kick2
                     theta_kick2_set[i,j] = theta_kick2
                     phi_kick2_set[i,j] = phi_kick2
+                    omega_kick2_set[i,j] = omega_kick2
                 if self.prior_pos is not None:
                     ra_set[i,j] = ra_b
                     dec_set[i,j] = dec_b
@@ -661,12 +677,27 @@ class DartBoard():
 
 
         # Save and return the walker positions
-        self.p0 = np.array([np.log(M1_set), np.log(M2_set), np.log(a_set), ecc_set])
-        if self.first_SN: self.p0 = np.vstack((self.p0, v_kick1_set[np.newaxis,:,:], theta_kick1_set[np.newaxis,:,:], phi_kick1_set[np.newaxis,:,:]))
-        if self.second_SN: self.p0 = np.vstack((self.p0, v_kick2_set[np.newaxis,:,:], theta_kick2_set[np.newaxis,:,:], phi_kick2_set[np.newaxis,:,:]))
-        if self.prior_pos is not None: self.p0 = np.vstack((self.p0, ra_set[np.newaxis,:,:], dec_set[np.newaxis,:,:]))
-        if self.model_metallicity: self.p0 = np.vstack((self.p0, np.log(z_set[np.newaxis,:,:])))
-        if self.model_time: self.p0 = np.vstack((self.p0, np.log(time_set[np.newaxis,:,:])))
+        self.p0 = np.array([np.log(M1_set),
+                            np.log(M2_set),
+                            np.log(a_set),
+                            ecc_set])
+        if self.first_SN: self.p0 = np.vstack((self.p0,
+                                               v_kick1_set[np.newaxis,:,:],
+                                               theta_kick1_set[np.newaxis,:,:],
+                                               phi_kick1_set[np.newaxis,:,:],
+                                               omega_kick1_set[np.newaxis,:,:]))
+        if self.second_SN: self.p0 = np.vstack((self.p0,
+                                                v_kick2_set[np.newaxis,:,:],
+                                                theta_kick2_set[np.newaxis,:,:],
+                                                phi_kick2_set[np.newaxis,:,:],
+                                                omega_kick2_set[np.newaxis,:,:]))
+        if self.prior_pos is not None: self.p0 = np.vstack((self.p0,
+                                                            ra_set[np.newaxis,:,:],
+                                                            dec_set[np.newaxis,:,:]))
+        if self.model_metallicity: self.p0 = np.vstack((self.p0,
+                                                        np.log(z_set[np.newaxis,:,:])))
+        if self.model_time: self.p0 = np.vstack((self.p0,
+                                                 np.log(time_set[np.newaxis,:,:])))
 
 
         # Swap axes for parallel tempered sampler
@@ -848,10 +879,12 @@ class DartBoard():
 
             # Generate the population
             if self.ra_obs is None or self.dec_obs is None:
-                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
+                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, \
+                        omega_kick1, v_kick2, theta_kick2, omega_kick2, \
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size)
             else:
-                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1, v_kick2, theta_kick2, \
+                M1, M2, orbital_period, ecc, v_kick1, theta_kick1, phi_kick1,
+                        omega_kick1, v_kick2, theta_kick2, omega_kick2, \
                         phi_kick2, ra, dec, t_b = forward_pop_synth.generate_population(self, batch_size, \
                         ra_in=self.ra_obs, dec_in=self.dec_obs)
 
@@ -881,8 +914,8 @@ class DartBoard():
                 if self.model_metallicity: z = np.exp(ln_z[i])
 
                 output = self.evolve_binary(M1[i], M2[i], orbital_period[i], ecc[i],
-                                            v_kick1[i], theta_kick1[i], phi_kick1[i],
-                                            v_kick2[i], theta_kick2[i], phi_kick2[i],
+                                            v_kick1[i], theta_kick1[i], phi_kick1[i], omega_kick1[i],
+                                            v_kick2[i], theta_kick2[i], phi_kick2[i], omega_kick2[i],
                                             t_b[i], z, False, **self.model_kwargs)
 
                 # Increment counter to keep track of the number of binaries run
@@ -898,8 +931,8 @@ class DartBoard():
 
                     # Create tuple of model parameters
                     x_i = ln_M1[i], ln_M2[i], ln_a[i], ecc[i]
-                    if self.first_SN: x_i += v_kick1[i], theta_kick1[i], phi_kick1[i]
-                    if self.second_SN: x_i += v_kick2[i], theta_kick2[i], phi_kick2[i]
+                    if self.first_SN: x_i += v_kick1[i], theta_kick1[i], phi_kick1[i], omega_kick1[i],
+                    if self.second_SN: x_i += v_kick2[i], theta_kick2[i], phi_kick2[i], omgega_kick2[i],
                     if self.prior_pos is not None: x_i += ra[i], dec[i]
                     if self.model_metallicity: x_i += (ln_z[i],)
                     if self.model_time: x_i += (ln_t_b[i],)
@@ -913,8 +946,8 @@ class DartBoard():
 
 
                     x_i = M1[i], M2[i], orbital_period[i], ecc[i], v_kick1[i], theta_kick1[i], \
-                            phi_kick1[i], v_kick2[i], theta_kick2[i], phi_kick2[i], ra[i], dec[i], \
-                            t_b[i], z
+                            phi_kick1[i], omega_kick1[i], v_kick2[i], theta_kick2[i], \
+                            phi_kick2[i], omega_kick2[i], ra[i], dec[i], t_b[i], z
 
 
                     # Save chains and derived

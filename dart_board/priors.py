@@ -16,11 +16,11 @@ def ln_prior(x, dart):
     ln_M1, ln_M2, ln_a, ecc = x[0:4]
     x = x[4:]
     if dart.first_SN:
-        v_kick1, theta_kick1, phi_kick1 = x[0:3]
-        x = x[3:]
+        v_kick1, theta_kick1, phi_kick1, omega_kick1 = x[0:4]
+        x = x[4:]
     if dart.second_SN:
-        v_kick2, theta_kick2, phi_kick2 = x[0:3]
-        x = x[3:]
+        v_kick2, theta_kick2, phi_kick2, omega_kick2 = x[0:4]
+        x = x[4:]
     if dart.prior_pos is not None:
         ra_b, dec_b = x[0:2]
         x = x[2:]
@@ -70,11 +70,13 @@ def ln_prior(x, dart):
         lp += dart.prior_v_kick1(v_kick1, sigma=kick_sigma)
         lp += dart.prior_theta_kick1(theta_kick1)
         lp += dart.prior_phi_kick1(phi_kick1)
+        lp += dart.prior_omega_kick1(omega_kick1)
 
     if dart.second_SN:
         lp += dart.prior_v_kick2(v_kick2, sigma=kick_sigma)
         lp += dart.prior_theta_kick2(theta_kick2)
         lp += dart.prior_phi_kick2(phi_kick2)
+        lp += dart.prior_omega_kick2(omega_kick2)
 
     if dart.prior_pos is None:
         if dart.model_time:
