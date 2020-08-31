@@ -39,7 +39,7 @@ def func_Roche_radius(M1, M2, A):
 
 
 def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
-                  v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0),
+                  v1_kick=(0.0, 0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0, 0.0),
                   metallicity=0.02, verbose_output=False, model_kwargs={}):
 
     times = np.linspace(t_min, t_max, N_times)
@@ -68,32 +68,32 @@ def evolve_binary(evolve, M1_in, M2_in, P_orb_in, ecc, t_min, t_max,
     for time in times:
 
         output = evolve(M1_in, M2_in, P_orb_in, ecc,
-                        v1_kick[0], v1_kick[1], v1_kick[2],
-                        v2_kick[0], v2_kick[1], v2_kick[2],
+                        v1_kick[0], v1_kick[1], v1_kick[2], v1_kick[3],
+                        v2_kick[0], v2_kick[1], v2_kick[2], v2_kick[3],
                         time, metallicity, verbose_output,
                         **model_kwargs)
 
-        R1_out = np.append(R1_out, output[9])
-        R2_out = np.append(R2_out, output[10])
+        R1_out = np.append(R1_out, output['R1'])
+        R2_out = np.append(R2_out, output['R2'])
 
-        M1_out = np.append(M1_out, output[0])
-        M2_out = np.append(M2_out, output[1])
+        M1_out = np.append(M1_out, output['M1'])
+        M2_out = np.append(M2_out, output['M2'])
 
-        Teff1_out = np.append(Teff1_out, output[11])
-        Teff2_out = np.append(Teff2_out, output[12])
+        Teff1_out = np.append(Teff1_out, output['Teff1'])
+        Teff2_out = np.append(Teff2_out, output['Teff2'])
 
-        Mdot1_out = np.append(Mdot1_out, output[5])
-        Mdot2_out = np.append(Mdot2_out, output[6])
+        Mdot1_out = np.append(Mdot1_out, output['mdot1'])
+        Mdot2_out = np.append(Mdot2_out, output['mdot2'])
 
-        P_orb_tmp = A_to_P(output[0], output[1], output[2])
+        P_orb_tmp = A_to_P(output['M1'], output['M2'], output['a'])
         P_orb_out = np.append(P_orb_out, P_orb_tmp)
-        ecc_out = np.append(ecc_out, output[3])
+        ecc_out = np.append(ecc_out, output['ecc'])
 
-        k1_out = np.append(k1_out, output[15])
-        k2_out = np.append(k2_out, output[16])
+        k1_out = np.append(k1_out, output['k1'])
+        k2_out = np.append(k2_out, output['k2'])
 
-        L1_out = np.append(L1_out, output[13])
-        L2_out = np.append(L2_out, output[14])
+        L1_out = np.append(L1_out, output['L1'])
+        L2_out = np.append(L2_out, output['L2'])
 
 
     return times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot1_out, Mdot2_out, \
@@ -317,12 +317,12 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
 
 
 def evolve_return_type(evolve, M1, M2, P_orb, ecc, time,
-                       v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
+                       v1_kick=(0.0, 0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0, 0.0), metallicity=0.02,
                        verbose_output=False, sys_obs={}, model_kwargs={}):
 
     output, sys_type = evolve(M1, M2, P_orb, ecc,
-                              v1_kick[0], v1_kick[1], v1_kick[2],
-                              v2_kick[0], v2_kick[1], v2_kick[2],
+                              v1_kick[0], v1_kick[1], v1_kick[2], v1_kick[3],
+                              v2_kick[0], v2_kick[1], v2_kick[2], v2_kick[3],
                               time, metallicity, verbose_output,
                               print_history=False, sys_type=True,
                               **model_kwargs)
@@ -330,19 +330,19 @@ def evolve_return_type(evolve, M1, M2, P_orb, ecc, time,
     return output, sys_type
 
 def evolve_and_print(evolve, M1, M2, P_orb, ecc, time,
-                     v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
+                     v1_kick=(0.0, 0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0, 0.0), metallicity=0.02,
                      verbose_output=False, sys_obs={}, model_kwargs={}):
 
     output = evolve(M1, M2, P_orb, ecc,
-                    v1_kick[0], v1_kick[1], v1_kick[2],
-                    v2_kick[0], v2_kick[1], v2_kick[2],
+                    v1_kick[0], v1_kick[1], v1_kick[2], v1_kick[3],
+                    v2_kick[0], v2_kick[1], v2_kick[2], v2_kick[3],
                     time, metallicity, verbose_output,
                     print_history=True, **model_kwargs)
 
 
 
 def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1,
-                    v1_kick=(0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0), metallicity=0.02,
+                    v1_kick=(0.0, 0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0, 0.0), metallicity=0.02,
                     file_out=None, sys_obs={}, model_kwargs={}):
 
     # Evolve binary
