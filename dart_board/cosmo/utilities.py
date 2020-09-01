@@ -22,19 +22,42 @@ Z_sun = 0.02   # Solar metallicity
 
 
 z_from_t_interp = None
+log_rho_from_z_interp = None
 
 
 def H_z(z):
     return H0 * np.sqrt(Omega_m * (1.0+z)**3 + Omega_l)
 
-def calc_rho_z(z):
+
+def initialize_log_rho_from_z():
+
+    global log_rho_from_z_interp
+
+    z_set = np.linspace(0, 199, 1000)
+    rho_set = np.zeros(1000)
 
     def integrand(z):
         return calc_SFR(z) / (H_z(z) * (1.0+z)) * (H0_inverse*H0)
 
-    rho, rho_err = quad(integrand, z, 200)
+    for i, z in enumerate(z_set):
+        rho, rho_err = quad(integrand, z, 200)
 
-    return (1.0-R) * rho
+        rho_set[i] = (1.0-R) * rho
+
+    z_set_new = np.append(z_set, [199.001, 1e99])
+    rho_set_new = np.append(rho_set, [1.0e-99, 1.0e-99])
+
+    log_rho_from_z_interp = interp1d(z_set_new, np.log10(rho_set_new))
+
+
+def calc_rho_z(z):
+
+    global log_rho_from_z_interp
+
+    if log_rho_from_z_interp is None: initialize_log_rho_from_z()
+
+    return 10**log_rho_from_z_interp(z)
+
 
 def calc_SFR(z):
     return 0.015 * (1.0+z)**2.7 / (1.0 + ((1.0+z)/2.9)**5.6)
