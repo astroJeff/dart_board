@@ -266,7 +266,7 @@ def plot_HR_diagram(ax, L1_out, L2_out, Teff1_out, Teff2_out):
 
 def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out,
                      Mdot1_out, Mdot2_out, P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out,
-                     title=None, file_out=None, sys_obs={}):
+                     title=None, sys_obs={}):
 
 
     fig, ax = plt.subplots(5, 1, figsize=(10,10))
@@ -308,12 +308,7 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
     # idx_2 = np.where(k2_out < 10)[0]
     # plot_HR_diagram(ax[7], L1_out[k1_out<10], L2_out[k2_out<10], Teff1_out[k1_out<10], Teff2_out[k2_out<10])
 
-
-    plt.tight_layout()
-    if file_out is not None:
-        plt.savefig(file_out)
-    else:
-        plt.show()
+    return fig
 
 
 def evolve_return_type(evolve, M1, M2, P_orb, ecc, time,
@@ -343,7 +338,7 @@ def evolve_and_print(evolve, M1, M2, P_orb, ecc, time,
 
 def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1,
                     v1_kick=(0.0, 0.0, 0.0, 0.0), v2_kick=(0.0, 0.0, 0.0, 0.0), metallicity=0.02,
-                    file_out=None, sys_obs={}, model_kwargs={}):
+                    sys_obs={}, model_kwargs={}):
 
     # Evolve binary
     times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, \
@@ -353,5 +348,7 @@ def evolve_and_plot(evolve, M1, M2, P_orb, ecc, t_max, t_min=0.1,
 
 
     # Plot binary
-    plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot1_out, Mdot2_out,
-                     P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out, file_out=file_out, sys_obs=sys_obs)
+    fig = plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out, Mdot1_out, Mdot2_out,
+                           P_orb_out, ecc_out, L1_out, L2_out, k1_out, k2_out, sys_obs=sys_obs)
+
+    return fig

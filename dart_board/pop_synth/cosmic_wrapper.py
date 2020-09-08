@@ -79,6 +79,7 @@ def evolve(M1,
            omega_kick_2,
            time,
            metallicity,
+           return_evolution = False,
            verbose_output = False,
            idum = None,
            dtp = 0.1,
@@ -247,6 +248,10 @@ def evolve(M1,
     _evolvebin.binary.bcm[:bcm_index] = np.zeros(bcm.shape)
     bcm = bcm.view(dtype=bcm_dtype)
     bpp = bpp.view(dtype=bpp_dtype)
+
+    # If we want the entire evolution
+    if return_evolution:
+        return bcm, bpp
 
     kick = kick_info_out.ravel().view(dtype=kick_dtype)
 
