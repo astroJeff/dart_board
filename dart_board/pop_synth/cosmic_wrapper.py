@@ -134,6 +134,9 @@ def evolve(M1,
            bdecayfac = 1,
            rembar_massloss = 0.5,
            kickflag = 0,
+           f_acc = 1,
+           don_lim = 0,
+           acc_lim = -2,
            zsun = 0.014):
 
 
