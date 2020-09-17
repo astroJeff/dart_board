@@ -214,6 +214,9 @@ def evolve(M1,
     _evolvebin.metvars.zsun = zsun
     _evolvebin.snvars.kickflag = kickflag
     _evolvebin.cmcpass.using_cmc = 0
+    _evolvebin.windvars.f_acc = 1
+    _evolvebin.windvars.don_lim = 0
+    _evolvebin.windvars.acc_lim = -2
 
     kstar_1 = 1
     kstar_2 = 1
