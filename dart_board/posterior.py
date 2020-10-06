@@ -41,30 +41,24 @@ def ln_posterior(x, dart):
     # Calculate the prior probability
     lp = priors.ln_prior(x, dart)
 
-    if dart.ntemps is None:
 
-        if np.isinf(lp) or np.isnan(lp):
-            return (-np.inf,) + empty_arr
 
-        ll, output = ln_likelihood(x, dart)
+    if np.isinf(lp) or np.isnan(lp):
+        return (-np.inf,) + empty_arr
 
-        # Convert from numpy structured array to a regular ndarray
-        if isinstance(output, np.ndarray):
-            output = tuple(output)
+    ll, output = ln_likelihood(x, dart)
+
+    # Convert from numpy structured array to a regular ndarray
+    if isinstance(output, np.ndarray):
+        output = tuple(output)
 #         if len(output.shape) == 0:
 #             output = np.column_stack(output[name] for name in output.dtype.names)[0]
 # #
-        # print(output)
+    # print(output)
 
-        # return lp+ll, np.array([output])
-        return (lp+ll,) + tuple(output)
+    # return lp+ll, np.array([output])
+    return (lp+ll,) + tuple(output)
 
-    else:
-
-        if np.isinf(lp) or np.isnan(lp): return -np.inf
-
-        ll = ln_likelihood(x, dart)
-        return lp+ll
 
 
 def ln_likelihood(x, dart):
@@ -143,20 +137,14 @@ def ln_likelihood(x, dart):
 
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type):
-        if dart.ntemps is None:
-            return -np.inf, empty_arr
-        else:
-            return -np.inf
+        return -np.inf, empty_arr
 
 
     # Check for kwargs arguments
     ll = 0
     if not dart.system_kwargs == {}: ll = posterior_properties(x_in, output, dart)
 
-    if dart.ntemps is None:
-        return ll, output
-    else:
-        return ll
+    return ll, output
 
 
 

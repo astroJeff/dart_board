@@ -63,11 +63,13 @@ class DartBoard():
                  generate_z=forward_pop_synth.get_z,
                  generate_pos=None,
                  ntemps=None,
+                 Tmax=10,
                  nwalkers=80,
                  threads=1,
                  pool=None,
                  evolve_binary=None,
                  thin=100,
+                 verbose=False,
                  prior_kwargs={},
                  system_kwargs={},
                  model_kwargs={}):
@@ -220,9 +222,12 @@ class DartBoard():
 
         # emcee parameters
         self.ntemps = ntemps
+        self.Tmax = Tmax
         self.nwalkers = nwalkers
         self.threads = threads
         self.pool = pool
+
+        self.verbose = verbose
 
         # Current dart positions
         self.p0 = []
@@ -353,13 +358,9 @@ class DartBoard():
 
 
             # Calculate the posterior probability for x
-            if self.ntemps is None:
-                out = self.posterior_function(x, self)
-                lp = out[0]
-                derived = out[1:]
-                # lp, derived = self.posterior_function(x, self)
-            else:
-                lp = self.posterior_function(x, self)
+            out = self.posterior_function(x, self)
+            lp = out[0]
+            derived = out[1]
 
 
 
@@ -370,6 +371,52 @@ class DartBoard():
                 x_best = copy.copy(x)
 
         if x_best is None: print("No", a_set, "solutions found within", str(N_iterations), "iterations.")
+
+        return x_best
+
+
+    def find_good_point(self, N_iterations=10000, a_set='both'):
+
+        x_best_low = None
+        x_best_high = None
+
+        # Iterate to find position for focusing walkers
+        if a_set == 'high' or a_set == 'both':
+            print("Initializing large orbital separation solution...")
+            x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
+            print("High best:", x_best_high)
+
+        if a_set == 'low' or a_set == 'both':
+            print("Initializing short orbital separation solution...")
+            x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
+
+        if x_best_low is None and x_best_high is None:
+            print("No solutions were found. Exiting...")
+            sys.exit()
+        elif x_best_high is None:
+            print("Proceeding with short orbital separation solution.")
+            x_best = x_best_low
+        elif x_best_low is None:
+            print("Proceeding with large orbital separation solution.")
+            x_best = x_best_high
+        else:
+            if self.ntemps == 1 or self.ntemps is None:
+                out = self.posterior_function(x_best_low, self)
+                lp_best_low = out[0]
+                out = self.posterior_function(x_best_high, self)
+                lp_best_high = out[0]
+                # lp_best_low, derived_low = self.posterior_function(x_best_low, self)
+                # lp_best_high, derived_high = self.posterior_function(x_best_high, self)
+            else:
+                lp_best_low = self.posterior_function(x_best_low, self)
+                lp_best_high = self.posterior_function(x_best_high, self)
+
+            if lp_best_low < lp_best_high:
+                print("Proceeding with large orbital separation solution.")
+                x_best = x_best_high
+            else:
+                print("Proceeding with short orbital separation solution.")
+                x_best = x_best_low
 
         return x_best
 
@@ -385,54 +432,12 @@ class DartBoard():
                 to throw to search in parameter space.
         """
 
-
-
         # Set walkers
         print("Setting walkers...")
 
-
         if starting_point is None:
 
-            x_best_low = None
-            x_best_high = None
-
-            # Iterate to find position for focusing walkers
-            if a_set == 'high' or a_set == 'both':
-                print("Initializing large orbital separation solution...")
-                x_best_high = self.iterate_to_initialize(N_iterations=N_iterations, a_set='high')
-                print("High best:", x_best_high)
-
-            if a_set == 'low' or a_set == 'both':
-                print("Initializing short orbital separation solution...")
-                x_best_low = self.iterate_to_initialize(N_iterations=N_iterations, a_set='low')
-
-            if x_best_low is None and x_best_high is None:
-                print("No solutions were found. Exiting...")
-                sys.exit()
-            elif x_best_high is None:
-                print("Proceeding with short orbital separation solution.")
-                x_best = x_best_low
-            elif x_best_low is None:
-                print("Proceeding with large orbital separation solution.")
-                x_best = x_best_high
-            else:
-                if self.ntemps == 1 or self.ntemps is None:
-                    out = self.posterior_function(x_best_low, self)
-                    lp_best_low = out[0]
-                    out = self.posterior_function(x_best_high, self)
-                    lp_best_high = out[0]
-                    # lp_best_low, derived_low = self.posterior_function(x_best_low, self)
-                    # lp_best_high, derived_high = self.posterior_function(x_best_high, self)
-                else:
-                    lp_best_low = self.posterior_function(x_best_low, self)
-                    lp_best_high = self.posterior_function(x_best_high, self)
-
-                if lp_best_low < lp_best_high:
-                    print("Proceeding with large orbital separation solution.")
-                    x_best = x_best_high
-                else:
-                    print("Proceeding with short orbital separation solution.")
-                    x_best = x_best_low
+            x_best = self.find_good_point(N_iterations=N_iterations, a_set=a_set)
 
         else:
             # Use provided starting point
@@ -446,8 +451,15 @@ class DartBoard():
         # For parallel tempering algorithm
         if self.ntemps is not None:
             self.aim_darts_PT(x_best)
-            return
+        else:
+            self.aim_darts_single(x_best)
 
+        return
+
+
+
+
+    def aim_darts_single(self, x_best):
 
         # Iterate to find position for focusing walkers
         out = self.posterior_function(x_best, self)
@@ -568,8 +580,6 @@ class DartBoard():
 
         sys.stdout.flush()
 
-
-
     def aim_darts_PT(self, x_best):
         """
         Create a ball around a viable region of parameter space. The initial
@@ -582,7 +592,10 @@ class DartBoard():
         """
 
 
-        lp_best = self.posterior_function(x_best, self)
+        # lp_best = self.posterior_function(x_best, self)
+        out = self.posterior_function(x_best, self)
+        lp_best = out[0]
+
 
 
         # Allocate walkers
@@ -628,9 +641,12 @@ class DartBoard():
 
 
                     # Calculate the posterior probability for x
-                    lp = self.posterior_function(x, self)
+                    # lp = self.posterior_function(x, self)
+                    out = self.posterior_function(x, self)
+                    lp = out[0]
 
-                print("Temp", i, "Walker", j, lp)
+
+                if self.verbose: print("Temp", i, "Walker", j, lp)
 
                 # Save model parameters to variables
                 ln_M1, ln_M2, ln_a, ecc = x[0:4]
@@ -699,11 +715,9 @@ class DartBoard():
         if self.model_time: self.p0 = np.vstack((self.p0,
                                                  np.log(time_set[np.newaxis,:,:])))
 
-
         # Swap axes for parallel tempered sampler
         self.p0 = np.swapaxes(self.p0, 0, 1)
         self.p0 = np.swapaxes(self.p0, 1, 2)
-
 
         print("...walkers are set.")
 
@@ -724,13 +738,20 @@ class DartBoard():
 
 
         # To allow for PT sampling
-        if self.ntemps is not None: method = 'emcee_PT'
+        if self.ntemps is not None:
+
+            try:
+                import ptemcee
+            except ImportError:
+                raise ImportError("You must pip install ptemcee to run the parallel-tempering MCMC method")
+
+            method = 'emcee_PT'
 
 
         if method == 'emcee':
 
             # Define sampler
-            if self.pool is not None:
+            if pool is not None:
                 sampler = emcee.EnsembleSampler(self.nwalkers,
                                                 self.dim,
                                                 self.posterior_function,
@@ -786,18 +807,28 @@ class DartBoard():
 
             # Define sampler
             if self.pool is not None:
-                sampler = emcee.ptsampler.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
-                                          logl=posterior.ln_likelihood, logp=priors.ln_prior,
+#                 sampler = ptemcee.sampler.Sampler(self.nwalkers, self.ndim,
+#                                                   posterior.ln_likelihood,
+#                                                   priors.ln_prior,
+#                                                   betas=make_ladder(self.ndim, self.ntemps, Tmax=self.Tmax),
+#                                                   mapper=Pool(2).map)
+#
+# sampler = Sampler(self.nwalkers, self.ndim,
+#                           LogLikeGaussian(self.icov_unit),
+#                           LogPriorGaussian(self.icov_unit, cutoff=self.cutoff),
+#                           betas=make_ladder(self.ndim, self.ntemps, Tmax=self.Tmax))
+
+                sampler = ptemcee.Sampler(self.nwalkers, self.dim, posterior.ln_likelihood, priors.ln_prior,
+                                          ntemps=self.ntemps, Tmax=self.Tmax, blobs_dtype=posterior.blobs_dtype,
                                           loglargs=(self,), logpargs=(self,), pool=self.pool)
                 self.pool = None
-            elif self.threads != 1:
-                sampler = emcee.ptsampler.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
-                                          logl=posterior.ln_likelihood, logp=priors.ln_prior,
-                                          loglargs=(self,), logpargs=(self,), threads=self.threads)
             else:
-                sampler = emcee.ptsampler.PTSampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
-                                          logl=posterior.ln_likelihood, logp=priors.ln_prior,
+                sampler = ptemcee.Sampler(self.nwalkers, self.dim, posterior.ln_likelihood, priors.ln_prior,
+                                          ntemps=self.ntemps, Tmax=self.Tmax, blobs_dtype=posterior.blobs_dtype,
                                           loglargs=(self,), logpargs=(self,))
+                # sampler = ptemcee.Sampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
+                #                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
+                #                           loglargs=(self,), logpargs=(self,))
 
 
 
@@ -815,10 +846,13 @@ class DartBoard():
             print("...full run finished")
 
 
-
             self.chains = sampler.chain
+            self.derived = sampler.blobs
             # self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)
-            self.lnprobability = sampler.lnprobability
+            if method == 'emcee':
+                self.lnprobability = sampler.lnprobability
+            elif method == 'emcee_PT':
+                self.lnprobability = sampler.logprobability
             self.sampler = sampler
 
 

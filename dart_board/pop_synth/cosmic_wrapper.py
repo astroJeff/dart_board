@@ -7,7 +7,6 @@ from cosmic.evolve import Evolve
 
 from cosmic import _evolvebin
 
-
 BPP_COLUMNS = ['tphys', 'mass_1', 'mass_2', 'kstar_1', 'kstar_2', 'sep', 'porb', 'ecc',
                'RRLO_1', 'RRLO_2', 'evol_type', 'aj_1', 'aj_2', 'tms_1', 'tms_2',
                'massc_1', 'massc_2', 'rad_1', 'rad_2', 'mass0_1', 'mass0_2', 'lum_1',
@@ -138,7 +137,6 @@ def evolve(M1,
            don_lim = 0,
            acc_lim = -2,
            zsun = 0.014):
-
 
     if idum is None:
         random_data = os.urandom(4)
