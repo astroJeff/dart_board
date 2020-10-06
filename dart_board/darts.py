@@ -751,7 +751,7 @@ class DartBoard():
         if method == 'emcee':
 
             # Define sampler
-            if pool is not None:
+            if self.pool is not None:
                 sampler = emcee.EnsembleSampler(self.nwalkers,
                                                 self.dim,
                                                 self.posterior_function,
