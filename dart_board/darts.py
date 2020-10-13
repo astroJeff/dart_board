@@ -51,6 +51,8 @@ class DartBoard():
                  ln_prior_pos=None,
                  ln_prior_z=None,
                  ln_posterior_function=None,
+                 ln_prior_function=None,
+                 ln_likelihood_function=None,
                  generate_M1=forward_pop_synth.get_M1,
                  generate_M2=forward_pop_synth.get_M2,
                  generate_a=forward_pop_synth.get_a,
@@ -154,6 +156,11 @@ class DartBoard():
             print("You must include a binary evolution scheme, e.g. pybse.evolv_wrapper")
             sys.exit(-1)
 
+        if ntemps != 1 or not is None:
+            if ln_prior_function is None or ln_likelihood_function is None:
+                print("You must include a prior and likelihood function when using the parallel tempering MCMC method.")
+                sys.exit(-1)
+
         # The type of binary we are modeling
         self.binary_type = binary_type
 
@@ -219,6 +226,11 @@ class DartBoard():
             self.posterior_function = posterior.ln_posterior
         else:
             self.posterior_function = ln_posterior_function
+
+        # Set the prior and likelihood functions for PT MCMC
+        if ntemps != 1 and ntemps is not None:
+            self.ln_prior_function = ln_prior_function
+            self.ln_likelihood_function = ln_likelihood_function
 
         # emcee parameters
         self.ntemps = ntemps
@@ -818,12 +830,12 @@ class DartBoard():
 #                           LogPriorGaussian(self.icov_unit, cutoff=self.cutoff),
 #                           betas=make_ladder(self.ndim, self.ntemps, Tmax=self.Tmax))
 
-                sampler = ptemcee.Sampler(self.nwalkers, self.dim, posterior.ln_likelihood, priors.ln_prior,
+                sampler = ptemcee.Sampler(self.nwalkers, self.dim, self.ln_likelihood_function, self.ln_prior_function,
                                           ntemps=self.ntemps, Tmax=self.Tmax, blobs_dtype=posterior.blobs_dtype,
                                           loglargs=(self,), logpargs=(self,), pool=self.pool)
                 self.pool = None
             else:
-                sampler = ptemcee.Sampler(self.nwalkers, self.dim, posterior.ln_likelihood, priors.ln_prior,
+                sampler = ptemcee.Sampler(self.nwalkers, self.dim, self.ln_likelihood_function, self.ln_prior_function,
                                           ntemps=self.ntemps, Tmax=self.Tmax, blobs_dtype=posterior.blobs_dtype,
                                           loglargs=(self,), logpargs=(self,))
                 # sampler = ptemcee.Sampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
