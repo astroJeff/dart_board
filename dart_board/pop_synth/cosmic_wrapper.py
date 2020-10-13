@@ -142,7 +142,6 @@ def evolve(M1,
         random_data = os.urandom(4)
         idum = int.from_bytes(random_data, byteorder="big")
 
-
     # This is a stand in - the eccentric anomaly needs to be passed instead of pi/3 below
     # Unfortunately, this needs to be updated within cosmic to be the mean anomaly.
     natal_kick_array = [[v_kick_1, (np.pi/2-theta_kick_1) * 180/np.pi, phi_kick_1 * 180/np.pi, omega_kick_1, 0],

@@ -157,8 +157,8 @@ class DartBoard():
             sys.exit(-1)
 
         if ntemps != 1 or ntemps is not None:
-            if ln_prior_function is None or ln_likelihood_function is None:
-                print("You must include a prior and likelihood function when using the parallel tempering MCMC method.")
+            if ln_likelihood_function is None:
+                print("You must include a likelihood function when using the parallel tempering MCMC method.")
                 sys.exit(-1)
 
         # The type of binary we are modeling
@@ -229,7 +229,10 @@ class DartBoard():
 
         # Set the prior and likelihood functions for PT MCMC
         if ntemps != 1 and ntemps is not None:
-            self.ln_prior_function = ln_prior_function
+            if ln_prior_function is None:
+                self.ln_prior_function = priors.ln_prior
+            else:
+                self.ln_prior_function = ln_prior_function
             self.ln_likelihood_function = ln_likelihood_function
 
         # emcee parameters
@@ -785,7 +788,6 @@ class DartBoard():
                                                 blobs_dtype=posterior.blobs_dtype,
                                                 args=[self])
 
-
             # Burn-in
             print(self.p0.shape)
             print("Starting burn-in...")
@@ -793,15 +795,12 @@ class DartBoard():
             # pos,prob,state,binary_data = sampler.run_mcmc(self.p0, nburn)
             print("...finished running burn-in")
 
-            # breakpoint()
-
             # Full run
             print("Starting full run...")
             sampler.reset()
             sampler.run_mcmc(pos, nsteps)
             # pos,prob,state,binary_data = sampler.run_mcmc(pos, nsteps)
             print("...full run finished")
-
 
             # Save only every 100th sample
             self.chains = sampler.chain[:,::self.thin,:]
@@ -811,25 +810,10 @@ class DartBoard():
 
             self.sampler = sampler
 
-
         elif method == 'emcee_PT':
-
-            # THIS DOES NOT YET WORK #
-
 
             # Define sampler
             if self.pool is not None:
-#                 sampler = ptemcee.sampler.Sampler(self.nwalkers, self.ndim,
-#                                                   posterior.ln_likelihood,
-#                                                   priors.ln_prior,
-#                                                   betas=make_ladder(self.ndim, self.ntemps, Tmax=self.Tmax),
-#                                                   mapper=Pool(2).map)
-#
-# sampler = Sampler(self.nwalkers, self.ndim,
-#                           LogLikeGaussian(self.icov_unit),
-#                           LogPriorGaussian(self.icov_unit, cutoff=self.cutoff),
-#                           betas=make_ladder(self.ndim, self.ntemps, Tmax=self.Tmax))
-
                 sampler = ptemcee.Sampler(self.nwalkers, self.dim, self.ln_likelihood_function, self.ln_prior_function,
                                           ntemps=self.ntemps, Tmax=self.Tmax, blobs_dtype=posterior.blobs_dtype,
                                           loglargs=(self,), logpargs=(self,), pool=self.pool)
@@ -838,11 +822,6 @@ class DartBoard():
                 sampler = ptemcee.Sampler(self.nwalkers, self.dim, self.ln_likelihood_function, self.ln_prior_function,
                                           ntemps=self.ntemps, Tmax=self.Tmax, blobs_dtype=posterior.blobs_dtype,
                                           loglargs=(self,), logpargs=(self,))
-                # sampler = ptemcee.Sampler(ntemps=self.ntemps, nwalkers=self.nwalkers, dim=self.dim,
-                #                           logl=posterior.ln_likelihood, logp=priors.ln_prior,
-                #                           loglargs=(self,), logpargs=(self,))
-
-
 
             # Burn-in
             print("Starting burn-in...")
@@ -857,17 +836,10 @@ class DartBoard():
                 pass
             print("...full run finished")
 
-
             self.chains = sampler.chain
             self.derived = sampler.blobs
-            # self.derived = np.swapaxes(np.array(sampler.blobs), 0, 1)
-            if method == 'emcee':
-                self.lnprobability = sampler.lnprobability
-            elif method == 'emcee_PT':
-                self.lnprobability = sampler.logprobability
+            self.lnprobability = sampler.logprobability
             self.sampler = sampler
-
-
 
         elif method == 'nestle':
 
