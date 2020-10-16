@@ -156,7 +156,7 @@ class DartBoard():
             print("You must include a binary evolution scheme, e.g. pybse.evolv_wrapper")
             sys.exit(-1)
 
-        if ntemps != 1 or ntemps is not None:
+        if ntemps != 1 and ntemps is not None:
             if ln_likelihood_function is None:
                 print("You must include a likelihood function when using the parallel tempering MCMC method.")
                 sys.exit(-1)
