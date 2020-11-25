@@ -15,8 +15,10 @@ def ln_prior_t_cosmo(ln_t_b, t_min=c.min_t, t_max=c.max_t):
 
     z = utilities.get_z_from_t(t_b)
 
-    # From Madau & Dickinson (2014)
-    sfr = 0.015 * (1.0 + z)**2.7 / (1.0 + ((1.0+z)/2.9)**5.6)
+    # # From Madau & Dickinson (2014)
+    # sfr = 0.015 * (1.0 + z)**2.7 / (1.0 + ((1.0+z)/2.9)**5.6)
 
+    # From Madau & Fragos (2017)
+    sfr = 0.01 * (1.0 + z)**2.6 / (1.0 + ((1.0+z)/3.2)**6.2)
 
     return np.log( sfr*t_b )
