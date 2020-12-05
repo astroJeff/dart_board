@@ -71,6 +71,7 @@ class DartBoard():
                  pool=None,
                  evolve_binary=None,
                  thin=100,
+                 emcee_moves=[(emcee.moves.StretchMove(a=4.0),1)],
                  verbose=False,
                  prior_kwargs={},
                  system_kwargs={},
@@ -241,6 +242,7 @@ class DartBoard():
         self.nwalkers = nwalkers
         self.threads = threads
         self.pool = pool
+        self.emcee_moves = emcee_moves
 
         self.verbose = verbose
 
@@ -772,6 +774,7 @@ class DartBoard():
                                                 self.posterior_function,
                                                 args=[self],
                                                 blobs_dtype=posterior.blobs_dtype,
+                                                moves=self.emcee_moves,
                                                 pool=self.pool)
                 self.pool = None
             elif self.threads != 1:
@@ -780,13 +783,15 @@ class DartBoard():
                                                 self.posterior_function,
                                                 args=[self],
                                                 blobs_dtype=posterior.blobs_dtype,
+                                                moves=self.emcee_moves,
                                                 threads=self.threads)
             else:
                 sampler = emcee.EnsembleSampler(self.nwalkers,
                                                 self.dim,
                                                 self.posterior_function,
                                                 blobs_dtype=posterior.blobs_dtype,
-                                                args=[self])
+                                                args=[self],
+                                                moves=self.emcee_moves)
 
             # Burn-in
             print(self.p0.shape)
