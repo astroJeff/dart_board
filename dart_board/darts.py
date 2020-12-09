@@ -71,7 +71,7 @@ class DartBoard():
                  pool=None,
                  evolve_binary=None,
                  thin=100,
-                 emcee_moves=[(emcee.moves.StretchMove(a=4.0),1)],
+                 emcee_moves=[(emcee.moves.StretchMove(a=2.0),1)],
                  verbose=False,
                  prior_kwargs={},
                  system_kwargs={},
