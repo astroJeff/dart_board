@@ -9,7 +9,7 @@ def calc_Z(z):
     return utilities.y*utilities.calc_rho_z(z)/utilities.rho_b
 
 
-def ln_prior_z(ln_z_b, ln_t_b, z_min=c.min_z, z_max=c.max_z):
+def ln_prior_z(ln_z_b, ln_t_b, z_min=c.min_z, z_max=c.max_z, normed=False):
     """
     Return the prior probability on the log of the metallicity.
 
@@ -26,5 +26,15 @@ def ln_prior_z(ln_z_b, ln_t_b, z_min=c.min_z, z_max=c.max_z):
     # Get metallicity of the universe at that time
     Z_ref = calc_Z(z_ref)
 
-    a, b = (np.log10(z_min) - np.log10(Z_ref)) / 0.5, (np.log10(z_max) - np.log10(Z_ref)) / 0.5
-    return np.log(truncnorm.pdf(np.log10(Z), a, b, loc=np.log10(Z_ref), scale=0.5))
+    # Set the scale around the metallicity - in logspace
+    log_Z_scale = 0.5
+
+    # The truncnorm function is slower, but produces a normalized distribution.
+    if normed:
+        a, b = (np.log10(z_min) - np.log10(Z_ref)) / 0.5, (np.log10(z_max) - np.log10(Z_ref)) / 0.5
+        return np.log(truncnorm.pdf(np.log10(Z), a, b, loc=np.log10(Z_ref), scale=0.5))
+
+    else:
+        conds = [Z < z_min, (z_min <= Z) & (Z <= z_max), Z > z_max]
+        funcs = [-np.inf, lambda Z: -(np.log10(Z) - np.log10(Z_ref))**2 / (2*log_Z_scale**2), -np.inf]
+        return = np.piecewise(Z, conds, funcs)
