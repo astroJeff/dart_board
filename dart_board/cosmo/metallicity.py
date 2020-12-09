@@ -37,4 +37,4 @@ def ln_prior_z(ln_z_b, ln_t_b, z_min=c.min_z, z_max=c.max_z, normed=False):
     else:
         conds = [Z < z_min, (z_min <= Z) & (Z <= z_max), Z > z_max]
         funcs = [-np.inf, lambda Z: -(np.log10(Z) - np.log10(Z_ref))**2 / (2*log_Z_scale**2), -np.inf]
-        return = np.piecewise(Z, conds, funcs)
+        return np.piecewise(Z, conds, funcs)
