@@ -297,10 +297,10 @@ def plot_binary_evol(times, R1_out, R2_out, M1_out, M2_out, Teff1_out, Teff2_out
     plot_Mdot(ax[3], times, Mdot1_out, Mdot2_out)
 
     # Orbital period panel
-    plot_P_orb(ax[5], times[k2_out<15], P_orb_out[k2_out<15], np.max(times), sys_obs)
+    plot_P_orb(ax[5], times, P_orb_out, np.max(times), sys_obs)
 
     # Plot eccentricity panel
-    plot_ecc(ax[7], times[k2_out<15], ecc_out[k2_out<15], np.max(times), sys_obs)
+    plot_ecc(ax[7], times, ecc_out, np.max(times), sys_obs)
 
 
     # Plot HR diagram

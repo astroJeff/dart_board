@@ -35,7 +35,6 @@ paper/scripts/*.out
 notebooks
 dart_board/sf_history/__pycache__
 paper/scripts/.ipynb_checkpoints*
-dart_board/sf_history/*.dat
 paper/scripts/*.sbatch
 paper/scripts/*.dat
 paper/scripts/fort.*
