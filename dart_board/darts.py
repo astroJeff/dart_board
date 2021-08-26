@@ -26,6 +26,7 @@ from . import priors
 from . import posterior
 from . import forward_pop_synth
 from . import constants as c
+from .photometry import phot
 
 
 
@@ -39,6 +40,7 @@ class DartBoard():
     def __init__(self,
                  binary_type,
                  metallicity=0.02,
+                 include_photometry=False,
                  ln_prior_M1=priors.ln_prior_ln_M1,
                  ln_prior_M2=priors.ln_prior_ln_M2,
                  ln_prior_a=priors.ln_prior_ln_a,
@@ -167,6 +169,12 @@ class DartBoard():
 
         # Binary evolution parameters
         self.metallicity = metallicity
+
+        # Whether to include photometry in our evolution calculations
+        self.include_photometry = include_photometry
+        if include_photometry:
+            posterior.blobs_dtype = posterior.blobs_dtype + [('B1','f8'), ('V1','f8'), ('U1','f8'),
+                                                             ('B2','f8'), ('V2','f8'), ('U2','f8')])
 
         # Set the functions for the priors on each parameter
         self.prior_M1 = ln_prior_M1
@@ -927,7 +935,7 @@ class DartBoard():
 
             # Now, we want to zero the outputs
             chains = np.zeros((batch_size, 14))
-            derived = np.zeros((batch_size, 17))
+            derived = np.zeros((batch_size, len(posterior.blobs_dtype)))
             likelihood = np.zeros(batch_size, dtype=float)
             success = np.zeros(batch_size, dtype=bool)
 
@@ -940,6 +948,10 @@ class DartBoard():
                                             v_kick1[i], theta_kick1[i], phi_kick1[i], omega_kick1[i],
                                             v_kick2[i], theta_kick2[i], phi_kick2[i], omega_kick2[i],
                                             t_b[i], z, False, **self.model_kwargs)
+
+                # Add photometry if user wants it - this adds columns to output
+                if self.include_photometry:
+                    output = phot.calc_photometry(output, z)
 
                 # Increment counter to keep track of the number of binaries run
                 num_ran += 1

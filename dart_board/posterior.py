@@ -11,6 +11,7 @@ from .utils import P_to_A, A_to_P
 from . import constants as c
 # from . import darts
 from . import priors
+from .photometry import phot
 
 
 blobs_dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
@@ -34,7 +35,7 @@ def ln_posterior(x, dart):
     """
 
     # Empty array for emcee blobs
-    empty_arr = tuple(np.zeros(17))
+    empty_arr = tuple(np.zeros(len(blobs_dtype)))
 
 
 
@@ -115,7 +116,7 @@ def ln_likelihood(x, dart):
         t_b = c.Hubble_time
 
     # Empty array for emcee blobs
-    empty_arr = tuple(np.zeros(17))
+    empty_arr = tuple(np.zeros(len(blobs_dtype)))
 
 
     # Get initial orbital period
@@ -134,6 +135,10 @@ def ln_likelihood(x, dart):
                                 v_kick1, theta_kick1, phi_kick1, omega_kick1,
                                 v_kick2, theta_kick2, phi_kick2, omega_kick2,
                                 t_b, z, False, **dart.model_kwargs)
+
+    # Add photometry if user wants it - this adds columns to output
+    if dart.include_photometry:
+        output = phot.calc_photometry(output, z)
 
     # Return posterior probability and blobs
     if not check_output(output, dart.binary_type):
