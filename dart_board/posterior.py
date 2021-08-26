@@ -11,7 +11,6 @@ from .utils import P_to_A, A_to_P
 from . import constants as c
 # from . import darts
 from . import priors
-from .photometry import phot
 
 
 blobs_dtype = [('M1', 'f8'), ('M2', 'f8'), ('a', 'f8'), ('ecc', 'f8'), ('v_sys', 'f8'),
@@ -38,10 +37,8 @@ def ln_posterior(x, dart):
     empty_arr = tuple(np.zeros(len(blobs_dtype)))
 
 
-
     # Calculate the prior probability
     lp = priors.ln_prior(x, dart)
-
 
 
     if np.isinf(lp) or np.isnan(lp):
@@ -130,6 +127,8 @@ def ln_likelihood(x, dart):
         phi_kick2 = phi_kick1
         omega_kick2 = omega_kick1
 
+    # import pdb; pdb.set_trace()
+
     # Run rapid binary evolution code
     output = dart.evolve_binary(M1, M2, orbital_period, ecc,
                                 v_kick1, theta_kick1, phi_kick1, omega_kick1,
@@ -138,6 +137,7 @@ def ln_likelihood(x, dart):
 
     # Add photometry if user wants it - this adds columns to output
     if dart.include_photometry:
+        from .photometry import phot
         output = phot.calc_photometry(output, z)
 
     # Return posterior probability and blobs

@@ -26,7 +26,6 @@ from . import priors
 from . import posterior
 from . import forward_pop_synth
 from . import constants as c
-from .photometry import phot
 
 
 
@@ -174,7 +173,7 @@ class DartBoard():
         self.include_photometry = include_photometry
         if include_photometry:
             posterior.blobs_dtype = posterior.blobs_dtype + [('B1','f8'), ('V1','f8'), ('U1','f8'),
-                                                             ('B2','f8'), ('V2','f8'), ('U2','f8')])
+                                                             ('B2','f8'), ('V2','f8'), ('U2','f8')]
 
         # Set the functions for the priors on each parameter
         self.prior_M1 = ln_prior_M1
@@ -318,7 +317,6 @@ class DartBoard():
         Returns:
             x_best : tuple, position in parameter space
         """
-
 
         # To load star formation histories
         if self.prior_pos is not None: tmp = self.prior_pos(0.0, 0.0, 10.0)
@@ -951,6 +949,7 @@ class DartBoard():
 
                 # Add photometry if user wants it - this adds columns to output
                 if self.include_photometry:
+                    from .photometry import phot
                     output = phot.calc_photometry(output, z)
 
                 # Increment counter to keep track of the number of binaries run
