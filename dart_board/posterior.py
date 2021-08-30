@@ -36,7 +36,6 @@ def ln_posterior(x, dart):
     # Empty array for emcee blobs
     empty_arr = tuple(np.zeros(len(blobs_dtype)))
 
-
     # Calculate the prior probability
     lp = priors.ln_prior(x, dart)
 
@@ -48,11 +47,9 @@ def ln_posterior(x, dart):
 
     # Convert from numpy structured array to a regular ndarray
     if isinstance(output, np.ndarray):
-        output = tuple(output)
-#         if len(output.shape) == 0:
-#             output = np.column_stack(output[name] for name in output.dtype.names)[0]
-# #
-    # print(output)
+        output = output[0]
+        # output = tuple(output)
+
 
     # return lp+ll, np.array([output])
     return (lp+ll,) + tuple(output)

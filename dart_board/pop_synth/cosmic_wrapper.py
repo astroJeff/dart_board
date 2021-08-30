@@ -218,7 +218,7 @@ def evolve(M1,
     kstar_1 = 1
     kstar_2 = 1
 
-    [bpp_index, bcm_index, kick_info_out] \
+    [a, b, bpp_index, bcm_index, kick_info_out] \
                        = _evolvebin.evolv2([kstar_1, kstar_2],
                                            [M1, M2],
                                            P_orb,

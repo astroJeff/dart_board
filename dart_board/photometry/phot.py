@@ -1,6 +1,11 @@
 import numpy as np
 import tensorflow as tf
-model = tf.keras.models.load_model('Neural_Net_Parameters_to_Photometry')
+
+# Load up photometry model data
+# import importlib.resources as pkg_resources
+
+# photometry_data_file = resource_string(__name__, 'Neural_Net_Parameters_to_Photometry')
+model = tf.keras.models.load_model(__file__+'/../Neural_Net_Parameters_to_Photometry')
 
 def add_columns(array, dtype_additions):
     """
@@ -18,7 +23,7 @@ def add_columns(array, dtype_additions):
     """
 
     new_dtype = np.dtype(array.dtype.descr + dtype_additions)
-    new_output = np.zeros(len(array), dtype=new_dtype)
+    new_output = np.zeros(1, dtype=new_dtype)
 
     for col in array.dtype.names:
         new_output[col] = array[col]
@@ -30,7 +35,7 @@ def model_predictions(mass, gravity, Teff, FeH):
 
     """
     Calls the pretrained neural network that predicts the color indices B-V, U-B
-    and the absolute V magnitude of a star using its mass, gravity, Temperature 
+    and the absolute V magnitude of a star using its mass, gravity, Temperature
     and metallicity
 
     Parameters:
@@ -39,10 +44,10 @@ def model_predictions(mass, gravity, Teff, FeH):
               Teff: the effective temperature of the star in Kelvins
               FeH: the metallicity of the star in terms of its logarithmic
                    ratio to the solar metallicity
-    
+
     Returns:
            phot: a numpy array containing the predicted B-V, U-B indices and
-                 the absolute V magnitude 
+                 the absolute V magnitude
     """
     Input = np.array([Teff, gravity, mass, FeH]).reshape(1,4)
     phot = model.predict(Input)
@@ -79,7 +84,7 @@ def calc_photometry(output, Z):
         B_V1, U_B1, V1 = model_predictions(mass1, gravity1, Teff1, Z)[0]
         B1 = B_V1 + V1
         U1 = U_B1 + B1
-        
+
 
         new_output['U1'][0] = U1
         new_output['V1'][0] = V1
@@ -98,7 +103,7 @@ def calc_photometry(output, Z):
         B_V2, U_B2, V2 = model_predictions(mass2, gravity2, Teff2, Z)[0]
         B2 = B_V2 + V2
         U2 = U_B2 + B2
-        
+
 
         new_output['U2'][0] = U2
         new_output['V2'][0] = V2
@@ -107,6 +112,5 @@ def calc_photometry(output, Z):
         new_output['U2'][0] = 99
         new_output['V2'][0] = 99
         new_output['B2'][0] = 99
-
 
     return new_output
